@@ -3,6 +3,8 @@ import { Icon } from '@iconify/react';
 import { Avatar } from '@heroui/react';
 
 export function Sidebar({ onNavigate, activePage = 'dashboard' }) {
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
+
   const menuItems = [
     { icon: 'lucide:layout-dashboard', label: 'Dashboard', key: 'dashboard' },
     { icon: 'lucide:calendar', label: 'Appointment', key: 'appointments' },
@@ -11,18 +13,31 @@ export function Sidebar({ onNavigate, activePage = 'dashboard' }) {
   ];
 
   return (
-    <div className="w-64 border-r border-divider bg-content1 flex flex-col h-full">
-      <div className="p-4 flex items-center">
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-divider">
-          <Icon icon="lucide:home" className="text-default-500" />
-          <span className="font-medium">Oreo</span>
-        </div>
-        <div className="ml-4 text-default-500">Doctor</div>
+    <div className={`${isCollapsed ? 'w-20' : 'w-64'} border-r border-divider bg-content1 flex flex-col h-full transition-all duration-300`}>
+      <div className={`p-4 flex items-center ${isCollapsed ? 'justify-center' : ''}`}>
+        {!isCollapsed && (
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-divider">
+            <Icon icon="lucide:home" className="text-default-500" />
+            <span className="font-medium">Oreo</span>
+          </div>
+        )}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className={`p-2 rounded-lg hover:bg-default-100 ${isCollapsed ? '' : 'ml-auto'}`}
+        >
+          <Icon 
+            icon={isCollapsed ? "lucide:chevron-right" : "lucide:chevron-left"} 
+            className="text-default-500" 
+            width={20} 
+          />
+        </button>
       </div>
 
       <div className="flex-1 overflow-auto">
         <div className="py-2">
-          <div className="px-4 py-2 text-xs text-default-500 font-semibold">-- MAIN</div>
+          {!isCollapsed && (
+            <div className="px-4 py-2 text-xs text-default-500 font-semibold">-- MAIN</div>
+          )}
           <ul>
             {menuItems.map((item) => (
               <li key={item.key}>
@@ -34,16 +49,16 @@ export function Sidebar({ onNavigate, activePage = 'dashboard' }) {
                   }}
                   className={`flex items-center gap-3 px-4 py-3 hover:bg-default-100 ${
                     activePage === item.key ? 'text-primary border-l-4 border-primary' : 'text-default-700'
-                  }`}
+                  } ${isCollapsed ? 'justify-center' : ''}`}
+                  title={isCollapsed ? item.label : undefined}
                 >
                   <Icon icon={item.icon} width={20} />
-                  <span>{item.label}</span>
+                  {!isCollapsed && <span>{item.label}</span>}
                 </a>
               </li>
             ))}
           </ul>
         </div>
-
       </div>
     </div>
   );

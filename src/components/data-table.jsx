@@ -14,7 +14,9 @@ import {
   Input,
   Pagination,
   Select,
-  SelectItem
+  SelectItem,
+  Card,
+  CardBody
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 
@@ -25,7 +27,7 @@ export function DataTable({
   onDelete,
   onView
 }) {
-  const [filterValue, setFilterValue] = React.useState('');
+  const [filters, setFilters] = React.useState({});
   const [page, setPage] = React.useState(1);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   
@@ -36,19 +38,18 @@ export function DataTable({
     { value: 50, label: '50 per page' }
   ];
 
-  // Filter data based on search input
+  // Filter data based on all filter values
   const filteredData = React.useMemo(() => {
-    if (!filterValue) return data;
+    if (Object.keys(filters).length === 0) return data;
     
     return data.filter(item => {
-      return Object.values(item).some(
-        value => 
-          value && 
-          typeof value === 'string' && 
-          value.toLowerCase().includes(filterValue.toLowerCase())
-      );
+      return Object.entries(filters).every(([key, value]) => {
+        if (!value) return true;
+        const itemValue = item[key]?.toString().toLowerCase();
+        return itemValue?.includes(value.toLowerCase());
+      });
     });
-  }, [data, filterValue]);
+  }, [data, filters]);
 
   // Calculate pagination
   const pages = Math.ceil(filteredData.length / rowsPerPage);
@@ -58,6 +59,22 @@ export function DataTable({
     
     return filteredData.slice(start, end);
   }, [filteredData, page]);
+
+  // Get filterable columns (excluding actions column)
+  const filterableColumns = columns.filter(col => col.key !== 'actions');
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setFilters({});
+    setPage(1);
+  };
 
   // Render cell content based on column configuration
   const renderCell = (item, columnKey) => {
@@ -115,16 +132,48 @@ export function DataTable({
   };
 
   return (
-    <div className="bg-content1 p-6 rounded-lg shadow-sm">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-4">
-          <h3 className="text-lg font-semibold">All Records</h3>
+    <div className="space-y-4">
+      <Card>
+        <CardBody>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filterableColumns.map((column) => (
+              <div key={column.key}>
+                <Input
+                  label={column.label}
+                  placeholder={`Filter by ${column.label.toLowerCase()}`}
+                  value={filters[column.key] || ''}
+                  onValueChange={(value) => handleFilterChange(column.key, value)}
+                  size="sm"
+                  isClearable
+                  startContent={<Icon icon="lucide:search" className="text-default-400" width={16} />}
+                />
+              </div>
+            ))}
+          </div>
+          {Object.keys(filters).length > 0 && (
+            <div className="flex justify-end mt-4">
+              <Button
+                size="sm"
+                color="danger"
+                variant="light"
+                startContent={<Icon icon="lucide:trash-2" width={16} />}
+                onPress={clearFilters}
+              >
+                Clear All Filters
+              </Button>
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
+      <div className="bg-content1 p-6 rounded-lg shadow-sm">
+        <div className="flex justify-between items-center mb-4">
           <Select 
             size="sm"
             selectedKeys={[rowsPerPage.toString()]}
             onChange={(e) => {
               setRowsPerPage(Number(e.target.value));
-              setPage(1); // Reset to first page when changing rows per page
+              setPage(1);
             }}
             className="w-40"
           >
@@ -134,59 +183,60 @@ export function DataTable({
               </SelectItem>
             ))}
           </Select>
-        </div>
-        <div className="w-64">
-          <Input
-            placeholder="Search..."
-            startContent={<Icon icon="lucide:search" className="text-default-400" width={16} />}
-            value={filterValue}
-            onValueChange={setFilterValue}
+          <Button
             size="sm"
-            isClearable
-            onClear={() => setFilterValue('')}
-          />
+            color="primary"
+            variant="flat"
+            startContent={<Icon icon="lucide:download" width={16} />}
+            onPress={() => {
+              // Export functionality can be added here
+              console.log('Export data');
+            }}
+          >
+            Export
+          </Button>
         </div>
-      </div>
-      
-      <Table 
-        aria-label="Data table"
-        bottomContent={
-          pages > 1 ? (
-            <div className="flex w-full justify-between items-center">
-              <div className="text-small text-default-400">
-                {`${Math.min((page - 1) * rowsPerPage + 1, filteredData.length)} - ${Math.min(page * rowsPerPage, filteredData.length)} of ${filteredData.length} entries`}
+        
+        <Table 
+          aria-label="Data table"
+          bottomContent={
+            pages > 1 ? (
+              <div className="flex w-full justify-between items-center">
+                <div className="text-small text-default-400">
+                  {`${Math.min((page - 1) * rowsPerPage + 1, filteredData.length)} - ${Math.min(page * rowsPerPage, filteredData.length)} of ${filteredData.length} entries`}
+                </div>
+                <Pagination
+                  isCompact
+                  showControls
+                  showShadow
+                  color="primary"
+                  page={page}
+                  total={pages}
+                  onChange={setPage}
+                />
               </div>
-              <Pagination
-                isCompact
-                showControls
-                showShadow
-                color="primary"
-                page={page}
-                total={pages}
-                onChange={setPage}
-              />
-            </div>
-          ) : null
-        }
-        classNames={{
-          wrapper: "min-h-[400px]",
-        }}
-      >
-        <TableHeader>
-          {columns.map((column) => (
-            <TableColumn key={column.key}>{column.label}</TableColumn>
-          ))}
-        </TableHeader>
-        <TableBody emptyContent="No records found" items={items}>
-          {(item) => (
-            <TableRow key={item.id}>
-              {(columnKey) => (
-                <TableCell>{renderCell(item, columnKey)}</TableCell>
-              )}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ) : null
+          }
+          classNames={{
+            wrapper: "min-h-[400px]",
+          }}
+        >
+          <TableHeader>
+            {columns.map((column) => (
+              <TableColumn key={column.key}>{column.label}</TableColumn>
+            ))}
+          </TableHeader>
+          <TableBody emptyContent="No records found" items={items}>
+            {(item) => (
+              <TableRow key={item.id}>
+                {(columnKey) => (
+                  <TableCell>{renderCell(item, columnKey)}</TableCell>
+                )}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

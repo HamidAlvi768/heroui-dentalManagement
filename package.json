@@ -11,21 +11,32 @@
   },
   "dependencies": {
     "@heroui/react": "2.7.6",
+    "@hookform/resolvers": "^5.0.1",
     "@iconify/react": "latest",
+    "@radix-ui/react-label": "^2.1.4",
+    "@radix-ui/react-slot": "^1.2.0",
+    "@tailwindcss/vite": "^4.1.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "framer-motion": "^11.18.2",
+    "lucide-react": "^0.503.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "recharts": "2.12.0"
+    "react-hook-form": "^7.56.1",
+    "recharts": "2.12.0",
+    "tailwind-merge": "^3.2.0",
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "10.4.20",
-    "tailwindcss": "3.4.17",
-    "postcss": "8.4.49",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "postcss": "8.4.49",
+    "tailwindcss": "^3.4.17",
     "vite": "^6.0.11"
   }
 }
