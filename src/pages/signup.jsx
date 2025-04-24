@@ -1,99 +1,155 @@
-import React from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/auth/AuthContext';
 
 export default function SignupPage() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    agreeToTerms: false,
+  });
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle signup logic here
+    
+    // Login with dummy data
+    login({
+      token: 'dev-token',
+      user: {
+        id: 1,
+        email: formData.email || 'dev@example.com',
+        name: `${formData.firstName || 'Test'} ${formData.lastName || 'User'}`
+      }
+    });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <Card className="w-[400px]">
-        <CardHeader>
-          <CardTitle>Create an Account</CardTitle>
-          <CardDescription>Enter your details to create your account</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input 
-                  id="firstName" 
-                  placeholder="John"
-                  required 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input 
-                  id="lastName" 
-                  placeholder="Doe"
-                  required 
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="john.doe@example.com"
-                required 
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md p-8">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold">Create an account</h2>
+          <p className="text-gray-600 mt-2">Sign up to get started</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="firstName">First name</Label>
+              <Input
+                id="firstName"
+                name="firstName"
+                type="text"
+                value={formData.firstName}
+                onChange={handleChange}
+                className="mt-1"
+                placeholder="John"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                placeholder="Create a password"
-                required 
+            <div>
+              <Label htmlFor="lastName">Last name</Label>
+              <Input
+                id="lastName"
+                name="lastName"
+                type="text"
+                value={formData.lastName}
+                onChange={handleChange}
+                className="mt-1"
+                placeholder="Doe"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input 
-                id="confirmPassword" 
-                type="password" 
-                placeholder="Confirm your password"
-                required 
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <input 
-                type="checkbox" 
-                id="terms" 
-                className="h-4 w-4 rounded border-gray-300"
-                required
-              />
-              <label htmlFor="terms" className="text-sm">
-                I agree to the{" "}
-                <a href="#" className="text-primary hover:underline">
-                  Terms of Service
-                </a>
-                {" "}and{" "}
-                <a href="#" className="text-primary hover:underline">
-                  Privacy Policy
-                </a>
-              </label>
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full">
-              Create Account
-            </Button>
-            <p className="text-sm text-center text-muted-foreground">
-              Already have an account?{" "}
-              <a href="/login" className="text-primary hover:underline">
-                Sign in
+          </div>
+
+          <div>
+            <Label htmlFor="email">Email address</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="mt-1"
+              placeholder="john.doe@example.com"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="mt-1"
+              placeholder="Create a password"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="confirmPassword">Confirm password</Label>
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="mt-1"
+              placeholder="Confirm your password"
+            />
+          </div>
+
+          <div className="flex items-center">
+            <input
+              id="agreeToTerms"
+              name="agreeToTerms"
+              type="checkbox"
+              checked={formData.agreeToTerms}
+              onChange={handleChange}
+              className="h-4 w-4 text-primary border-gray-300 rounded"
+            />
+            <label htmlFor="agreeToTerms" className="ml-2 block text-sm text-gray-900">
+              I agree to the{' '}
+              <a href="#" className="font-medium text-primary hover:text-primary/80">
+                Terms of Service
+              </a>{' '}
+              and{' '}
+              <a href="#" className="font-medium text-primary hover:text-primary/80">
+                Privacy Policy
               </a>
-            </p>
-          </CardFooter>
+            </label>
+          </div>
+
+          <Button type="submit" className="w-full">
+            Create account
+          </Button>
+
+          <p className="text-center text-sm text-gray-600">
+            Already have an account?{' '}
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="font-medium text-primary hover:text-primary/80"
+            >
+              Sign in
+            </button>
+          </p>
         </form>
       </Card>
     </div>
