@@ -21,10 +21,7 @@ export function Sidebar({ onNavigate, activePage = 'dashboard' }) {
       </div>
 
       <div className="border-t border-b border-divider py-6 px-4 flex flex-col items-center">
-        <Avatar 
-          src="https://img.heroui.chat/image/avatar?w=200&h=200&u=1" 
-          className="w-24 h-24 mb-4"
-        />
+        {/* Yaha se */}
         <h3 className="text-lg font-semibold">Dr. Charlotte</h3>
         <p className="text-default-500 text-sm">Neurologist</p>
       </div>
