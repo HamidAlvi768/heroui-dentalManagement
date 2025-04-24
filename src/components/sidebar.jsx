@@ -8,14 +8,6 @@ export function Sidebar({ onNavigate, activePage = 'dashboard' }) {
     { icon: 'lucide:calendar', label: 'Appointment', key: 'appointments' },
     { icon: 'lucide:stethoscope', label: 'Doctors', key: 'doctors' },
     { icon: 'lucide:users', label: 'Patients', key: 'patients' },
-    { icon: 'lucide:credit-card', label: 'Payments', key: 'payments' },
-    { icon: 'lucide:building', label: 'Departments', key: 'departments' },
-    { icon: 'lucide:lock', label: 'Authentication', key: 'authentication' },
-  ];
-
-  const extraItems = [
-    { icon: 'lucide:file-text', label: 'Blog' },
-    { icon: 'lucide:folder', label: 'File Manager' },
   ];
 
   return (
@@ -55,27 +47,9 @@ export function Sidebar({ onNavigate, activePage = 'dashboard' }) {
                 >
                   <Icon icon={item.icon} width={20} />
                   <span>{item.label}</span>
-                  {['doctors', 'patients', 'payments', 'departments', 'authentication'].includes(item.key) && (
+                  {['doctors', 'patients'].includes(item.key) && (
                     <Icon icon="lucide:chevron-right" className="ml-auto" width={16} />
                   )}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="py-2">
-          <div className="px-4 py-2 text-xs text-default-500 font-semibold">-- EXTRA COMPONENTS</div>
-          <ul>
-            {extraItems.map((item, index) => (
-              <li key={index}>
-                <a 
-                  href="#" 
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-default-100 text-default-700"
-                >
-                  <Icon icon={item.icon} width={20} />
-                  <span>{item.label}</span>
-                  <Icon icon="lucide:chevron-right" className="ml-auto" width={16} />
                 </a>
               </li>
             ))}
