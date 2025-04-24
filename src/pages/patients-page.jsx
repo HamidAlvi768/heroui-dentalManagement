@@ -1,48 +1,65 @@
 import React from 'react';
 import { CrudTemplate } from '../components/crud-template';
+import { Avatar } from '@heroui/react';
 
 const columns = [
-  { key: 'id', label: 'ID' },
-  { key: 'name', label: 'Name' },
-  { key: 'age', label: 'Age' },
-  { key: 'gender', label: 'Gender' },
-  { key: 'phone', label: 'Phone' },
-  { key: 'email', label: 'Email' },
-  { key: 'actions', label: 'Actions' }
+  { key: 'mrnNumber', label: 'MRN NUMBER' },
+  { key: 'name', label: 'NAME' },
+  { key: 'phone', label: 'PHONE' },
+  { key: 'area', label: 'AREA' },
+  { key: 'city', label: 'CITY' },
+  { key: 'actions', label: 'ACTIONS' }
 ];
 
 const initialFormData = {
   name: '',
-  age: '',
+  dob: '',
   gender: '',
+  status: 'Active',
+  cnicPassport: '',
+  insuranceProvider: '',
   phone: '',
-  email: ''
+  email: '',
+  address: '',
+  otherDetails: '',
+  avatar: 'https://img.heroui.chat/image/avatar?w=128&h=128&u=10'
 };
 
 const formFields = [
-  { key: 'name', label: 'Name', type: 'text', required: true },
-  { key: 'age', label: 'Age', type: 'number', required: true },
+  { key: 'name', label: 'Full Name', type: 'text', required: true },
+  { key: 'dob', label: 'Date of Birth', type: 'date', required: true },
   { key: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female', 'Other'], required: true },
-  { key: 'phone', label: 'Phone', type: 'tel', required: true },
-  { key: 'email', label: 'Email', type: 'email', required: true }
+  { key: 'status', label: 'Status', type: 'select', options: [
+    { value: 'Active', label: 'Active' },
+    { value: 'Inactive', label: 'Inactive' },
+    { value: 'Admitted', label: 'Admitted' }
+  ]},
+  { key: 'cnicPassport', label: 'CNIC/Passport', type: 'text', required: true },
+  { key: 'insuranceProvider', label: 'Insurance Provider', type: 'text' },
+  { key: 'phone', label: 'Phone Number', type: 'tel', required: true },
+  { key: 'email', label: 'Email', type: 'email', required: true },
+  { key: 'address', label: 'Address', type: 'textarea', required: true },
+  { key: 'otherDetails', label: 'Other Details', type: 'textarea' }
 ];
 
 const mockData = [
   {
-    id: '1',
+    id: 'P1001',
     name: 'John Doe',
-    age: 45,
-    gender: 'Male',
+    mrnNumber: 'MRN001',
     phone: '(555) 123-4567',
-    email: 'john.doe@example.com'
+    area: 'Downtown',
+    city: 'New York',
+    avatar: 'https://img.heroui.chat/image/avatar?w=128&h=128&u=1'
   },
   {
-    id: '2',
+    id: 'P1002',
     name: 'Jane Smith',
-    age: 32,
-    gender: 'Female',
+    mrnNumber: 'MRN002',
     phone: '(555) 987-6543',
-    email: 'jane.smith@example.com'
+    area: 'Uptown',
+    city: 'Boston',
+    avatar: 'https://img.heroui.chat/image/avatar?w=128&h=128&u=2'
   }
 ];
 
@@ -66,4 +83,4 @@ function PatientsPage() {
   );
 }
 
-export default PatientsPage; 
+export default PatientsPage;

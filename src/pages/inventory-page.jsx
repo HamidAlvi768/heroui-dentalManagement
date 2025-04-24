@@ -1,128 +1,123 @@
 import React from 'react';
 import { CrudTemplate } from '../components/crud-template';
 
-// Sample data for inventory
-const inventoryData = [
-  {
-    id: '1',
-    itemName: 'Disposable Surgical Masks',
-    category: 'Personal Protective Equipment',
-    quantity: 2500,
-    unit: 'pieces',
-    threshold: 500,
-    supplier: 'MedSupply Inc.',
-    lastRestocked: '2025-04-15',
-    expiryDate: '2026-04-15',
-    status: 'In Stock',
-    location: 'Storage Room A, Shelf 2'
-  },
-  {
-    id: '2',
-    itemName: 'Amoxicillin 500mg',
-    category: 'Medication',
-    quantity: 350,
-    unit: 'bottles',
-    threshold: 50,
-    supplier: 'PharmaCorp',
-    lastRestocked: '2025-04-10',
-    expiryDate: '2025-10-10',
-    status: 'In Stock',
-    location: 'Pharmacy Storage, Cabinet 3'
-  },
-  {
-    id: '3',
-    itemName: 'Infusion Pumps',
-    category: 'Equipment',
-    quantity: 12,
-    unit: 'units',
-    threshold: 3,
-    supplier: 'MedTech Solutions',
-    lastRestocked: '2025-03-20',
-    expiryDate: 'N/A',
-    status: 'Low Stock',
-    location: 'Equipment Room, Section B'
-  },
-  {
-    id: '4',
-    itemName: 'Surgical Gloves (Size M)',
-    category: 'Personal Protective Equipment',
-    quantity: 75,
-    unit: 'boxes',
-    threshold: 100,
-    supplier: 'SafeGuard Medical',
-    lastRestocked: '2025-04-05',
-    expiryDate: '2026-04-05',
-    status: 'Low Stock',
-    location: 'Storage Room B, Shelf 1'
-  }
-];
-
-// Table columns configuration
 const columns = [
   {
-    key: 'itemName',
-    label: 'ITEM NAME',
+    key: 'item',
+    label: 'ITEM',
     render: (item) => (
-      <div>
-        <div className="font-medium">{item.itemName}</div>
-        <div className="text-default-500 text-xs">{item.category}</div>
-      </div>
+      <div className="font-medium">{item.item}</div>
     )
   },
-  {
-    key: 'quantity',
+  { key: 'category', label: 'CATEGORY' },
+  { key: 'subCategory', label: 'SUBCATEGORY' },
+  { 
+    key: 'quantity', 
     label: 'QUANTITY',
     render: (item) => (
-      <div>
-        <div className="font-medium">{item.quantity} {item.unit}</div>
-        <div className="text-default-500 text-xs">Threshold: {item.threshold}</div>
+      <div className="font-medium">{item.quantity}</div>
+    )
+  },
+  { 
+    key: 'unitPrice', 
+    label: 'UNIT PRICE',
+    render: (item) => (
+      <div className="font-medium">
+        ${item.unitPrice.toFixed(2)}
       </div>
     )
   },
-  { key: 'supplier', label: 'SUPPLIER' },
-  { key: 'expiryDate', label: 'EXPIRY DATE' },
-  { key: 'status', label: 'STATUS' },
   { key: 'actions', label: 'ACTIONS' }
 ];
 
-// Form fields for add/edit dialog
-const formFields = [
-  { key: 'itemName', label: 'Item Name', type: 'text', required: true },
-  { key: 'category', label: 'Category', type: 'select', required: true, options: [
-    { value: 'Medication', label: 'Medication' },
-    { value: 'Personal Protective Equipment', label: 'Personal Protective Equipment' },
-    { value: 'Equipment', label: 'Equipment' },
-    { value: 'Supplies', label: 'Supplies' },
-    { value: 'Laboratory', label: 'Laboratory' }
-  ]},
-  { key: 'quantity', label: 'Quantity', type: 'number', required: true },
-  { key: 'unit', label: 'Unit', type: 'text', required: true },
-  { key: 'threshold', label: 'Low Stock Threshold', type: 'number', required: true },
-  { key: 'supplier', label: 'Supplier', type: 'text', required: true },
-  { key: 'lastRestocked', label: 'Last Restocked Date', type: 'date' },
-  { key: 'expiryDate', label: 'Expiry Date', type: 'date' },
-  { key: 'location', label: 'Storage Location', type: 'text' },
-  { key: 'status', label: 'Status', type: 'select', options: [
-    { value: 'In Stock', label: 'In Stock' },
-    { value: 'Low Stock', label: 'Low Stock' },
-    { value: 'Out of Stock', label: 'Out of Stock' },
-    { value: 'Discontinued', label: 'Discontinued' }
-  ]}
+const categories = [
+  { value: 'medicines', label: 'Medicines' },
+  { value: 'equipment', label: 'Equipment' },
+  { value: 'supplies', label: 'Supplies' }
 ];
 
-// Initial form data for new inventory items
-const initialFormData = {
-  itemName: '',
-  category: '',
-  quantity: 0,
-  unit: '',
-  threshold: 0,
-  supplier: '',
-  lastRestocked: '',
-  expiryDate: '',
-  status: 'In Stock',
-  location: ''
+const subCategories = {
+  medicines: [
+    { value: 'tablets', label: 'Tablets' },
+    { value: 'syrups', label: 'Syrups' },
+    { value: 'injections', label: 'Injections' }
+  ],
+  equipment: [
+    { value: 'diagnostic', label: 'Diagnostic' },
+    { value: 'surgical', label: 'Surgical' },
+    { value: 'laboratory', label: 'Laboratory' }
+  ],
+  supplies: [
+    { value: 'disposable', label: 'Disposable' },
+    { value: 'reusable', label: 'Reusable' },
+    { value: 'stationary', label: 'Stationary' }
+  ]
 };
+
+const initialFormData = {
+  category: '',
+  subCategory: '',
+  item: '',
+  quantity: 0,
+  unitPrice: 0
+};
+
+const formFields = [
+  { 
+    key: 'category', 
+    label: 'Category', 
+    type: 'select', 
+    required: true,
+    options: categories
+  },
+  { 
+    key: 'subCategory', 
+    label: 'Sub Category', 
+    type: 'select', 
+    required: true,
+    options: [] // Will be populated based on selected category
+  },
+  { 
+    key: 'item', 
+    label: 'Item', 
+    type: 'text', 
+    required: true 
+  },
+  { 
+    key: 'quantity', 
+    label: 'Quantity', 
+    type: 'number',
+    required: true,
+    min: 0
+  },
+  { 
+    key: 'unitPrice', 
+    label: 'Unit Price', 
+    type: 'number',
+    required: true,
+    min: 0,
+    step: 0.01
+  }
+];
+
+const mockData = [
+  {
+    id: '1',
+    item: 'Paracetamol 500mg',
+    category: 'Medicines',
+    subCategory: 'Tablets',
+    quantity: 1000,
+    unitPrice: 0.15
+  },
+  {
+    id: '2',
+    item: 'Digital Thermometer',
+    category: 'Equipment',
+    subCategory: 'Diagnostic',
+    quantity: 50,
+    unitPrice: 12.99
+  }
+];
 
 function InventoryPage() {
   return (
@@ -131,7 +126,7 @@ function InventoryPage() {
       description="Manage hospital inventory and supplies"
       icon="lucide:package"
       columns={columns}
-      data={inventoryData}
+      data={mockData}
       initialFormData={initialFormData}
       formFields={formFields}
       addButtonLabel="Add Item"
