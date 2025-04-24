@@ -12,7 +12,9 @@ import {
   DropdownMenu,
   DropdownItem,
   Input,
-  Pagination
+  Pagination,
+  Select,
+  SelectItem
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 
@@ -25,7 +27,14 @@ export function DataTable({
 }) {
   const [filterValue, setFilterValue] = React.useState('');
   const [page, setPage] = React.useState(1);
-  const rowsPerPage = 5;
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  
+  const rowsPerPageOptions = [
+    { value: 5, label: '5 per page' },
+    { value: 10, label: '10 per page' },
+    { value: 25, label: '25 per page' },
+    { value: 50, label: '50 per page' }
+  ];
 
   // Filter data based on search input
   const filteredData = React.useMemo(() => {
@@ -108,7 +117,24 @@ export function DataTable({
   return (
     <div className="bg-content1 p-6 rounded-lg shadow-sm">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">All Records</h3>
+        <div className="flex items-center gap-4">
+          <h3 className="text-lg font-semibold">All Records</h3>
+          <Select 
+            size="sm"
+            selectedKeys={[rowsPerPage.toString()]}
+            onChange={(e) => {
+              setRowsPerPage(Number(e.target.value));
+              setPage(1); // Reset to first page when changing rows per page
+            }}
+            className="w-40"
+          >
+            {rowsPerPageOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value.toString()}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </Select>
+        </div>
         <div className="w-64">
           <Input
             placeholder="Search..."
@@ -126,7 +152,10 @@ export function DataTable({
         aria-label="Data table"
         bottomContent={
           pages > 1 ? (
-            <div className="flex justify-center">
+            <div className="flex w-full justify-between items-center">
+              <div className="text-small text-default-400">
+                {`${Math.min((page - 1) * rowsPerPage + 1, filteredData.length)} - ${Math.min(page * rowsPerPage, filteredData.length)} of ${filteredData.length} entries`}
+              </div>
               <Pagination
                 isCompact
                 showControls

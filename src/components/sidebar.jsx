@@ -47,9 +47,6 @@ export function Sidebar({ onNavigate, activePage = 'dashboard' }) {
                 >
                   <Icon icon={item.icon} width={20} />
                   <span>{item.label}</span>
-                  {['doctors', 'patients', 'payments', 'departments', 'authentication'].includes(item.key) && (
-                    <Icon icon="lucide:chevron-right" className="ml-auto" width={16} />
-                  )}
                 </a>
               </li>
             ))}
