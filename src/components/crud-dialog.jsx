@@ -42,7 +42,7 @@ export function CrudDialog({
 
   const renderFormField = (field, isInRow = false) => {
     const { key, label, type, options, required, placeholder } = field;
-    
+
     const commonProps = {
       key,
       label,
@@ -56,7 +56,7 @@ export function CrudDialog({
         label: "text-sm font-medium"
       }
     };
-    
+
     switch (type) {
       case 'text':
       case 'email':
@@ -73,7 +73,7 @@ export function CrudDialog({
             />
           </div>
         );
-      
+
       case 'select':
         return (
           <div className="flex-1 min-w-[200px]">
@@ -90,7 +90,7 @@ export function CrudDialog({
             </Select>
           </div>
         );
-      
+
       case 'checkbox':
         return (
           <div className="flex-1 min-w-[200px]">
@@ -102,7 +102,7 @@ export function CrudDialog({
             </Checkbox>
           </div>
         );
-      
+
       case 'textarea':
         return (
           <div className={isInRow ? "flex-1" : "w-full col-span-3"}>
@@ -114,7 +114,7 @@ export function CrudDialog({
             />
           </div>
         );
-      
+
       default:
         return null;
     }
@@ -137,8 +137,8 @@ export function CrudDialog({
   }
 
   return (
-    <Modal 
-      isOpen={isOpen} 
+    <Modal
+      isOpen={isOpen}
       onOpenChange={onOpenChange}
       size="3xl"
       scrollBehavior="inside"
@@ -158,7 +158,7 @@ export function CrudDialog({
                     {row.map((field) => renderFormField(field))}
                   </div>
                 ))}
-                
+
                 {/* Textarea fields in a single row */}
                 {textareaFields.length > 0 && (
                   <div className="flex gap-4">

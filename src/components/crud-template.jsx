@@ -11,22 +11,32 @@ export function CrudTemplate({
   icon,
   columns,
   data,
+  totalItems,
+  currentPage,
+  itemsPerPage,
   initialFormData,
   formFields,
   onSave,
+  onPerPageChange,
+  onPaginate,
+  onExport,
   onDelete,
   addButtonLabel = "Add New"
 }) {
-  const [items, setItems] = React.useState(data || []);
+  const [items, setItems] = React.useState(data);
   const [currentItem, setCurrentItem] = React.useState(null);
   const [isEditing, setIsEditing] = React.useState(false);
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-  const { 
-    isOpen: isDeleteOpen, 
-    onOpen: onDeleteOpen, 
-    onOpenChange: onDeleteOpenChange 
+  const {
+    isOpen: isDeleteOpen,
+    onOpen: onDeleteOpen,
+    onOpenChange: onDeleteOpenChange
   } = useDisclosure();
   const [itemToDelete, setItemToDelete] = React.useState(null);
+
+  React.useEffect(() => {
+    setItems(data);
+  }, [data]);
 
   const handleAddNew = () => {
     setCurrentItem(initialFormData);
@@ -57,12 +67,19 @@ export function CrudTemplate({
     console.log("View item:", item);
   };
 
+  const handlePerPageChange = (perPage) => {
+    onPerPageChange(perPage);
+  };
+  const handlePaginate = (page, perPage) => {
+    onPaginate(page, perPage);
+  }
+
   const handleSave = (formData) => {
     let updatedItems;
-    
+
     if (isEditing) {
       // Update existing item
-      updatedItems = items.map(item => 
+      updatedItems = items.map(item =>
         item.id === formData.id ? { ...item, ...formData } : item
       );
     } else {
@@ -73,10 +90,12 @@ export function CrudTemplate({
       };
       updatedItems = [...items, newItem];
     }
-    
+
     setItems(updatedItems);
     onClose();
     if (onSave) onSave(formData, isEditing);
+    setCurrentItem(null);
+    setIsEditing(false);
   };
 
   return (
@@ -90,11 +109,16 @@ export function CrudTemplate({
       <DataTable
         columns={columns}
         data={items}
+        totalItems={totalItems}
+        currentPage={currentPage}
+        rowsPerPage={itemsPerPage}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onView={handleView}
+        onPerPageChange={handlePerPageChange}
+        onPaginate={handlePaginate}
+        onExport={onExport}
       />
-      
       <CrudDialog
         isOpen={isOpen}
         onOpenChange={onOpenChange}

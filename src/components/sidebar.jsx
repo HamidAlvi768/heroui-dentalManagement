@@ -37,7 +37,7 @@ export function Sidebar() {
   }, []);
 
   const menuItems = [
-    { icon: 'lucide:layout-dashboard', label: 'Dashboard', path: '/' },
+    { icon: 'lucide:layout-dashboard', label: 'Dashboard', path: '/dashboard' },
     { icon: 'lucide:stethoscope', label: 'Doctors', path: '/doctors' },
     { icon: 'lucide:users', label: 'Patients', path: '/patients' },
     { icon: 'lucide:calendar', label: 'Appointments', path: '/appointments' },
@@ -45,7 +45,8 @@ export function Sidebar() {
     { icon: 'lucide:package', label: 'Inventory', path: '/inventory' },
     { icon: 'lucide:file-text', label: 'Reports', path: '/reports' },
     { type: 'divider' },
-    { icon: 'lucide:settings', label: 'Settings', path: '/settings' }
+    { icon: 'lucide:users', label: 'Users', path: '/users' },
+    { icon: 'lucide:settings', label: 'Settings', path: '/settings' },
   ];
 
   // Mobile toggle button (always visible on mobile)
@@ -62,10 +63,10 @@ export function Sidebar() {
     <>
       {/* Mobile toggle button */}
       {isMobile && !isOpen && <MobileToggleButton />}
-      
+
       {/* Overlay for mobile - with fade transition */}
       {isMobile && (
-        <div 
+        <div
           onClick={() => setIsOpen(false)}
           className={`
             fixed inset-0 bg-black/50 z-40
@@ -74,7 +75,7 @@ export function Sidebar() {
           `}
         />
       )}
-      
+
       {/* Sidebar - with slide transition */}
       <div className={`
         ${isMobile ? 'w-64' : (isCollapsed ? 'w-20' : 'w-64')}
@@ -97,7 +98,7 @@ export function Sidebar() {
               <span className="font-medium">{config.appName}</span>
             </div>
           )}
-          
+
           {/* Desktop collapse button */}
           {!isMobile && (
             <button
@@ -111,7 +112,7 @@ export function Sidebar() {
               />
             </button>
           )}
-          
+
           {/* Mobile close button */}
           {isMobile && (
             <button
@@ -151,7 +152,7 @@ export function Sidebar() {
                       title={(!isMobile && isCollapsed) ? item.label : undefined}
                     >
                       <Icon icon={item.icon} width={20} />
-                      {((!isCollapsed || isMobile)) && 
+                      {((!isCollapsed || isMobile)) &&
                         <span className="transition-opacity duration-200">{item.label}</span>
                       }
                     </a>

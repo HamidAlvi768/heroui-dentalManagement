@@ -13,6 +13,7 @@ import ProfilePage from './pages/profile-page';
 import SettingsPage from './pages/settings-page';
 import LoginPage from './pages/login';
 import SignupPage from './pages/signup';
+import UsersPage from './pages/users-page';
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -104,6 +105,13 @@ export default function App() {
           <PrivateRoute>
             <AppLayout>
               <ReportsPage />
+            </AppLayout>
+          </PrivateRoute>
+        } />
+        <Route path="/users" element={
+          <PrivateRoute>
+            <AppLayout>
+              <UsersPage />
             </AppLayout>
           </PrivateRoute>
         } />

@@ -23,25 +23,35 @@ import { Icon } from '@iconify/react';
 export function DataTable({
   columns,
   data,
+  totalItems,
+  currentPage,
+  rowsPerPage,
   onEdit,
   onDelete,
-  onView
+  onView,
+  onPerPageChange,
+  onPaginate,
+  onExport,
 }) {
   const [filters, setFilters] = React.useState({});
   const [page, setPage] = React.useState(1);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [itemsPerPage, setItemsPerPage] = React.useState(rowsPerPage || 5);
+
+  const pages = Math.ceil(totalItems / itemsPerPage);
 
   const rowsPerPageOptions = [
+    { value: 3, label: '3 per page' },
     { value: 5, label: '5 per page' },
     { value: 10, label: '10 per page' },
     { value: 25, label: '25 per page' },
-    { value: 50, label: '50 per page' }
+    { value: 50, label: '50 per page' },
+    { value: 100, label: '100 per page' }
   ];
 
   // Filter data based on all filter values
   const filteredData = React.useMemo(() => {
     if (Object.keys(filters).length === 0) return data;
-    
+
     return data.filter(item => {
       return Object.entries(filters).every(([key, value]) => {
         if (!value) return true;
@@ -51,14 +61,6 @@ export function DataTable({
     });
   }, [data, filters]);
 
-  // Calculate pagination
-  const pages = Math.ceil(filteredData.length / rowsPerPage);
-  const items = React.useMemo(() => {
-    const start = (page - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-
-    return filteredData.slice(start, end);
-  }, [filteredData, page]);
 
   // Get filterable columns (excluding actions column)
   const filterableColumns = columns.filter(col => col.key !== 'actions');
@@ -68,12 +70,12 @@ export function DataTable({
       ...prev,
       [key]: value
     }));
-    setPage(1);
+    setPage(page);
   };
 
   const clearFilters = () => {
     setFilters({});
-    setPage(1);
+    setPage(page);
   };
 
   // Render cell content based on column configuration
@@ -168,21 +170,27 @@ export function DataTable({
 
       <div className="bg-content1 p-6 rounded-lg shadow-sm">
         <div className="flex justify-between items-center mb-4">
-          <Select 
-            size="sm"
-            selectedKeys={[rowsPerPage.toString()]}
-            onChange={(e) => {
-              setRowsPerPage(Number(e.target.value));
-              setPage(1);
-            }}
-            className="w-40"
-          >
-            {rowsPerPageOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value.toString()}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </Select>
+          <div className="flex flex-col gap-2">
+            <span className="text-sm text-default-400">
+              Showing {itemsPerPage} of {totalItems} records
+            </span>
+            <Select
+              size="sm"
+              selectedKeys={[itemsPerPage.toString()]}
+              onChange={(e) => {
+                setPage(page);
+                setItemsPerPage(Number(e.target.value));
+                onPerPageChange(Number(e.target.value));
+              }}
+              className="w-40"
+            >
+              {rowsPerPageOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value.toString()}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </Select>
+          </div>
           <Button
             size="sm"
             color="primary"
@@ -196,23 +204,22 @@ export function DataTable({
             Export
           </Button>
         </div>
-        
-        <Table 
+        <Table
           aria-label="Data table"
           bottomContent={
             pages > 1 ? (
               <div className="flex w-full justify-between items-center">
-                <div className="text-small text-default-400">
-                  {`${Math.min((page - 1) * rowsPerPage + 1, filteredData.length)} - ${Math.min(page * rowsPerPage, filteredData.length)} of ${filteredData.length} entries`}
-                </div>
                 <Pagination
                   isCompact
                   showControls
                   showShadow
                   color="primary"
-                  page={page}
+                  page={currentPage}
                   total={pages}
-                  onChange={setPage}
+                  onChange={(newPage) => {
+                    setPage(newPage);
+                    onPaginate(newPage, itemsPerPage);
+                  }}
                 />
               </div>
             ) : null
@@ -226,7 +233,7 @@ export function DataTable({
               <TableColumn key={column.key}>{column.label}</TableColumn>
             ))}
           </TableHeader>
-          <TableBody emptyContent="No records found" items={items}>
+          <TableBody emptyContent="No records found" items={data}>
             {(item) => (
               <TableRow key={item.id}>
                 {(columnKey) => (
@@ -234,6 +241,7 @@ export function DataTable({
                 )}
               </TableRow>
             )}
+
           </TableBody>
         </Table>
       </div>
