@@ -1,28 +1,48 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { Button, Card, CardBody, Tabs, Tab } from '@heroui/react';
 import { StatsCard } from './stats-card';
 import { HospitalSurveyChart } from './hospital-survey-chart';
 import { PatientMap } from './patient-map';
 import { Header } from './header';
+import { useAuth } from '../auth/AuthContext';
+import config from '../config/config';
 
 export function Dashboard() {
   const [selected, setSelected] = React.useState("chart");
+  const [stats, setStats] = React.useState({
+    users_count: 0,
+    patients_count: 0,
+    inventory_count: 0,
+    invoices_count: 0
+  });
+
+  const { token } = useAuth();
+  useEffect(() => {
+    config.initAPI(token)
+    config.getData('/dashboard')
+      .then(data => {
+        console.log(data.data.data)
+        setStats(data.data.data)
+      })
+      .catch(error => {
+        console.log(error)
+      })
+  }, [])
 
   return (
     <div className="min-h-screen bg-content2">
       <Header />
-
       <div className="p-6">
         <div className="flex justify-between items-center mb-4">
           <div>
             <h1 className="text-2xl font-semibold">Dashboard</h1>
-            <p className="text-default-500">Welcome to Oreo</p>
+            <p className="text-default-500">Welcome to {config.appName}</p>
           </div>
           <div className="flex items-center">
             <div className="flex items-center gap-2 bg-default-100 rounded-full px-4 py-1">
               <Icon icon="lucide:home" className="text-primary" width={16} />
-              <span className="text-default-700">Oreo</span>
+              <span className="text-default-700">{config.appName}</span>
               <span className="text-default-400">/</span>
               <span className="text-default-700">Dashboard</span>
             </div>
@@ -30,26 +50,35 @@ export function Dashboard() {
         </div>
 
         <div className="grid grid-cols-3 gap-6 mb-6">
-          <StatsCard 
-            value="1600" 
-            label="New Feedbacks" 
-            change="15%" 
-            color="danger" 
+          <StatsCard
+            value={stats.users_count}
+            label="Users"
+            change="15%"
+            color="danger"
             progressValue={65}
           />
-          <StatsCard 
-            value="3218" 
-            label="Happy Clients" 
-            change="23%" 
-            color="success" 
+          <StatsCard
+            value={stats.patients_count}
+            label="Patients"
+            change="23%"
+            color="success"
             progressValue={80}
           />
-          <StatsCard 
-            value="284" 
-            label="Well Smiley Faces" 
-            change="50%" 
-            icon="lucide:smile" 
-            color="secondary" 
+          <StatsCard
+            value={stats.inventory_count}
+            label="Inventory"
+            change="50%"
+            icon="lucide:smile"
+            color="secondary"
+            progressValue={90}
+          />
+
+          <StatsCard
+            value={stats.invoices_count}
+            label="Invoices"
+            change="50%"
+            icon="lucide:smile"
+            color="secondary"
             progressValue={90}
           />
         </div>
@@ -68,10 +97,10 @@ export function Dashboard() {
                     <Icon icon="lucide:x" className="text-default-400" />
                   </div>
                 </div>
-                
-                <Tabs 
-                  aria-label="Survey view options" 
-                  selectedKey={selected} 
+
+                <Tabs
+                  aria-label="Survey view options"
+                  selectedKey={selected}
                   onSelectionChange={setSelected}
                   variant="light"
                   size="sm"
@@ -80,36 +109,36 @@ export function Dashboard() {
                   <Tab key="chart" title="Chart View" />
                   <Tab key="table" title="Table View" />
                 </Tabs>
-                
+
                 <HospitalSurveyChart />
               </CardBody>
             </Card>
           </div>
-          
+
           <div>
             <Card className="h-full">
               <CardBody>
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold mb-2">TOTAL NEW PATIENT</h3>
                   <div className="h-10 flex items-end">
-                    {[1,2,3,4,5,6,7,8,9,10,11,12].map((i) => (
-                      <div 
-                        key={i} 
-                        className="w-2 mx-1 bg-default-300" 
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
+                      <div
+                        key={i}
+                        className="w-2 mx-1 bg-default-300"
                         style={{ height: `${Math.random() * 100}%` }}
                       ></div>
                     ))}
                   </div>
                 </div>
-                
+
                 <PatientMap />
-                
+
                 <div className="mt-4">
                   <div className="flex justify-between font-semibold mb-2">
                     <div>City</div>
                     <div>Count</div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <div className="flex justify-between items-center py-2 border-b border-divider">
                       <div>New York</div>

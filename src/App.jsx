@@ -21,7 +21,7 @@ function PrivateRoute({ children }) {
 
 function PublicRoute({ children }) {
   const { token } = useAuth();
-  return !token ? children : <Navigate to="/" />;
+  return !token ? children : <Navigate to="/dashboard" />;
 }
 
 function AppLayout({ children }) {
@@ -35,11 +35,17 @@ function AppLayout({ children }) {
   );
 }
 
+
 export default function App() {
   return (
     <Router>
       <Routes>
         {/* Public Routes */}
+        <Route path="/" element={
+          <PublicRoute>
+            <Navigate to="/login" />
+          </PublicRoute>
+        } />
         <Route path="/login" element={
           <PublicRoute>
             <LoginPage />
@@ -52,7 +58,7 @@ export default function App() {
         } />
 
         {/* Private Routes */}
-        <Route path="/" element={
+        <Route path="/dashboard" element={
           <PrivateRoute>
             <AppLayout>
               <Dashboard />
