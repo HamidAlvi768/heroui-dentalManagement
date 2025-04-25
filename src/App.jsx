@@ -28,7 +28,7 @@ function AppLayout({ children }) {
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 w-0 overflow-auto">
         {children}
       </div>
     </div>

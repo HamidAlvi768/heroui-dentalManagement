@@ -3,6 +3,7 @@ import { Icon } from '@iconify/react';
 import { Avatar, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@heroui/react';
 import { useAuth } from '@/auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import config from '../config/config';
 
 export function Header() {
   const { logout, user } = useAuth();
@@ -17,7 +18,7 @@ export function Header() {
     <header className="bg-primary h-16 flex items-center justify-between px-6">
       <div className="flex items-center">
         <Icon icon="lucide:activity" className="text-white mr-2" width={24} />
-        <span className="text-white text-xl font-semibold">OREO</span>
+        <span className="text-white text-xl font-semibold">{config.appName}</span>
       </div>
       <div className="flex items-center gap-6">
         <Icon icon="lucide:list-todo" className="text-white" width={20} />
