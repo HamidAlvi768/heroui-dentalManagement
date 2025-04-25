@@ -137,7 +137,7 @@ export function DataTable({
     <div className="space-y-4">
       <Card>
         <CardBody>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {filterableColumns.map((column) => (
               <div key={column.key}>
                 <Input
