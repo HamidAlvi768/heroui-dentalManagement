@@ -5,10 +5,13 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/auth/AuthContext';
+import config from '../config/config';
+import { toast } from 'react-toastify';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const [isSending, setIsSending] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -25,23 +28,43 @@ export default function LoginPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setIsSending(true);
+
+      config.initAPI(null)
+      config.postData('/user/login', formData)
+        .then(data => {
+          console.log(data)
+          const success = data.data.success;
+          const message = data.data.message;
+          if (success) {
+            const user = data.data.data.user;
+            const at = data.data.data.access_token;
+            login({
+              token: at,
+              user: user,
+            });
+            toast.success(message);
+          }
+          else {
+            toast.error(message);
+          }
+        })
+        .catch(error => {
+          console.error('Login error:', error);
+          toast.error(error.message);
+        })
+        .finally(() => {
+          setIsSending(false);
+        });
     
-    // Login with dummy data
-    login({
-      token: 'dev-token',
-      user: {
-        id: 1,
-        email: formData.email || 'dev@example.com',
-        name: 'Test User'
-      }
-    });
+
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold">Welcome back</h2>
+          <h2 className="text-3xl font-bold">{config.appName}</h2>
           <p className="text-gray-600 mt-2">Please sign in to your account</p>
         </div>
 
@@ -72,7 +95,7 @@ export default function LoginPage() {
             />
           </div>
 
-          <div className="flex items-center justify-between">
+          {/* <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
                 id="remember-me"
@@ -92,13 +115,13 @@ export default function LoginPage() {
                 Forgot your password?
               </a>
             </div>
-          </div>
+          </div> */}
 
           <Button type="submit" className="w-full">
-            Sign in
+            {isSending ? 'Signing in...' : 'Sign in'}
           </Button>
 
-          <p className="text-center text-sm text-gray-600">
+          {/* <p className="text-center text-sm text-gray-600">
             Don't have an account?{' '}
             <button
               type="button"
@@ -107,7 +130,7 @@ export default function LoginPage() {
             >
               Sign up
             </button>
-          </p>
+          </p> */}
         </form>
       </Card>
     </div>

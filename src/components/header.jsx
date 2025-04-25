@@ -110,8 +110,8 @@ export function Header() {
             <DropdownTrigger>
               <div className="flex items-center gap-3 cursor-pointer">
                 <div className="text-right">
-                  <div className="text-white font-medium">{user?.name || 'Dr. Charlotte'}</div>
-                  <div className="text-white/70 text-sm">Neurologist</div>
+                  <div className="text-white font-medium">{user?.username || 'User'}</div>
+                  <div className="text-white/70 text-sm">({user?.role || 'User'})</div>
                 </div>
                 <Avatar 
                   src="https://img.heroui.chat/image/avatar?w=200&h=200&u=1" 
