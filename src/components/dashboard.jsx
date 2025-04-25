@@ -10,6 +10,62 @@ import config from '../config/config';
 
 export function Dashboard() {
   const [selected, setSelected] = React.useState("chart");
+  const [stats, setStats] = React.useState({
+    users_count: 0,
+    patients_count: 0,
+    inventory_count: 0,
+    invoices_count: 0
+  });
+
+  const { token } = useAuth();
+  useEffect(() => {
+    config.initAPI(token)
+    config.getData('/dashboard')
+      .then(data => {
+        console.log(data.data.data)
+        setStats(data.data.data)
+      })
+      .catch(error => {
+        console.log(error)
+      })
+  }, [])
+
+  // Sample data for table view
+  const tableData = [
+    { year: '2011', patients: 30, revenue: 15000, growth: '+15%' },
+    { year: '2012', patients: 55, revenue: 25000, growth: '+25%' },
+    { year: '2013', patients: 75, revenue: 35000, growth: '+20%' },
+    { year: '2014', patients: 90, revenue: 45000, growth: '+15%' },
+  ];
+
+  const renderSurveyContent = () => {
+    if (selected === "chart") {
+      return <HospitalSurveyChart />;
+    }
+    
+    return (
+      <Table aria-label="Survey data table">
+        <TableHeader>
+          <TableColumn>YEAR</TableColumn>
+          <TableColumn>PATIENTS</TableColumn>
+          <TableColumn>REVENUE</TableColumn>
+          <TableColumn>GROWTH</TableColumn>
+        </TableHeader>
+        <TableBody>
+          {tableData.map((row) => (
+            <TableRow key={row.year}>
+              <TableCell>{row.year}</TableCell>
+              <TableCell>{row.patients}</TableCell>
+              <TableCell>${row.revenue.toLocaleString()}</TableCell>
+              <TableCell>
+                <span className="text-success">{row.growth}</span>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-content2">
@@ -18,12 +74,12 @@ export function Dashboard() {
         <div className="flex justify-between items-center mb-4">
           <div>
             <h1 className="text-2xl font-semibold">Dashboard</h1>
-            <p className="text-default-500">Welcome to Oreo</p>
+            <p className="text-default-500">Welcome to {config.appName}</p>
           </div>
           <div className="flex items-center">
             <div className="flex items-center gap-2 bg-default-100 rounded-full px-4 py-1">
               <Icon icon="lucide:home" className="text-primary" width={16} />
-              <span className="text-default-700">Oreo</span>
+              <span className="text-default-700">{config.appName}</span>
               <span className="text-default-400">/</span>
               <span className="text-default-700">Dashboard</span>
             </div>
@@ -78,10 +134,10 @@ export function Dashboard() {
                     <Icon icon="lucide:x" className="text-default-400" />
                   </div>
                 </div>
-                
-                <Tabs 
-                  aria-label="Survey view options" 
-                  selectedKey={selected} 
+
+                <Tabs
+                  aria-label="Survey view options"
+                  selectedKey={selected}
                   onSelectionChange={setSelected}
                   variant="light"
                   size="sm"
@@ -90,7 +146,7 @@ export function Dashboard() {
                   <Tab key="chart" title="Chart View" />
                   <Tab key="table" title="Table View" />
                 </Tabs>
-                
+
                 <HospitalSurveyChart />
               </CardBody>
             </Card>
