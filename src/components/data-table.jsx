@@ -1,10 +1,10 @@
 import React from 'react';
-import { 
-  Table, 
-  TableHeader, 
-  TableColumn, 
-  TableBody, 
-  TableRow, 
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
   TableCell,
   Button,
   Dropdown,
@@ -30,7 +30,7 @@ export function DataTable({
   const [filters, setFilters] = React.useState({});
   const [page, setPage] = React.useState(1);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  
+
   const rowsPerPageOptions = [
     { value: 5, label: '5 per page' },
     { value: 10, label: '10 per page' },
@@ -56,7 +56,7 @@ export function DataTable({
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
-    
+
     return filteredData.slice(start, end);
   }, [filteredData, page]);
 
@@ -79,7 +79,7 @@ export function DataTable({
   // Render cell content based on column configuration
   const renderCell = (item, columnKey) => {
     const column = columns.find(col => col.key === columnKey);
-    
+
     if (columnKey === 'actions') {
       return (
         <div className="flex justify-end">
@@ -107,9 +107,9 @@ export function DataTable({
                 </DropdownItem>
               )}
               {onDelete && (
-                <DropdownItem 
-                  className="text-danger" 
-                  color="danger" 
+                <DropdownItem
+                  className="text-danger"
+                  color="danger"
                   onPress={() => onDelete(item)}
                 >
                   <div className="flex items-center gap-2">
@@ -123,11 +123,11 @@ export function DataTable({
         </div>
       );
     }
-    
+
     if (column && column.render) {
       return column.render(item);
     }
-    
+
     return item[columnKey];
   };
 
