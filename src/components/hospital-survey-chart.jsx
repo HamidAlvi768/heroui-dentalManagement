@@ -10,7 +10,6 @@ import {
 } from 'recharts';
 
 export function HospitalSurveyChart() {
-  // Sample data for the chart
   const data = [
     { year: '2011', purple: 10, yellow: 5, gray: 15 },
     { year: '2012', purple: 30, yellow: 25, gray: 20 },
@@ -22,8 +21,8 @@ export function HospitalSurveyChart() {
   ];
 
   return (
-    <div className="h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
+    <div style={{ width: '100%', height: '400px', minHeight: '300px' }}>
+      <ResponsiveContainer>
         <AreaChart
           data={data}
           margin={{
@@ -33,6 +32,20 @@ export function HospitalSurveyChart() {
             bottom: 0,
           }}
         >
+          <defs>
+            <linearGradient id="colorPurple" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#d4b8ff" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#d4b8ff" stopOpacity={0}/>
+            </linearGradient>
+            <linearGradient id="colorYellow" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#ffcc66" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#ffcc66" stopOpacity={0}/>
+            </linearGradient>
+            <linearGradient id="colorGray" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#999999" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#999999" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="year" />
           <YAxis />
@@ -42,24 +55,24 @@ export function HospitalSurveyChart() {
             dataKey="purple" 
             stackId="1" 
             stroke="#d4b8ff" 
-            fill="#d4b8ff" 
-            fillOpacity={0.6} 
+            fillOpacity={1}
+            fill="url(#colorPurple)" 
           />
           <Area 
             type="monotone" 
             dataKey="yellow" 
             stackId="1" 
             stroke="#ffcc66" 
-            fill="#ffcc66" 
-            fillOpacity={0.6} 
+            fillOpacity={1}
+            fill="url(#colorYellow)" 
           />
           <Area 
             type="monotone" 
             dataKey="gray" 
             stackId="1" 
             stroke="#999999" 
-            fill="#999999" 
-            fillOpacity={0.6} 
+            fillOpacity={1}
+            fill="url(#colorGray)" 
           />
         </AreaChart>
       </ResponsiveContainer>

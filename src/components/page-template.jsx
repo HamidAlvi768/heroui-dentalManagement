@@ -27,7 +27,7 @@ export function PageTemplate({
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 bg-default-100 rounded-full px-4 py-1">
               <Icon icon="lucide:home" className="text-primary" width={16} />
-              <span className="text-default-700">Oreo</span>
+              <span className="text-default-700">Al Shifa</span>
               <span className="text-default-400">/</span>
               <span className="text-default-700">{title}</span>
             </div>

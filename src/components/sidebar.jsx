@@ -129,9 +129,6 @@ export function Sidebar() {
 
         <div className="flex-1 overflow-auto">
           <div className="py-2">
-            {(!isCollapsed || isMobile) && (
-              <div className="px-4 py-2 text-xs text-muted-foreground font-semibold">-- MAIN</div>
-            )}
             <ul className="space-y-1">
               {menuItems.map((item) =>
                 item.type === 'divider' ? (

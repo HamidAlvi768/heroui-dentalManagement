@@ -43,7 +43,7 @@ export default function ProfilePage() {
           </div>
           <div className="flex items-center gap-2 bg-card rounded-full px-4 py-1">
             <Icon icon="lucide:home" className="text-primary" width={16} />
-            <span className="text-foreground">Oreo</span>
+            <span className="text-foreground">Al Shifa</span>
             <span className="text-muted-foreground">/</span>
             <span className="text-foreground">Profile</span>
           </div>

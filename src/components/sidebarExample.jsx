@@ -18,7 +18,7 @@ export function Sidebar({ onNavigate, activePage = 'dashboard' }) {
         {!isCollapsed && (
           <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-divider">
             <Icon icon="lucide:home" className="text-default-500" />
-            <span className="font-medium">Oreo</span>
+            <span className="font-medium">Al Shifa</span>
           </div>
         )}
         <button

@@ -23,7 +23,7 @@ const columns = [
     label: 'UNIT PRICE',
     render: (item) => (
       <div className="font-medium">
-        ${item.unitPrice.toFixed(2)}
+        PKR {item.unitPrice.toFixed(2)}
       </div>
     )
   },
