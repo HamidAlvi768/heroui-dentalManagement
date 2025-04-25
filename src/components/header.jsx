@@ -1,8 +1,18 @@
 import React from 'react';
 import { Icon } from '@iconify/react';
 import { Avatar, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@heroui/react';
+import { useAuth } from '@/auth/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export function Header() {
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <header className="bg-primary h-16 flex items-center justify-between px-6">
       <div className="flex items-center">
@@ -16,22 +26,12 @@ export function Header() {
           <Icon icon="lucide:bell" className="text-white" width={20} />
           <span className="absolute -top-1 -right-1 bg-danger text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">2</span>
         </div>
-        <div className="flex items-center gap-2 ml-4">
-          <div className="bg-white/20 rounded-full p-2">
-            <Icon icon="lucide:search" className="text-white" width={16} />
-          </div>
-          <input 
-            type="text" 
-            placeholder="Search..." 
-            className="bg-white/10 text-white placeholder-white/70 rounded-full py-1 px-4 outline-none w-40"
-          />
-        </div>
         <div className="border-l border-white/20 pl-6 ml-2">
           <Dropdown placement="bottom-end">
             <DropdownTrigger>
               <div className="flex items-center gap-3 cursor-pointer">
                 <div className="text-right">
-                  <div className="text-white font-medium">Dr. Charlotte</div>
+                  <div className="text-white font-medium">{user?.name || 'Dr. Charlotte'}</div>
                   <div className="text-white/70 text-sm">Neurologist</div>
                 </div>
                 <Avatar 
@@ -41,19 +41,17 @@ export function Header() {
               </div>
             </DropdownTrigger>
             <DropdownMenu aria-label="Profile actions">
-              <DropdownItem>
+              <DropdownItem onPress={() => navigate('/profile')}>
                 <div className="flex items-center gap-2">
                   <Icon icon="lucide:user" width={16} />
                   <span>Profile</span>
                 </div>
               </DropdownItem>
-              <DropdownItem>
-                <div className="flex items-center gap-2">
-                  <Icon icon="lucide:settings" width={16} />
-                  <span>Settings</span>
-                </div>
-              </DropdownItem>
-              <DropdownItem className="text-danger" color="danger">
+              <DropdownItem 
+                className="text-danger" 
+                color="danger"
+                onPress={handleLogout}
+              >
                 <div className="flex items-center gap-2">
                   <Icon icon="lucide:log-out" width={16} />
                   <span>Log Out</span>
@@ -65,4 +63,4 @@ export function Header() {
       </div>
     </header>
   );
-} 
+}

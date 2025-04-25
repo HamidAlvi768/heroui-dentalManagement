@@ -1,32 +1,47 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useState, useEffect } from 'react'
 
-const AuthContext = createContext()
+const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(null)
+  const [user, setUser] = useState(null)
+  const [token, setToken] = useState(localStorage.getItem('authToken'))
 
-  // Load token from localStorage on first render
   useEffect(() => {
-    const storedToken = localStorage.getItem('token')
+    // Check localStorage for token on mount
+    const storedToken = localStorage.getItem('authToken')
     if (storedToken) {
       setToken(storedToken)
     }
   }, [])
 
-  // Keep localStorage in sync with token state
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem('token', token)
-    } else {
-      localStorage.removeItem('token')
-    }
-  }, [token])
+  const login = (userData) => {
+    // In a real app, you would validate credentials with your backend
+    setUser(userData.user)
+    setToken(userData.token)
+    localStorage.setItem('authToken', userData.token)
+  }
 
-  return (
-    <AuthContext.Provider value={{ token, setToken }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  const logout = () => {
+    setUser(null)
+    setToken(null)
+    localStorage.removeItem('authToken')
+  }
+
+  const value = {
+    user,
+    token,
+    login,
+    logout,
+    isAuthenticated: !!token,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export const useAuth = () => useContext(AuthContext)
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}

@@ -52,19 +52,7 @@ const doctorsData = [
 
 // Table columns configuration
 const columns = [
-  {
-    key: 'name',
-    label: 'NAME',
-    render: (item) => (
-      <div className="flex items-center gap-4">
-        <Avatar src={item.avatar} size="sm" />
-        <div>
-          <div className="font-medium">{item.name}</div>
-          <div className="text-default-500 text-xs">{item.specialty}</div>
-        </div>
-      </div>
-    )
-  },
+  { key: 'name', label: 'NAME' },
   { key: 'email', label: 'EMAIL' },
   { key: 'phone', label: 'PHONE' },
   { key: 'status', label: 'STATUS' },
@@ -74,36 +62,34 @@ const columns = [
 // Form fields for add/edit dialog
 const formFields = [
   { key: 'name', label: 'Full Name', type: 'text', required: true },
-  { key: 'specialty', label: 'Specialty', type: 'select', required: true, options: [
-    { value: 'Cardiology', label: 'Cardiology' },
-    { value: 'Neurology', label: 'Neurology' },
-    { value: 'Pediatrics', label: 'Pediatrics' },
-    { value: 'Dermatology', label: 'Dermatology' },
-    { value: 'Orthopedics', label: 'Orthopedics' },
-    { value: 'Ophthalmology', label: 'Ophthalmology' },
-    { value: 'Psychiatry', label: 'Psychiatry' }
-  ]},
-  { key: 'email', label: 'Email', type: 'email', required: true },
-  { key: 'phone', label: 'Phone Number', type: 'tel', required: true },
-  { key: 'experience', label: 'Experience', type: 'text' },
-  { key: 'address', label: 'Address', type: 'textarea' },
+  { key: 'dob', label: 'Date of Birth', type: 'date', required: true },
+  { key: 'cnicPassport', label: 'CNIC/Passport', type: 'text', required: true },
   { key: 'status', label: 'Status', type: 'select', options: [
     { value: 'Active', label: 'Active' },
     { value: 'Inactive', label: 'Inactive' },
     { value: 'On Leave', label: 'On Leave' }
-  ]}
+  ]},
+  { key: 'insuranceProvider', label: 'Insurance Provider', type: 'text' },
+  { key: 'email', label: 'Email', type: 'email', required: true },
+  { key: 'phone', label: 'Phone Number', type: 'tel', required: true },
+  { key: 'experience', label: 'Experience', type: 'text' },
+  { key: 'address', label: 'Address', type: 'textarea', required: true },
+  { key: 'otherDetails', label: 'Other Details', type: 'textarea' }
 ];
 
 // Initial form data for new doctors
 const initialFormData = {
   name: '',
-  specialty: '',
+  dob: '',
+  cnicPassport: '',
+  insuranceProvider: '',
   email: '',
   phone: '',
   status: 'Active',
   avatar: 'https://img.heroui.chat/image/avatar?w=128&h=128&u=10',
   experience: '',
-  address: ''
+  address: '',
+  otherDetails: ''
 };
 
 function DoctorsPage() {
