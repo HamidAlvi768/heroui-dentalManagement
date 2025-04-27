@@ -5,7 +5,6 @@ import { Header } from './header';
 
 export function PageTemplate({
   title,
-  description,
   icon,
   children,
   onAddNew,
@@ -22,7 +21,6 @@ export function PageTemplate({
               <Icon icon={icon} className="text-primary" width={24} />
               <h1 className="text-2xl font-semibold">{title}</h1>
             </div>
-            <p className="text-default-500 mt-1">{description}</p>
           </div>
           <div className="flex items-center gap-4">
             {onAddNew && (

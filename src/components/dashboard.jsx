@@ -149,34 +149,34 @@ export function Dashboard() {
 
                 <div className="mt-4">
                   <div className="flex justify-between font-semibold mb-2">
-                    <div>City</div>
+                    <div>Area</div>
                     <div>Count</div>
                   </div>
 
                   <div className="space-y-2">
                     <div className="flex justify-between items-center py-2 border-b border-divider">
-                      <div>New York</div>
+                      <div>Downtown</div>
                       <div className="flex items-center">
                         215
                         <Icon icon="lucide:arrow-up-right" className="text-success ml-1" width={16} />
                       </div>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-divider">
-                      <div>Los Angeles</div>
+                      <div>Uptown</div>
                       <div className="flex items-center">
                         189
                         <Icon icon="lucide:arrow-up-right" className="text-success ml-1" width={16} />
                       </div>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-divider">
-                      <div>Chicago</div>
+                      <div>Suburb</div>
                       <div className="flex items-center">
                         408
                         <Icon icon="lucide:arrow-down-right" className="text-danger ml-1" width={16} />
                       </div>
                     </div>
                     <div className="flex justify-between items-center py-2">
-                      <div>Houston</div>
+                      <div>Industrial</div>
                       <div>215</div>
                     </div>
                   </div>

@@ -4,10 +4,12 @@ import { Avatar, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@
 import { useAuth } from '@/auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import config from '../config/config';
+import { useLocation } from 'react-router-dom';
 
 export function Header() {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [notifications] = useState([
     { id: 1, message: 'New appointment request', time: '5m ago' },
     { id: 2, message: 'Patient records updated', time: '1h ago' }
@@ -20,9 +22,36 @@ export function Header() {
 
   return (
     <header className="bg-primary h-16 flex items-center justify-between px-6">
-      <div className="flex items-center">
+      <div className="flex items-center gap-8">
         <Icon icon="lucide:activity" className="text-white mr-2" width={24} />
         <span className="text-white text-xl font-semibold">{config.appName}</span>
+        {/* Nav items from sidebar */}
+        <nav className="flex gap-2 ml-8">
+          {[
+            { icon: 'lucide:layout-dashboard', label: 'Dashboard', path: '/dashboard' },
+            { icon: 'lucide:stethoscope', label: 'Doctors', path: '/doctors' },
+            { icon: 'lucide:users', label: 'Patients', path: '/patients' },
+            { icon: 'lucide:calendar', label: 'Appointments', path: '/appointments' },
+            { icon: 'lucide:pill', label: 'Prescriptions', path: '/prescriptions' },
+            { icon: 'lucide:package', label: 'Inventory', path: '/inventory' },
+            { icon: 'lucide:file-text', label: 'Reports', path: '/reports' },
+            { icon: 'lucide:receipt', label: 'Invoices', path: '/invoices' },
+            { icon: 'lucide:users', label: 'Users', path: '/users' },
+            { icon: 'lucide:settings', label: 'Settings', path: '/settings' },
+          ].map((item) => (
+            <a
+              key={item.path}
+              href="#"
+              onClick={e => {
+                e.preventDefault();
+                navigate(item.path);
+              }}
+              className={`flex items-center gap-1 px-3 py-2 rounded-md text-white/90 hover:bg-white/10 transition-colors ${location.pathname === item.path ? 'bg-white/20 text-white font-semibold' : ''}`}
+            >
+              <span>{item.label}</span>
+            </a>
+          ))}
+        </nav>
       </div>
       <div className="flex items-center gap-6">
         <Dropdown placement="bottom-end">

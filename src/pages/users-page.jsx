@@ -27,6 +27,22 @@ const formFields = [
   { key: 'role', label: 'Role', type: 'select', options: ['Admin', 'Moderator', 'Doctor', 'User'], required: true },
 ];
 
+// Filter columns
+const filterColumns = [
+  { key: 'username', label: 'USER NAME' },
+  { key: 'email', label: 'EMAIL' },
+  { key: 'role', label: 'ROLE', type: 'select', options: [
+    { value: 'Admin', label: 'Admin' },
+    { value: 'Moderator', label: 'Moderator' },
+    { value: 'Doctor', label: 'Doctor' },
+    { value: 'User', label: 'User' }
+  ] },
+  { key: 'verified', label: 'VERIFIED', type: 'select', options: [
+    { value: true, label: 'Yes' },
+    { value: false, label: 'No' }
+  ] },
+];
+
 function UsersPage() {
 
   const { token } = useAuth();
@@ -61,7 +77,6 @@ function UsersPage() {
   return (
     <CrudTemplate
       title="Users"
-      description="Manage users records"
       icon="lucide:users"
       columns={columns}
       data={users}

@@ -8,7 +8,6 @@ import { showToast } from '../utils/toast';
 
 export function CrudTemplate({
   title,
-  description,
   icon,
   columns,
   data,
@@ -106,7 +105,6 @@ export function CrudTemplate({
   return (
     <PageTemplate
       title={title}
-      description={description}
       icon={icon}
       onAddNew={handleAddNew}
       addButtonLabel={addButtonLabel}

@@ -119,11 +119,19 @@ const mockData = [
   }
 ];
 
+// Filter columns
+const filterColumns = [
+  { key: 'item', label: 'ITEM' },
+  { key: 'category', label: 'CATEGORY', type: 'select', options: categories },
+  { key: 'subCategory', label: 'SUBCATEGORY', type: 'select', options: Object.values(subCategories).flat() },
+  { key: 'minQuantity', label: 'MIN QUANTITY', type: 'number' },
+  { key: 'maxQuantity', label: 'MAX QUANTITY', type: 'number' },
+];
+
 function InventoryPage() {
   return (
     <CrudTemplate
       title="Inventory"
-      description="Manage hospital inventory and supplies"
       icon="lucide:package"
       columns={columns}
       data={mockData}

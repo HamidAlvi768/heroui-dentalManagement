@@ -187,9 +187,9 @@ export function DataTable({
       <Card>
         <CardBody>
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex gap-4 pb-2">
               {filterableColumns.map((column) => (
-                <div key={column.key}>
+                <div key={column.key} className="flex-1">
                   {renderFilterInput(column)}
                 </div>
               ))}

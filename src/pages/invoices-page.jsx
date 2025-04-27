@@ -1,0 +1,100 @@
+import React from 'react';
+import { CrudTemplate } from '../components/crud-template';
+
+// Table columns
+const columns = [
+  { key: 'patient', label: 'PATIENT' },
+  { key: 'doctor', label: 'DOCTOR' },
+  { key: 'date', label: 'DATE' },
+  { key: 'total', label: 'TOTAL' },
+  { key: 'discount', label: 'DISCOUNT' },
+  { key: 'afterDiscount', label: 'AFTER DISCOUNT' },
+  { key: 'paid', label: 'PAID' },
+  { key: 'due', label: 'DUE' },
+  { key: 'actions', label: 'ACTIONS' },
+];
+
+// Filter columns
+const filterColumns = [
+  { key: 'patient', label: 'PATIENT', type: 'select', options: [
+    { value: 'P1001', label: 'John Doe' },
+    { value: 'P1002', label: 'Jane Smith' },
+  ] },
+  { key: 'doctor', label: 'DOCTOR', type: 'select', options: [
+    { value: 'D1001', label: 'Dr. John Smith' },
+    { value: 'D1002', label: 'Dr. Sarah Johnson' },
+  ] },
+  { key: 'invoiceNumber', label: 'INVOICE NUMBER' },
+  { key: 'startDate', label: 'START DATE', type: 'date' },
+  { key: 'endDate', label: 'END DATE', type: 'date' },
+];
+
+// Add Invoice form fields
+const formFields = [
+  { key: 'date', label: 'Invoice Date', type: 'date', required: true },
+  { key: 'category', label: 'Category', type: 'select', required: true, options: [
+    { value: 'consultation', label: 'Consultation' },
+    { value: 'surgery', label: 'Surgery' },
+    { value: 'lab', label: 'Lab' },
+  ] },
+  { key: 'procedure', label: 'Procedure (CPT)', type: 'select', required: true, options: [
+    { value: '99213', label: '99213 - Office Visit' },
+    { value: '93000', label: '93000 - ECG' },
+  ] },
+  { key: 'description', label: 'Description', type: 'text' },
+  { key: 'quantity', label: 'Quantity', type: 'number', required: true, min: 1, default: 1 },
+  { key: 'price', label: 'Price', type: 'number', required: true },
+  { key: 'discount', label: 'Discount (%)', type: 'number', required: false },
+  { key: 'paid', label: 'Paid', type: 'number', required: false },
+];
+
+const initialFormData = {
+  date: '',
+  category: '',
+  procedure: '',
+  description: '',
+  quantity: 1,
+  price: '',
+  discount: '',
+  paid: '',
+};
+
+const mockData = [
+  {
+    id: '1',
+    patient: 'John Doe',
+    doctor: 'Dr. John Smith',
+    date: '2025-05-01',
+    total: 1000,
+    discount: 10,
+    afterDiscount: 900,
+    paid: 900,
+    due: 0,
+  },
+  {
+    id: '2',
+    patient: 'Jane Smith',
+    doctor: 'Dr. Sarah Johnson',
+    date: '2025-05-02',
+    total: 2000,
+    discount: 5,
+    afterDiscount: 1900,
+    paid: 1000,
+    due: 900,
+  },
+];
+
+export default function InvoicesPage() {
+  return (
+    <CrudTemplate
+      title="Invoices"
+      icon="lucide:receipt"
+      columns={columns}
+      data={mockData}
+      initialFormData={initialFormData}
+      formFields={formFields}
+      filterColumns={filterColumns}
+      addButtonLabel="Add Invoice"
+    />
+  );
+} 

@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './auth/AuthContext';
-import { Sidebar } from './components/sidebar';
 import { Dashboard } from './components/dashboard';
 import DoctorsPage from './pages/doctors-page';
 import PatientsPage from './pages/patients-page';
@@ -14,6 +13,7 @@ import SettingsPage from './pages/settings-page';
 import LoginPage from './pages/login';
 import SignupPage from './pages/signup';
 import UsersPage from './pages/users-page';
+import InvoicesPage from './pages/invoices-page';
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -28,7 +28,7 @@ function PublicRoute({ children }) {
 function AppLayout({ children }) {
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar />
+      {/* <Sidebar /> */}
       <div className="flex-1 w-0 overflow-auto">
         {children}
       </div>
@@ -126,6 +126,13 @@ export default function App() {
           <PrivateRoute>
             <AppLayout>
               <SettingsPage />
+            </AppLayout>
+          </PrivateRoute>
+        } />
+        <Route path="/invoices" element={
+          <PrivateRoute>
+            <AppLayout>
+              <InvoicesPage />
             </AppLayout>
           </PrivateRoute>
         } />
