@@ -2,8 +2,7 @@ import React, { useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { Button, Card, CardBody, Tabs, Tab, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@heroui/react';
 import { StatsCard } from './stats-card';
-import { HospitalSurveyChart } from './hospital-survey-chart';
-import { PatientMap } from './patient-map';
+import { AppointmentsChart } from './hospital-survey-chart';
 import { Header } from './header';
 import { useAuth } from '../auth/AuthContext';
 import config from '../config/config';
@@ -32,34 +31,32 @@ export function Dashboard() {
 
   // Sample data for table view
   const tableData = [
-    { year: '2011', patients: 30, revenue: 15000, growth: '+15%' },
-    { year: '2012', patients: 55, revenue: 25000, growth: '+25%' },
-    { year: '2013', patients: 75, revenue: 35000, growth: '+20%' },
-    { year: '2014', patients: 90, revenue: 45000, growth: '+15%' },
+    { month: 'Jan', scheduled: 45, completed: 38, cancelled: 7 },
+    { month: 'Feb', scheduled: 52, completed: 45, cancelled: 7 },
+    { month: 'Mar', scheduled: 49, completed: 40, cancelled: 9 },
+    { month: 'Apr', scheduled: 55, completed: 48, cancelled: 7 },
   ];
 
   const renderSurveyContent = () => {
     if (selected === "chart") {
-      return <HospitalSurveyChart />;
+      return <AppointmentsChart />;
     }
     
     return (
-      <Table aria-label="Survey data table">
+      <Table aria-label="Appointments data table">
         <TableHeader>
-          <TableColumn>YEAR</TableColumn>
-          <TableColumn>PATIENTS</TableColumn>
-          <TableColumn>REVENUE</TableColumn>
-          <TableColumn>GROWTH</TableColumn>
+          <TableColumn>MONTH</TableColumn>
+          <TableColumn>SCHEDULED</TableColumn>
+          <TableColumn>COMPLETED</TableColumn>
+          <TableColumn>CANCELLED</TableColumn>
         </TableHeader>
         <TableBody>
           {tableData.map((row) => (
-            <TableRow key={row.year}>
-              <TableCell>{row.year}</TableCell>
-              <TableCell>{row.patients}</TableCell>
-              <TableCell>${row.revenue.toLocaleString()}</TableCell>
-              <TableCell>
-                <span className="text-success">{row.growth}</span>
-              </TableCell>
+            <TableRow key={row.month}>
+              <TableCell>{row.month}</TableCell>
+              <TableCell>{row.scheduled}</TableCell>
+              <TableCell>{row.completed}</TableCell>
+              <TableCell>{row.cancelled}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -71,19 +68,9 @@ export function Dashboard() {
     <div className="min-h-screen bg-content2">
       <Header />
       <div className="p-6">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-2xl font-semibold">Dashboard</h1>
-            <p className="text-default-500">Welcome to {config.appName}</p>
-          </div>
-          <div className="flex items-center">
-            <div className="flex items-center gap-2 bg-default-100 rounded-full px-4 py-1">
-              <Icon icon="lucide:home" className="text-primary" width={16} />
-              <span className="text-default-700">{config.appName}</span>
-              <span className="text-default-400">/</span>
-              <span className="text-default-700">Dashboard</span>
-            </div>
-          </div>
+        <div>
+          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <p className="text-default-500">Welcome to {config.appName}</p>
         </div>
 
         <div className="grid grid-cols-3 gap-6 mb-6">
@@ -127,7 +114,7 @@ export function Dashboard() {
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center">
                     <div className="w-1 h-6 bg-primary mr-2"></div>
-                    <h3 className="text-lg font-semibold">Hospital <span className="text-default-500">Survey</span></h3>
+                    <h3 className="text-lg font-semibold">Appointments <span className="text-default-500">Overview</span></h3>
                   </div>
                   <div className="flex items-center gap-2">
                     <Icon icon="lucide:more-horizontal" className="text-default-400" />
@@ -136,7 +123,7 @@ export function Dashboard() {
                 </div>
 
                 <Tabs
-                  aria-label="Survey view options"
+                  aria-label="Appointments view options"
                   selectedKey={selected}
                   onSelectionChange={setSelected}
                   variant="light"
@@ -147,7 +134,7 @@ export function Dashboard() {
                   <Tab key="table" title="Table View" />
                 </Tabs>
 
-                <HospitalSurveyChart />
+                {renderSurveyContent()}
               </CardBody>
             </Card>
           </div>
@@ -155,20 +142,10 @@ export function Dashboard() {
           <div>
             <Card className="h-full">
               <CardBody>
-                <div className="mb-4">
+                <div>
                   <h3 className="text-lg font-semibold mb-2">TOTAL NEW PATIENT</h3>
-                  <div className="h-10 flex items-end">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
-                      <div
-                        key={i}
-                        className="w-2 mx-1 bg-default-300"
-                        style={{ height: `${Math.random() * 100}%` }}
-                      ></div>
-                    ))}
-                  </div>
+        
                 </div>
-
-                <PatientMap />
 
                 <div className="mt-4">
                   <div className="flex justify-between font-semibold mb-2">

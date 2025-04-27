@@ -4,6 +4,7 @@ import { DataTable } from './data-table';
 import { CrudDialog } from './crud-dialog';
 import { DeleteDialog } from './delete-dialog';
 import { useDisclosure } from '@heroui/react';
+import { showToast } from '../utils/toast';
 
 export function CrudTemplate({
   title,
@@ -21,6 +22,7 @@ export function CrudTemplate({
   onPaginate,
   onExport,
   onDelete,
+  filterColumns,
   addButtonLabel = "Add New"
 }) {
   const [items, setItems] = React.useState(data);
@@ -60,6 +62,7 @@ export function CrudTemplate({
     setItems(updatedItems);
     if (onDelete) onDelete(itemToDelete);
     setItemToDelete(null);
+    showToast.success(`${title.slice(0, -1)} deleted successfully`);
   };
 
   const handleView = (item) => {
@@ -82,6 +85,7 @@ export function CrudTemplate({
       updatedItems = items.map(item =>
         item.id === formData.id ? { ...item, ...formData } : item
       );
+      showToast.success(`${title.slice(0, -1)} updated successfully`);
     } else {
       // Add new item with a generated ID
       const newItem = {
@@ -89,6 +93,7 @@ export function CrudTemplate({
         id: Date.now().toString(),
       };
       updatedItems = [...items, newItem];
+      showToast.success(`${title.slice(0, -1)} created successfully`);
     }
 
     setItems(updatedItems);
@@ -118,6 +123,7 @@ export function CrudTemplate({
         onPerPageChange={handlePerPageChange}
         onPaginate={handlePaginate}
         onExport={onExport}
+        filterColumns={filterColumns}
       />
       <CrudDialog
         isOpen={isOpen}

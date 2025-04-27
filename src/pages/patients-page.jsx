@@ -2,6 +2,15 @@ import React from 'react';
 import { CrudTemplate } from '../components/crud-template';
 import { Avatar } from '@heroui/react';
 
+// Filter columns
+const filterColumns = [
+  { key: 'name', label: 'NAME' },
+  { key: 'mrnNumber', label: 'MRN NUMBER' },
+  { key: 'phone', label: 'PHONE' },
+  { key: 'startDate', label: 'START DATE', type: 'date' },
+  { key: 'endDate', label: 'END DATE', type: 'date' },
+];
+
 const columns = [
   { key: 'mrnNumber', label: 'MRN NUMBER' },
   { key: 'name', label: 'NAME' },
@@ -73,6 +82,7 @@ function PatientsPage() {
       data={mockData}
       initialFormData={initialFormData}
       formFields={formFields}
+      filterColumns={filterColumns}
       onSave={(data, isEditing) => {
         console.log('Save patient:', data, 'isEditing:', isEditing);
       }}

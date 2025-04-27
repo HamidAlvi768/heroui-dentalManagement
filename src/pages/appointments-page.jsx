@@ -2,6 +2,20 @@ import React from 'react';
 import { CrudTemplate } from '../components/crud-template';
 import { Avatar } from '@heroui/react';
 
+// Filter columns
+const filterColumns = [
+  { key: 'aptNo', label: 'APT NO' },
+  { key: 'doctorName', label: 'DOCTOR' },
+  { key: 'patientName', label: 'PATIENT' },
+  { key: 'startDate', label: 'START DATE', type: 'date' },
+  { key: 'endDate', label: 'END DATE', type: 'date' },
+  { key: 'status', label: 'STATUS', type: 'select', options: [
+    { value: 'Scheduled', label: 'Scheduled' },
+    { value: 'Completed', label: 'Completed' },
+    { value: 'Cancelled', label: 'Cancelled' }
+  ]},
+];
+
 const columns = [
   { key: 'aptNo', label: 'APT NO' },
   { key: 'doctorName', label: 'DOCTOR' },
@@ -116,6 +130,7 @@ function AppointmentsPage() {
       initialFormData={initialFormData}
       formFields={formFields}
       addButtonLabel="Add Appointment"
+      filterColumns={filterColumns}
     />
   );
 }

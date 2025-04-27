@@ -16,7 +16,7 @@ import {
   Select,
   SelectItem,
   Card,
-  CardBody
+  CardBody,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 
@@ -32,12 +32,12 @@ export function DataTable({
   onPerPageChange,
   onPaginate,
   onExport,
+  filterColumns
 }) {
-  const [filters, setFilters] = React.useState({});
+  const [filterInputs, setFilterInputs] = React.useState({});
+  const [activeFilters, setActiveFilters] = React.useState({});
   const [page, setPage] = React.useState(1);
   const [itemsPerPage, setItemsPerPage] = React.useState(rowsPerPage || 5);
-
-  const pages = Math.ceil(totalItems / itemsPerPage);
 
   const rowsPerPageOptions = [
     { value: 3, label: '3 per page' },
@@ -48,34 +48,83 @@ export function DataTable({
     { value: 100, label: '100 per page' }
   ];
 
-  // Filter data based on all filter values
+  // Filter data based on active filters
   const filteredData = React.useMemo(() => {
-    if (Object.keys(filters).length === 0) return data;
+    if (Object.keys(activeFilters).length === 0) return data;
 
     return data.filter(item => {
-      return Object.entries(filters).every(([key, value]) => {
+      return Object.entries(activeFilters).every(([key, value]) => {
         if (!value) return true;
         const itemValue = item[key]?.toString().toLowerCase();
         return itemValue?.includes(value.toLowerCase());
       });
     });
-  }, [data, filters]);
+  }, [data, activeFilters]);
 
+  // Calculate pagination
+  const pages = Math.ceil(filteredData.length / itemsPerPage);
+  const items = React.useMemo(() => {
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+
+    return filteredData.slice(start, end);
+  }, [filteredData, page, itemsPerPage]);
 
   // Get filterable columns (excluding actions column)
-  const filterableColumns = columns.filter(col => col.key !== 'actions');
+  console.log(filterColumns);
 
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({
+  const filterableColumns = filterColumns.filter(col => col.key !== 'actions');
+
+  const handleInputChange = (key, value) => {
+    setFilterInputs(prev => ({
       ...prev,
       [key]: value
     }));
-    setPage(page);
+  };
+
+  const applyFilters = () => {
+    setActiveFilters(filterInputs);
+    setPage(1);
   };
 
   const clearFilters = () => {
-    setFilters({});
-    setPage(page);
+    setFilterInputs({});
+    setActiveFilters({});
+    setPage(1);
+  };
+
+  const renderFilterInput = (column) => {
+    if (column.type === 'select' && column.options) {
+      return (
+        <Select
+          label={column.label}
+          placeholder={`Filter by ${column.label.toLowerCase()}`}
+          selectedKeys={filterInputs[column.key] ? [filterInputs[column.key]] : []}
+          onSelectionChange={(keys) => handleInputChange(column.key, Array.from(keys)[0])}
+          size="sm"
+          className="w-full"
+        >
+          {column.options.map((option) => (
+            <SelectItem key={option.value || option} value={option.value || option}>
+              {option.label || option}
+            </SelectItem>
+          ))}
+        </Select>
+      );
+    }
+
+    return (
+      <Input
+      type={column.type || 'text'}
+        label={column.label}
+        placeholder={`Filter by ${column.label.toLowerCase()}`}
+        value={filterInputs[column.key] || ''}
+        onValueChange={(value) => handleInputChange(column.key, value)}
+        size="sm"
+        isClearable
+        startContent={<Icon icon="lucide:search" className="text-default-400" width={16} />}
+      />
+    );
   };
 
   // Render cell content based on column configuration
@@ -137,34 +186,36 @@ export function DataTable({
     <div className="space-y-4">
       <Card>
         <CardBody>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {filterableColumns.map((column) => (
-              <div key={column.key}>
-                <Input
-                  label={column.label}
-                  placeholder={`Filter by ${column.label.toLowerCase()}`}
-                  value={filters[column.key] || ''}
-                  onValueChange={(value) => handleFilterChange(column.key, value)}
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {filterableColumns.map((column) => (
+                <div key={column.key}>
+                  {renderFilterInput(column)}
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end gap-2">
+              {Object.keys(filterInputs).length > 0 && (
+                <Button
                   size="sm"
-                  isClearable
-                  startContent={<Icon icon="lucide:search" className="text-default-400" width={16} />}
-                />
-              </div>
-            ))}
-          </div>
-          {Object.keys(filters).length > 0 && (
-            <div className="flex justify-end mt-4">
+                  color="danger"
+                  variant="light"
+                  startContent={<Icon icon="lucide:trash-2" width={16} />}
+                  onPress={clearFilters}
+                >
+                  Clear Filters
+                </Button>
+              )}
               <Button
                 size="sm"
-                color="danger"
-                variant="light"
-                startContent={<Icon icon="lucide:trash-2" width={16} />}
-                onPress={clearFilters}
+                color="primary"
+                startContent={<Icon icon="lucide:filter" width={16} />}
+                onPress={applyFilters}
               >
-                Clear All Filters
+                Apply Filters
               </Button>
             </div>
-          )}
+          </div>
         </CardBody>
       </Card>
 
@@ -233,7 +284,7 @@ export function DataTable({
               <TableColumn key={column.key}>{column.label}</TableColumn>
             ))}
           </TableHeader>
-          <TableBody emptyContent="No records found" items={data}>
+          <TableBody emptyContent="No records found" items={items}>
             {(item) => (
               <TableRow key={item.id}>
                 {(columnKey) => (

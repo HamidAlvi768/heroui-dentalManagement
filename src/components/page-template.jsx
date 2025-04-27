@@ -25,12 +25,6 @@ export function PageTemplate({
             <p className="text-default-500 mt-1">{description}</p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-default-100 rounded-full px-4 py-1">
-              <Icon icon="lucide:home" className="text-primary" width={16} />
-              <span className="text-default-700">Al Shifa</span>
-              <span className="text-default-400">/</span>
-              <span className="text-default-700">{title}</span>
-            </div>
             {onAddNew && (
               <Button color="primary" startContent={<Icon icon="lucide:plus" />} onPress={onAddNew}>
                 {addButtonLabel}

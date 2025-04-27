@@ -36,17 +36,9 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-semibold">Profile</h1>
-            <p className="text-muted-foreground">Manage your personal information</p>
-          </div>
-          <div className="flex items-center gap-2 bg-card rounded-full px-4 py-1">
-            <Icon icon="lucide:home" className="text-primary" width={16} />
-            <span className="text-foreground">Al Shifa</span>
-            <span className="text-muted-foreground">/</span>
-            <span className="text-foreground">Profile</span>
-          </div>
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold">Profile</h1>
+          <p className="text-muted-foreground">Manage your personal information</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

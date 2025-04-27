@@ -143,6 +143,7 @@ function ReportsPage() {
       data={reportsData}
       initialFormData={initialFormData}
       formFields={formFields}
+      filterColumns={filterColumns}
       addButtonLabel="Generate Report"
     />
   );

@@ -129,6 +129,7 @@ function InventoryPage() {
       data={mockData}
       initialFormData={initialFormData}
       formFields={formFields}
+      filterColumns={filterColumns}
       addButtonLabel="Add Item"
     />
   );

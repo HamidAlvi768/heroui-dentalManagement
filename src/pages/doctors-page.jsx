@@ -50,6 +50,15 @@ const doctorsData = [
   }
 ];
 
+// Filter columns
+const filterColumns = [
+  { key: 'name', label: 'NAME' },
+  { key: 'email', label: 'EMAIL' , type: 'email' },
+  { key: 'phone', label: 'PHONE', type: 'phone' },
+  { key: 'startDate', label: 'START DATE', type: 'date' },
+  { key: 'endDate', label: 'END DATE', type: 'date' },
+];
+
 // Table columns configuration
 const columns = [
   { key: 'name', label: 'NAME' },
@@ -103,6 +112,7 @@ function DoctorsPage() {
       initialFormData={initialFormData}
       formFields={formFields}
       addButtonLabel="Add Doctor"
+      filterColumns={filterColumns}
     />
   );
 }

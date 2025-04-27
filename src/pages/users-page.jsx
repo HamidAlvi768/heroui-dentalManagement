@@ -3,8 +3,7 @@ import { CrudTemplate } from '../components/crud-template';
 import { Avatar } from '@heroui/react';
 import config from '../config/config';
 import { useAuth } from '../auth/AuthContext';
-import { toast } from 'react-toastify';
-import { get } from 'react-hook-form';
+import { showToast } from '../utils/toast';
 
 const columns = [
   { key: 'username', label: 'USER NAME' },
@@ -70,6 +69,7 @@ function UsersPage() {
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}
+      filterColumns={filterColumns}
       formFields={formFields}
       onPerPageChange={(perPage) => {
         getUsers(perPage, 1);
@@ -86,10 +86,11 @@ function UsersPage() {
             .then(response => {
               console.log('User updated:', response.data);
               setUsers(users.map(user => user.id === data.id ? data : user));
-              toast.success('User updated successfully!');
+              showToast.success('User updated successfully!');
             })
             .catch(error => {
               console.error('Error updating user:', error);
+              showToast.error(error.message || 'Error updating user');
             });
         } else {
           // Create new user
@@ -97,10 +98,11 @@ function UsersPage() {
             .then(response => {
               console.log('User created:', response.data.user);
               setUsers([...users, response.data.user]);
-              toast.success('User created successfully!');
+              showToast.success('User created successfully!');
             })
             .catch(error => {
               console.error('Error creating user:', error);
+              showToast.error(error.message || 'Error creating user');
             });
         }
       }}
@@ -109,10 +111,11 @@ function UsersPage() {
           .then(response => {
             console.log('User deleted:', response.data);
             setUsers(users.filter(user => user.id !== item.id));
-            toast.success('User deleted successfully!');
+            showToast.success('User deleted successfully!');
           })
           .catch(error => {
             console.error('Error deleting user:', error);
+            showToast.error(error.message || 'Error deleting user');
           });
         console.log('Delete patient:', item);
       }}

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/auth/AuthContext';
 import config from '../config/config';
-import { toast } from 'react-toastify';
+import { showToast } from '../utils/toast';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -30,34 +30,32 @@ export default function LoginPage() {
     e.preventDefault();
     setIsSending(true);
 
-      config.initAPI(null)
-      config.postData('/user/login', formData)
-        .then(data => {
-          console.log(data)
-          const success = data.data.success;
-          const message = data.data.message;
-          if (success) {
-            const user = data.data.data.user;
-            const at = data.data.data.access_token;
-            login({
-              token: at,
-              user: user,
-            });
-            toast.success(message);
-          }
-          else {
-            toast.error(message);
-          }
-        })
-        .catch(error => {
-          console.error('Login error:', error);
-          toast.error(error.message);
-        })
-        .finally(() => {
-          setIsSending(false);
-        });
-    
-
+    config.initAPI(null)
+    config.postData('/user/login', formData)
+      .then(data => {
+        console.log(data)
+        const success = data.data.success;
+        const message = data.data.message;
+        if (success) {
+          const user = data.data.data.user;
+          const at = data.data.data.access_token;
+          login({
+            token: at,
+            user: user,
+          });
+          showToast.success(message);
+        }
+        else {
+          showToast.error(message);
+        }
+      })
+      .catch(error => {
+        console.error('Login error:', error);
+        showToast.error(error.message);
+      })
+      .finally(() => {
+        setIsSending(false);
+      });
   };
 
   return (
@@ -135,4 +133,4 @@ export default function LoginPage() {
       </Card>
     </div>
   );
-} 
+}

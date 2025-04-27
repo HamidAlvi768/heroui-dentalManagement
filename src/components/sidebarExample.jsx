@@ -14,16 +14,11 @@ export function Sidebar({ onNavigate, activePage = 'dashboard' }) {
 
   return (
     <div className={`${isCollapsed ? 'w-20' : 'w-64'} border-r border-divider bg-content1 flex flex-col h-full transition-all duration-300`}>
-      <div className={`p-4 flex items-center ${isCollapsed ? 'justify-center' : ''}`}>
-        {!isCollapsed && (
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-divider">
-            <Icon icon="lucide:home" className="text-default-500" />
-            <span className="font-medium">Al Shifa</span>
-          </div>
-        )}
+      <div className="p-4 flex items-center justify-between">
+        {!isCollapsed && <span className="font-medium">Al Shifa</span>}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className={`p-2 rounded-lg hover:bg-default-100 ${isCollapsed ? '' : 'ml-auto'}`}
+          className="p-2 rounded-lg hover:bg-default-100"
         >
           <Icon 
             icon={isCollapsed ? "lucide:chevron-right" : "lucide:chevron-left"} 
