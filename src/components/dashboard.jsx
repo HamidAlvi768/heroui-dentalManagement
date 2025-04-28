@@ -26,6 +26,7 @@ export function Dashboard() {
     patients_count: 0,
     inventory_count: 0,
     invoices_count: 0,
+    expenses_count: 0,
     doctors_count: 0,
     appointments_count: 0,
     prescriptions_count: 0,
@@ -45,6 +46,7 @@ export function Dashboard() {
           patients_count: _stats.patients_count || 0,
           inventory_count: _stats.inventory_count || 0,
           invoices_count: _stats.invoices_count || 0,
+          expenses_count: _stats.expenses_count || 0,
           doctors_count: _stats.doctors_count || 0,
           appointments_count: _stats.appointments_count || 0,
           prescriptions_count: _stats.prescriptions_count || 0,
@@ -140,6 +142,11 @@ export function Dashboard() {
             value={stats.invoices_count}
             label="Invoices"
             icon="lucide:receipt"
+          />
+          <StatsCard
+            value={stats.expenses_count}
+            label="Expenses"
+            icon="lucide:credit-card"
           />
         </div>
 

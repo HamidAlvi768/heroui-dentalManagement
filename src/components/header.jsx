@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { Avatar, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@heroui/react';
 import { useAuth } from '@/auth/AuthContext';
@@ -14,10 +14,80 @@ export function Header() {
     { id: 1, message: 'New appointment request', time: '5m ago' },
     { id: 2, message: 'Patient records updated', time: '1h ago' }
   ]);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+  const navRef = useRef(null);
+  
+  // Store the scroll position in session storage to persist between route changes
+  const navScrollPositionKey = 'nav-scroll-position';
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    
+    // Restore the previous scroll position when component mounts
+    // without animation by temporarily removing smooth scrolling
+    const originalScrollBehavior = nav.style.scrollBehavior;
+    nav.style.scrollBehavior = 'auto';
+    
+    const savedScrollPosition = sessionStorage.getItem(navScrollPositionKey);
+    if (savedScrollPosition) {
+      nav.scrollLeft = parseInt(savedScrollPosition, 10);
+    }
+    
+    // Restore the original scroll behavior
+    setTimeout(() => {
+      nav.style.scrollBehavior = originalScrollBehavior;
+    }, 0);
+    
+    const updateArrows = () => {
+      setShowLeftArrow(nav.scrollLeft > 0);
+      setShowRightArrow(nav.scrollLeft + nav.offsetWidth < nav.scrollWidth - 1);
+    };
+    
+    // Save the current scroll position whenever it changes
+    const handleScroll = () => {
+      sessionStorage.setItem(navScrollPositionKey, nav.scrollLeft.toString());
+      updateArrows();
+    };
+    
+    updateArrows();
+    nav.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', updateArrows);
+    
+    return () => {
+      nav.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', updateArrows);
+    };
+  }, []);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+  
+  const handleNavigation = (e, path) => {
+    e.preventDefault();
+    // Save the current scroll position explicitly before navigation
+    if (navRef.current) {
+      sessionStorage.setItem(navScrollPositionKey, navRef.current.scrollLeft.toString());
+    }
+    navigate(path);
+  }
+
+  // Function to scroll with animation (for arrow buttons only)
+  const scrollWithAnimation = (amount) => {
+    const nav = navRef.current;
+    if (!nav) return;
+    
+    // Temporarily enable smooth scrolling
+    nav.style.scrollBehavior = 'smooth';
+    nav.scrollBy({ left: amount });
+    
+    // Reset scroll behavior after animation
+    setTimeout(() => {
+      nav.style.scrollBehavior = 'auto';
+    }, 300); // slightly longer than the animation duration
   };
 
   return (
@@ -25,33 +95,61 @@ export function Header() {
       <div className="flex items-center gap-8">
         <Icon icon="lucide:activity" className="text-white mr-2" width={24} />
         <span className="text-white text-xl font-semibold">{config.appName}</span>
-        {/* Nav items from sidebar */}
-        <nav className="flex gap-2 ml-8">
-          {[
-            { icon: 'lucide:layout-dashboard', label: 'Dashboard', path: '/dashboard' },
-            { icon: 'lucide:stethoscope', label: 'Doctors', path: '/doctors' },
-            { icon: 'lucide:users', label: 'Patients', path: '/patients' },
-            { icon: 'lucide:calendar', label: 'Appointments', path: '/appointments' },
-            { icon: 'lucide:pill', label: 'Prescriptions', path: '/prescriptions' },
-            { icon: 'lucide:package', label: 'Inventory', path: '/inventory' },
-            { icon: 'lucide:file-text', label: 'Reports', path: '/reports' },
-            { icon: 'lucide:receipt', label: 'Invoices', path: '/invoices' },
-            { icon: 'lucide:users', label: 'Users', path: '/users' },
-            { icon: 'lucide:settings', label: 'Settings', path: '/settings' },
-          ].map((item) => (
-            <a
-              key={item.path}
-              href="#"
-              onClick={e => {
-                e.preventDefault();
-                navigate(item.path);
-              }}
-              className={`flex items-center gap-1 px-3 py-2 rounded-md text-white/90 hover:bg-white/10 transition-colors ${location.pathname === item.path ? 'bg-white/20 text-white font-semibold' : ''}`}
+        {/* Scrollable Nav Tabs */}
+        <div className="relative w-[70vw] max-w-5xl">
+          {showLeftArrow && (
+            <button
+              className="absolute left-0 top-0 bottom-0 z-10 px-2 bg-gradient-to-r from-primary via-primary/80 to-transparent"
+              style={{ display: 'flex', alignItems: 'center' }}
+              onClick={() => scrollWithAnimation(-200)}
             >
-              <span>{item.label}</span>
-            </a>
-          ))}
-        </nav>
+              <Icon icon="lucide:chevron-left" className="text-white" width={24} />
+            </button>
+          )}
+          <nav
+            id="nav-slider"
+            ref={navRef}
+            className="flex gap-2 ml-8 overflow-x-auto scrollbar-hide px-8"
+            style={{ scrollBehavior: 'auto' }} 
+          >
+            {[
+              { label: 'Dashboard', path: '/dashboard' },
+              { label: 'Doctors', path: '/doctors' },
+              { label: 'Patients', path: '/patients' },
+              { label: 'Appointments', path: '/appointments' },
+              { label: 'Prescriptions', path: '/prescriptions' },
+              { label: 'Inventory', path: '/inventory' },
+              { label: 'Reports', path: '/reports' },
+              { label: 'Invoices', path: '/invoices' },
+              { label: 'Expenses', path: '/expenses' },
+              { label: 'Users', path: '/users' },
+              { label: 'Settings', path: '/settings' },
+            ].map((item) => (
+              <a
+                key={item.path}
+                href="#"
+                onClick={(e) => handleNavigation(e, item.path)}
+                className={`whitespace-nowrap px-4 py-2 rounded-lg font-semibold transition-colors duration-200 ${location.pathname === item.path ? 'bg-white text-primary' : 'bg-primary/80 text-white/90 hover:bg-white/10'}`}
+                style={{ 
+                  minWidth: 'max-content', 
+                  padding: '8px 16px',
+                  textAlign: 'center' 
+                }}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+          {showRightArrow && (
+            <button
+              className="absolute right-0 top-0 bottom-0 z-10 px-2 bg-gradient-to-l from-primary via-primary/80 to-transparent"
+              style={{ display: 'flex', alignItems: 'center' }}
+              onClick={() => scrollWithAnimation(200)}
+            >
+              <Icon icon="lucide:chevron-right" className="text-white" width={24} />
+            </button>
+          )}
+        </div>
       </div>
       <div className="flex items-center gap-6">
         <Dropdown placement="bottom-end">
