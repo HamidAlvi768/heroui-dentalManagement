@@ -31,16 +31,20 @@ const formFields = [
 const filterColumns = [
   { key: 'username', label: 'USER NAME' },
   { key: 'email', label: 'EMAIL' },
-  { key: 'role', label: 'ROLE', type: 'select', options: [
-    { value: 'Admin', label: 'Admin' },
-    { value: 'Moderator', label: 'Moderator' },
-    { value: 'Doctor', label: 'Doctor' },
-    { value: 'User', label: 'User' }
-  ] },
-  { key: 'verified', label: 'VERIFIED', type: 'select', options: [
-    { value: true, label: 'Yes' },
-    { value: false, label: 'No' }
-  ] },
+  {
+    key: 'role', label: 'ROLE', type: 'select', options: [
+      { value: 'Admin', label: 'Admin' },
+      { value: 'Moderator', label: 'Moderator' },
+      { value: 'Doctor', label: 'Doctor' },
+      { value: 'User', label: 'User' }
+    ]
+  },
+  {
+    key: 'verified', label: 'VERIFIED', type: 'select', options: [
+      { value: true, label: 'Yes' },
+      { value: false, label: 'No' }
+    ]
+  },
 ];
 
 function UsersPage() {
@@ -52,15 +56,21 @@ function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
-  function getUsers(perpage = 5, page = 1) {
+  function getUsers(perpage = 5, page = 1, filters = {}) {
+    setLoading(true);
     config.initAPI(token);
-    config.getData(`/users/list?perpage=${perpage}&page=${page}`)
+    config.getData(`/users/list?perpage=${perpage}&page=${page}&username=${filters.username || ''}&email=${filters.email || ''}&role=${filters.role || ''}&verified=${filters.verified || ''}`)
       .then(data => {
-        setUsers(data.data.data);
+        const _users = data.data.data.map(user => {
+          user.verified = user.verified === 1 ? 'Yes' : 'No';
+          return user;
+        });
+        setUsers(_users);
         setTotalItems(data.data.meta.total);
         setCurrentPage(data.data.meta.page);
         setItemsPerPage(data.data.meta.perpage);
         setLoading(false);
+
       })
       .catch(error => {
         console.log(error);
@@ -72,20 +82,24 @@ function UsersPage() {
     getUsers(5, 1);
   }, []);
 
-  console.log('Users:', users);
-
   return (
     <CrudTemplate
       title="Users"
+      description="Manage users records"
       icon="lucide:users"
+      loading={loading}
       columns={columns}
       data={users}
       totalItems={totalItems}
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}
-      filterColumns={filterColumns}
       formFields={formFields}
+      filterColumns={filterColumns}
+      onFilterChange={(filters) => {
+        console.log('Filters:', filters);
+        getUsers(itemsPerPage, 1, filters);
+      }}
       onPerPageChange={(perPage) => {
         getUsers(perPage, 1);
       }}
@@ -101,11 +115,10 @@ function UsersPage() {
             .then(response => {
               console.log('User updated:', response.data);
               setUsers(users.map(user => user.id === data.id ? data : user));
-              showToast.success('User updated successfully!');
+              toast.success('User updated successfully!');
             })
             .catch(error => {
               console.error('Error updating user:', error);
-              showToast.error(error.message || 'Error updating user');
             });
         } else {
           // Create new user
@@ -113,11 +126,10 @@ function UsersPage() {
             .then(response => {
               console.log('User created:', response.data.user);
               setUsers([...users, response.data.user]);
-              showToast.success('User created successfully!');
+              toast.success('User created successfully!');
             })
             .catch(error => {
               console.error('Error creating user:', error);
-              showToast.error(error.message || 'Error creating user');
             });
         }
       }}
@@ -126,11 +138,10 @@ function UsersPage() {
           .then(response => {
             console.log('User deleted:', response.data);
             setUsers(users.filter(user => user.id !== item.id));
-            showToast.success('User deleted successfully!');
+            toast.success('User deleted successfully!');
           })
           .catch(error => {
             console.error('Error deleting user:', error);
-            showToast.error(error.message || 'Error deleting user');
           });
         console.log('Delete patient:', item);
       }}

@@ -21,6 +21,8 @@ import {
 import { Icon } from '@iconify/react';
 
 export function DataTable({
+  loading,
+  title,
   columns,
   data,
   totalItems,
@@ -32,12 +34,15 @@ export function DataTable({
   onPerPageChange,
   onPaginate,
   onExport,
-  filterColumns
+  filterColumns,
+  onFilterChange,
 }) {
   const [filterInputs, setFilterInputs] = React.useState({});
   const [activeFilters, setActiveFilters] = React.useState({});
   const [page, setPage] = React.useState(1);
   const [itemsPerPage, setItemsPerPage] = React.useState(rowsPerPage || 5);
+
+  const pages = Math.ceil(totalItems / itemsPerPage);
 
   const rowsPerPageOptions = [
     { value: 3, label: '3 per page' },
@@ -48,30 +53,7 @@ export function DataTable({
     { value: 100, label: '100 per page' }
   ];
 
-  // Filter data based on active filters
-  const filteredData = React.useMemo(() => {
-    if (Object.keys(activeFilters).length === 0) return data;
-
-    return data.filter(item => {
-      return Object.entries(activeFilters).every(([key, value]) => {
-        if (!value) return true;
-        const itemValue = item[key]?.toString().toLowerCase();
-        return itemValue?.includes(value.toLowerCase());
-      });
-    });
-  }, [data, activeFilters]);
-
-  // Calculate pagination
-  const pages = Math.ceil(filteredData.length / itemsPerPage);
-  const items = React.useMemo(() => {
-    const start = (page - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-
-    return filteredData.slice(start, end);
-  }, [filteredData, page, itemsPerPage]);
-
-  // Get filterable columns (excluding actions column)
-  console.log(filterColumns);
+  
 
   const filterableColumns = filterColumns.filter(col => col.key !== 'actions');
 
@@ -84,14 +66,17 @@ export function DataTable({
 
   const applyFilters = () => {
     setActiveFilters(filterInputs);
+    onFilterChange(filterInputs);
     setPage(1);
   };
 
   const clearFilters = () => {
     setFilterInputs({});
     setActiveFilters({});
+    onFilterChange({});
     setPage(1);
   };
+
 
   const renderFilterInput = (column) => {
     if (column.type === 'select' && column.options) {
@@ -115,7 +100,7 @@ export function DataTable({
 
     return (
       <Input
-      type={column.type || 'text'}
+        type={column.type || 'text'}
         label={column.label}
         placeholder={`Filter by ${column.label.toLowerCase()}`}
         value={filterInputs[column.key] || ''}
@@ -187,7 +172,7 @@ export function DataTable({
       <Card>
         <CardBody>
           <div className="space-y-4">
-            <div className="flex gap-4 pb-2">
+            <div className="flex flex-wrap gap-4 pb-2">
               {filterableColumns.map((column) => (
                 <div key={column.key} className="flex-1">
                   {renderFilterInput(column)}
@@ -258,7 +243,7 @@ export function DataTable({
         <Table
           aria-label="Data table"
           bottomContent={
-            pages > 1 ? (
+            pages > 0 ? (
               <div className="flex w-full justify-between items-center">
                 <Pagination
                   isCompact
@@ -284,7 +269,7 @@ export function DataTable({
               <TableColumn key={column.key}>{column.label}</TableColumn>
             ))}
           </TableHeader>
-          <TableBody emptyContent="No records found" items={items}>
+          <TableBody emptyContent="No records found" items={data}>
             {(item) => (
               <TableRow key={item.id}>
                 {(columnKey) => (
@@ -292,7 +277,6 @@ export function DataTable({
                 )}
               </TableRow>
             )}
-
           </TableBody>
         </Table>
       </div>

@@ -4,9 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Inter', sans-serif;
+* {
+  /* transition: all 0.2s ease-in-out; */
 }
+
 
 @layer base {
   :root {
@@ -69,6 +70,7 @@ body {
   * {
     @apply border-[hsl(var(--border))];
   }
+
   body {
     @apply bg-background text-foreground;
   }
