@@ -37,13 +37,17 @@ const initialFormData = {
   patientId: '',
   examination: '',
   prescriptionDate: '',
-  medicineType: '',
-  medicineName: '',
-  description: '',
-  days: 0,
-  weeks: 0,
-  months: 0,
-  note: ''
+  note: '',
+  medicines: [
+    {
+      medicineType: '',
+      medicineName: '',
+      description: '',
+      days: '',
+      weeks: '',
+      months: ''
+    }
+  ]
 };
 
 const formFields = [
@@ -73,47 +77,6 @@ const formFields = [
     label: 'Prescription Date', 
     type: 'date', 
     required: true 
-  },
-  { 
-    key: 'medicineType', 
-    label: 'Medicine Type', 
-    type: 'select',
-    required: true,
-    options: [
-      { value: 'tablet', label: 'Tablet' },
-      { value: 'syrup', label: 'Syrup' },
-      { value: 'injection', label: 'Injection' },
-      { value: 'capsule', label: 'Capsule' }
-    ]
-  },
-  { 
-    key: 'medicineName', 
-    label: 'Medicine Name', 
-    type: 'text', 
-    required: true 
-  },
-  { 
-    key: 'description', 
-    label: 'Description', 
-    type: 'textarea'
-  },
-  { 
-    key: 'days', 
-    label: 'Days', 
-    type: 'number',
-    min: 0
-  },
-  { 
-    key: 'weeks', 
-    label: 'Weeks', 
-    type: 'number',
-    min: 0
-  },
-  { 
-    key: 'months', 
-    label: 'Months', 
-    type: 'number',
-    min: 0
   },
   { 
     key: 'note', 
