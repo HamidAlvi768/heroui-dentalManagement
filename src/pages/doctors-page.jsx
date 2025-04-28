@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CrudTemplate } from '../components/crud-template';
 import { Avatar } from '@heroui/react';
+import { EntityDetailDialog } from '../components/entity-detail-dialog';
 
 // Sample data for doctors
 const doctorsData = [
@@ -102,18 +103,60 @@ const initialFormData = {
 };
 
 function DoctorsPage() {
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+
+  const handleViewDetail = (doctor) => {
+    setSelectedDoctor({
+      ...doctor,
+      appointments: [
+        {
+          id: 'APT250465',
+          patient: 'test Patient',
+          status: 'Checked In',
+          problem: '',
+          startTime: '10:00:00',
+          endTime: '11:15:00',
+          date: '26-Apr-2025',
+        },
+      ]
+    });
+    setIsDetailOpen(true);
+  };
+
+  const customActions = (item) => [
+    {
+      label: "View Details",
+      icon: "lucide:eye",
+      handler: () => handleViewDetail(item)
+    }
+  ];
+
   return (
-    <CrudTemplate
-      title="Doctors"
-      description="Manage hospital doctors"
-      icon="lucide:stethoscope"
-      columns={columns}
-      data={doctorsData}
-      initialFormData={initialFormData}
-      formFields={formFields}
-      addButtonLabel="Add Doctor"
-      filterColumns={filterColumns}
-    />
+    <>
+      <CrudTemplate
+        title="Doctors"
+        description="Manage hospital doctors"
+        icon="lucide:stethoscope"
+        columns={columns}
+        data={doctorsData}
+        initialFormData={initialFormData}
+        formFields={formFields}
+        addButtonLabel="Add Doctor"
+        filterColumns={filterColumns}
+        customRowActions={customActions}
+        onRowClick={handleViewDetail}
+      />
+      {selectedDoctor && (
+        <EntityDetailDialog
+          isOpen={isDetailOpen}
+          onOpenChange={setIsDetailOpen}
+          entity={selectedDoctor}
+          entityType="doctor"
+          onEdit={() => console.log('Edit doctor:', selectedDoctor)}
+        />
+      )}
+    </>
   );
 }
 

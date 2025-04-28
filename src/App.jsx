@@ -4,6 +4,7 @@ import { useAuth } from './auth/AuthContext';
 import { Dashboard } from './components/dashboard';
 import DoctorsPage from './pages/doctors-page';
 import PatientsPage from './pages/patients-page';
+import PatientDetailsPage from './pages/patient-details-page';
 import AppointmentsPage from './pages/appointments-page';
 import PrescriptionPage from './pages/prescription-page';
 import InventoryPage from './pages/inventory-page';
@@ -78,6 +79,13 @@ export default function App() {
           <PrivateRoute>
             <AppLayout>
               <PatientsPage />
+            </AppLayout>
+          </PrivateRoute>
+        } />
+        <Route path="/patients/:id" element={
+          <PrivateRoute>
+            <AppLayout>
+              <PatientDetailsPage />
             </AppLayout>
           </PrivateRoute>
         } />

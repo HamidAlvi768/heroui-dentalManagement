@@ -1,6 +1,7 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CrudTemplate } from '../components/crud-template';
-import { Avatar } from '@heroui/react';
+import { Avatar, Badge } from '@heroui/react';
 
 // Filter columns
 const filterColumns = [
@@ -73,6 +74,20 @@ const mockData = [
 ];
 
 function PatientsPage() {
+  const navigate = useNavigate();
+
+  const handleViewDetail = (patient) => {
+    navigate(`/patients/${patient.id}`, { state: { patient } });
+  };
+
+  const customActions = (item) => [
+    {
+      label: "View Details",
+      icon: "lucide:eye",
+      handler: () => handleViewDetail(item)
+    }
+  ];
+
   return (
     <CrudTemplate
       title="Patients"
@@ -83,6 +98,9 @@ function PatientsPage() {
       initialFormData={initialFormData}
       formFields={formFields}
       filterColumns={filterColumns}
+      addButtonLabel="Add Patient"
+      customRowActions={customActions}
+      onRowClick={handleViewDetail}
       onSave={(data, isEditing) => {
         console.log('Save patient:', data, 'isEditing:', isEditing);
       }}

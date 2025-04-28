@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CrudTemplate } from '../components/crud-template';
+import { EntityDetailDialog } from '../components/entity-detail-dialog';
 
 // Table columns
 const columns = [
@@ -69,16 +70,53 @@ const mockData = [
 ];
 
 export default function ExpensePage() {
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedExpense, setSelectedExpense] = useState(null);
+
+  const handleViewDetail = (expense) => {
+    const mappedExpense = {
+      ...expense,
+      paymentDate: expense.date,
+      receiverName: expense.receiver,
+      accountName: expense.account,
+      amount: expense.amount
+    };
+    setSelectedExpense(mappedExpense);
+    setIsDetailOpen(true);
+  };
+
+  const customActions = (item) => [
+    {
+      label: "View Details",
+      icon: "lucide:eye",
+      handler: () => handleViewDetail(item)
+    }
+  ];
+
   return (
-    <CrudTemplate
-      title="Expenses"
-      icon="lucide:credit-card"
-      columns={columns}
-      data={mockData}
-      initialFormData={initialFormData}
-      formFields={formFields}
-      filterColumns={filterColumns}
-      addButtonLabel="Add Expense"
-    />
+    <>
+      <CrudTemplate
+        title="Expenses"
+        icon="lucide:banknote"
+        columns={columns}
+        data={mockData}
+        initialFormData={initialFormData}
+        formFields={formFields}
+        filterColumns={filterColumns}
+        addButtonLabel="Add Expense"
+        customRowActions={customActions}
+        onRowClick={handleViewDetail}
+      />
+      {selectedExpense && (
+        <EntityDetailDialog
+          isOpen={isDetailOpen}
+          onOpenChange={setIsDetailOpen}
+          entity={selectedExpense}
+          title={`Expense Details - ${selectedExpense.receiverName}`}
+          onEdit={() => console.log('Edit expense:', selectedExpense)}
+          entityType="expense"
+        />
+      )}
+    </>
   );
-} 
+}

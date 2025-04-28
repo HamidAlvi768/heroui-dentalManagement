@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CrudTemplate } from '../components/crud-template';
+import { EntityDetailDialog } from '../components/entity-detail-dialog';
+import { CrudDialog } from '../components/crud-dialog';
+import { useDisclosure } from '@heroui/react';
 
 const columns = [
   {
@@ -129,17 +132,91 @@ const filterColumns = [
 ];
 
 function InventoryPage() {
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const { isOpen: isEditOpen, onOpen: onEditOpen, onOpenChange: onEditOpenChange } = useDisclosure();
+
+  const handleViewDetail = (item) => {
+    // Map the item data to match our detail view fields
+    const mappedItem = {
+      ...item,
+      consumptionHistory: [], // Empty consumption history as specified
+      additionHistory: [
+        {
+          username: "Safeer",
+          additionQty: 21,
+          unitPrice: 1,
+          time: "2024-09-17 13:44:43"
+        }
+      ]
+    };
+    setSelectedItem(mappedItem);
+    setIsDetailOpen(true);
+  };
+
+  const handleEdit = () => {
+    // Convert the item data to match the form fields format
+    setSelectedItem(prevItem => ({
+      ...prevItem,
+      category: prevItem.category,
+      subCategory: prevItem.subCategory,
+      item: prevItem.item,
+      quantity: prevItem.quantity,
+      unitPrice: prevItem.unitPrice
+    }));
+    setIsDetailOpen(false);
+    onEditOpen();
+  };
+
+  const handleSave = (updatedData) => {
+    // Here you would typically save to backend
+    console.log('Saving item:', updatedData);
+    onEditOpenChange(false);
+  };
+
+  const customActions = (item) => [
+    {
+      label: "View Details",
+      icon: "lucide:eye",
+      handler: () => handleViewDetail(item)
+    }
+  ];
+
   return (
-    <CrudTemplate
-      title="Inventory"
-      icon="lucide:package"
-      columns={columns}
-      data={mockData}
-      initialFormData={initialFormData}
-      formFields={formFields}
-      filterColumns={filterColumns}
-      addButtonLabel="Add Item"
-    />
+    <>
+      <CrudTemplate
+        title="Inventory"
+        icon="lucide:package"
+        columns={columns}
+        data={mockData}
+        initialFormData={initialFormData}
+        formFields={formFields}
+        filterColumns={filterColumns}
+        addButtonLabel="Add Item"
+        customRowActions={customActions}
+        onRowClick={handleViewDetail}
+      />
+      {selectedItem && (
+        <>
+          <EntityDetailDialog
+            isOpen={isDetailOpen}
+            onOpenChange={setIsDetailOpen}
+            entity={selectedItem}
+            title={selectedItem.item}
+            onEdit={handleEdit}
+            entityType="inventory"
+          />
+          <CrudDialog
+            isOpen={isEditOpen}
+            onOpenChange={onEditOpenChange}
+            title="Edit Item"
+            formData={selectedItem}
+            formFields={formFields}
+            onSave={handleSave}
+          />
+        </>
+      )}
+    </>
   );
 }
 
