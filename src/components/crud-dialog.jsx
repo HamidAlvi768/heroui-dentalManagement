@@ -141,10 +141,10 @@ export function CrudDialog({
     <Modal
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      size="3xl"
+      size={Array.isArray(form.medicines) ? "5xl" : "3xl"}
       scrollBehavior="inside"
       classNames={{
-        base: "max-h-[90vh]"
+        base: "max-h-[90vh] min-w-[900px]"
       }}
     >
       <ModalContent>

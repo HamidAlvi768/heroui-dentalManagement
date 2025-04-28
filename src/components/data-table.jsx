@@ -133,44 +133,22 @@ export function DataTable({
 
     if (columnKey === 'actions') {
       return (
-        <div className="flex justify-end">
-          <Dropdown>
-            <DropdownTrigger>
-              <Button isIconOnly variant="light" size="sm">
-                <Icon icon="lucide:more-vertical" width={16} />
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu aria-label="Actions">
-              {onView && (
-                <DropdownItem onPress={() => onView(item)}>
-                  <div className="flex items-center gap-2">
-                    <Icon icon="lucide:eye" width={16} />
-                    <span>View</span>
-                  </div>
-                </DropdownItem>
-              )}
-              {onEdit && (
-                <DropdownItem onPress={() => onEdit(item)}>
-                  <div className="flex items-center gap-2">
-                    <Icon icon="lucide:edit" width={16} />
-                    <span>Edit</span>
-                  </div>
-                </DropdownItem>
-              )}
-              {onDelete && (
-                <DropdownItem
-                  className="text-danger"
-                  color="danger"
-                  onPress={() => onDelete(item)}
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon icon="lucide:trash-2" width={16} />
-                    <span>Delete</span>
-                  </div>
-                </DropdownItem>
-              )}
-            </DropdownMenu>
-          </Dropdown>
+        <div className="flex gap-2 justify-end">
+          {onView && (
+            <Button isIconOnly variant="light" size="sm" onPress={() => onView(item)} title="View">
+              <Icon icon="lucide:eye" width={16} />
+            </Button>
+          )}
+          {onEdit && (
+            <Button isIconOnly variant="light" size="sm" onPress={() => onEdit(item)} title="Edit">
+              <Icon icon="lucide:edit" width={16} />
+            </Button>
+          )}
+          {onDelete && (
+            <Button isIconOnly variant="light" size="sm" color="danger" onPress={() => onDelete(item)} title="Delete">
+              <Icon icon="lucide:trash-2" width={16} />
+            </Button>
+          )}
         </div>
       );
     }

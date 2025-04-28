@@ -14,6 +14,7 @@ import LoginPage from './pages/login';
 import SignupPage from './pages/signup';
 import UsersPage from './pages/users-page';
 import InvoicesPage from './pages/invoices-page';
+import ExpensePage from './pages/expense-page';
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -133,6 +134,13 @@ export default function App() {
           <PrivateRoute>
             <AppLayout>
               <InvoicesPage />
+            </AppLayout>
+          </PrivateRoute>
+        } />
+        <Route path="/expenses" element={
+          <PrivateRoute>
+            <AppLayout>
+              <ExpensePage />
             </AppLayout>
           </PrivateRoute>
         } />
