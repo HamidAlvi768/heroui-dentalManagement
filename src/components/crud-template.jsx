@@ -9,6 +9,7 @@ import { showToast } from '../utils/toast';
 export function CrudTemplate({
   title,
   icon,
+  loading,
   columns,
   data,
   totalItems,
@@ -25,7 +26,8 @@ export function CrudTemplate({
   addButtonLabel = "Add New",
   DetailDialog, // New prop for custom detail dialog
   customRowActions, // New prop for custom row actions
-  onRowClick // New prop for row click handling
+  onRowClick, // New prop for row click handling
+  onFilterChange
 }) {
   const [items, setItems] = React.useState(data);
   const [currentItem, setCurrentItem] = React.useState(null);
@@ -116,6 +118,7 @@ export function CrudTemplate({
       addButtonLabel={addButtonLabel}
     >
       <DataTable
+        loading={loading}
         columns={columns}
         data={items}
         totalItems={totalItems}
@@ -129,6 +132,9 @@ export function CrudTemplate({
         onExport={onExport}
         filterColumns={filterColumns}
         customRowActions={customRowActions}
+        onFilterChange={(filters) => {
+          onFilterChange(filters);
+        }}
       />
       <CrudDialog
         isOpen={isOpen}
