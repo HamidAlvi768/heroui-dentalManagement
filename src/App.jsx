@@ -43,7 +43,8 @@ function AppLayout({ children }) {
 
 export default function App() {
   return (
-    <Router>
+    // <Router basename='/jantrah/react/dental/'>
+    <Router basename=''>
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={
