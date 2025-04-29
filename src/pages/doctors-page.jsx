@@ -1,118 +1,150 @@
-import React from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { CrudTemplate } from '../components/crud-template';
 import { Avatar } from '@heroui/react';
+import config from '../config/config';
+import { useAuth } from '../auth/AuthContext';
+import { showToast } from '../utils/toast';
 
-// Sample data for doctors
-const doctorsData = [
-  {
-    id: '1',
-    name: 'Dr. John Smith',
-    specialty: 'Cardiology',
-    email: 'john.smith@hospital.com',
-    phone: '(555) 123-4567',
-    status: 'Active',
-    avatar: 'https://img.heroui.chat/image/avatar?w=128&h=128&u=1',
-    experience: '15 years',
-    address: '123 Medical Drive, New York, NY'
-  },
-  {
-    id: '2',
-    name: 'Dr. Sarah Johnson',
-    specialty: 'Neurology',
-    email: 'sarah.johnson@hospital.com',
-    phone: '(555) 234-5678',
-    status: 'Active',
-    avatar: 'https://img.heroui.chat/image/avatar?w=128&h=128&u=2',
-    experience: '12 years',
-    address: '456 Health Avenue, Boston, MA'
-  },
-  {
-    id: '3',
-    name: 'Dr. Michael Chen',
-    specialty: 'Pediatrics',
-    email: 'michael.chen@hospital.com',
-    phone: '(555) 345-6789',
-    status: 'On Leave',
-    avatar: 'https://img.heroui.chat/image/avatar?w=128&h=128&u=3',
-    experience: '8 years',
-    address: '789 Care Street, Chicago, IL'
-  },
-  {
-    id: '4',
-    name: 'Dr. Emily Rodriguez',
-    specialty: 'Dermatology',
-    email: 'emily.rodriguez@hospital.com',
-    phone: '(555) 456-7890',
-    status: 'Active',
-    avatar: 'https://img.heroui.chat/image/avatar?w=128&h=128&u=4',
-    experience: '10 years',
-    address: '321 Wellness Road, Miami, FL'
-  }
+const columns = [
+  { key: 'username', label: 'USER NAME' },
+  { key: 'email', label: 'EMAIL' },
+  // { key: 'role', label: 'ROLE' },
+  { key: 'verified', label: 'VERIFIED' },
+  { key: 'actions', label: 'ACTIONS' }
+];
+
+const initialFormData = {
+  username: '',
+  email: '',
+  password: '',
+  role: '',
+};
+
+const formFields = [
+  { key: 'username', label: 'username', type: 'text', required: true },
+  { key: 'email', label: 'Email', type: 'email', required: true },
+  { key: 'password', label: 'Password', type: 'text', required: true },
+  // { key: 'role', label: 'Role', type: 'select', options: ['Admin', 'Moderator', 'Doctor', 'User'], required: true },
 ];
 
 // Filter columns
 const filterColumns = [
-  { key: 'name', label: 'NAME' },
-  { key: 'email', label: 'EMAIL' , type: 'email' },
-  { key: 'phone', label: 'PHONE', type: 'phone' },
-  { key: 'startDate', label: 'START DATE', type: 'date' },
-  { key: 'endDate', label: 'END DATE', type: 'date' },
-];
-
-// Table columns configuration
-const columns = [
-  { key: 'name', label: 'NAME' },
+  { key: 'username', label: 'USER NAME' },
   { key: 'email', label: 'EMAIL' },
-  { key: 'phone', label: 'PHONE' },
-  { key: 'status', label: 'STATUS' },
-  { key: 'actions', label: 'ACTIONS' }
+  // {
+  //   key: 'role', label: 'ROLE', type: 'select', options: [
+  //     { value: 'Admin', label: 'Admin' },
+  //     { value: 'Moderator', label: 'Moderator' },
+  //     { value: 'Doctor', label: 'Doctor' },
+  //     { value: 'User', label: 'User' }
+  //   ]
+  // },
+  {
+    key: 'verified', label: 'VERIFIED', type: 'select', options: [
+      { value: true, label: 'Yes' },
+      { value: false, label: 'No' }
+    ]
+  },
 ];
-
-// Form fields for add/edit dialog
-const formFields = [
-  { key: 'name', label: 'Full Name', type: 'text', required: true },
-  { key: 'dob', label: 'Date of Birth', type: 'date', required: true },
-  { key: 'cnicPassport', label: 'CNIC/Passport', type: 'text', required: true },
-  { key: 'status', label: 'Status', type: 'select', options: [
-    { value: 'Active', label: 'Active' },
-    { value: 'Inactive', label: 'Inactive' },
-    { value: 'On Leave', label: 'On Leave' }
-  ]},
-  { key: 'insuranceProvider', label: 'Insurance Provider', type: 'text' },
-  { key: 'email', label: 'Email', type: 'email', required: true },
-  { key: 'phone', label: 'Phone Number', type: 'tel', required: true },
-  { key: 'experience', label: 'Experience', type: 'text' },
-  { key: 'address', label: 'Address', type: 'textarea', required: true },
-  { key: 'otherDetails', label: 'Other Details', type: 'textarea' }
-];
-
-// Initial form data for new doctors
-const initialFormData = {
-  name: '',
-  dob: '',
-  cnicPassport: '',
-  insuranceProvider: '',
-  email: '',
-  phone: '',
-  status: 'Active',
-  avatar: 'https://img.heroui.chat/image/avatar?w=128&h=128&u=10',
-  experience: '',
-  address: '',
-  otherDetails: ''
-};
 
 function DoctorsPage() {
+
+  const { token } = useAuth();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [totalItems, setTotalItems] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+
+  function getUsers(perpage = 5, page = 1, filters = {}) {
+    setLoading(true);
+    config.initAPI(token);
+    config.getData(`/users/list?perpage=${perpage}&page=${page}&username=${filters.username || ''}&email=${filters.email || ''}&role=${filters.role || 'doctor'}&verified=${filters.verified || ''}`)
+      .then(data => {
+        const _users = data.data.data.map(user => {
+          user.verified = user.verified === 1 ? 'Yes' : 'No';
+          return user;
+        });
+        setUsers(_users);
+        setTotalItems(data.data.meta.total);
+        setCurrentPage(data.data.meta.page);
+        setItemsPerPage(data.data.meta.perpage);
+        setLoading(false);
+
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }
+
+
+  useEffect(() => {
+    getUsers(5, 1);
+  }, []);
+
   return (
     <CrudTemplate
       title="Doctors"
-      description="Manage hospital doctors"
-      icon="lucide:stethoscope"
+      description="Manage doctors records"
+      icon="lucide:users"
+      loading={loading}
       columns={columns}
-      data={doctorsData}
+      data={users}
+      totalItems={totalItems}
+      currentPage={currentPage}
+      itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}
       formFields={formFields}
-      addButtonLabel="Add Doctor"
       filterColumns={filterColumns}
+      onFilterChange={(filters) => {
+        console.log('Filters:', filters);
+        getUsers(itemsPerPage, 1, filters);
+      }}
+      onPerPageChange={(perPage) => {
+        getUsers(perPage, 1);
+      }}
+      onPaginate={(page, perpage) => {
+        console.log('Page:', page, 'Perpage:', perpage);
+        getUsers(perpage, page);
+      }}
+      onSave={(data, isEditing) => {
+        console.log('Save patient:', data, 'isEditing:', isEditing);
+        if (isEditing) {
+          // Update existing user
+          config.postData(`/users/edit?id=${data.id}`, data)
+            .then(response => {
+              console.log('User updated:', response.data);
+              setUsers(users.map(user => user.id === data.id ? data : user));
+              toast.success('Doctor updated successfully!');
+            })
+            .catch(error => {
+              console.error('Error updating user:', error);
+            });
+        } else {
+          // Create new user
+          config.postData('/users/create', data)
+            .then(response => {
+              console.log('User created:', response.data.user);
+              setUsers([...users, response.data.user]);
+              toast.success('User created successfully!');
+            })
+            .catch(error => {
+              console.error('Error creating user:', error);
+            });
+        }
+      }}
+      onDelete={(item) => {
+        config.postData(`/users/delete?id=${item.id}`, item)
+          .then(response => {
+            console.log('User deleted:', response.data);
+            setUsers(users.filter(user => user.id !== item.id));
+            toast.success('Doctor deleted successfully!');
+          })
+          .catch(error => {
+            console.error('Error deleting user:', error);
+          });
+        console.log('Delete patient:', item);
+      }}
     />
   );
 }

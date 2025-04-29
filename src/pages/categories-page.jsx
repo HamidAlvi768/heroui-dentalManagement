@@ -6,91 +6,59 @@ import { useAuth } from '../auth/AuthContext';
 import { showToast } from '../utils/toast';
 
 const columns = [
-  { key: 'category_name', label: 'Category' },
-  { key: 'code', label: 'CODE' },
   { key: 'name', label: 'NAME' },
   { key: 'description', label: 'DESCRIPTION' },
-  { key: 'cost_price', label: 'COST PRICE' },
-  { key: 'selling_price', label: 'SELLING PRICE' },
-  { key: 'quantity', label: 'QUANTITY' },
-  { key: 'expiry_date', label: 'EXPIRY DATE' },
+  { key: 'inventory_count', label: 'Inventory Items' },
   { key: 'active', label: 'ACTIVE' },
   { key: 'actions', label: 'ACTIONS' }
 ];
 
 const initialFormData = {
-  category_id: '',
   name: '',
   description: '',
-  code: '',
-  cost_price: '',
-  selling_price: '',
-  expiry_date: '',
-  quantity: '',
   active: '',
 };
 
+const formFields = [
+  { key: 'name', label: 'name', type: 'text', required: true },
+  { key: 'description', label: 'Description', type: 'textarea', required: true },
+  { 
+    key: 'active', 
+    label: 'Active', 
+    type: 'select', 
+    required: true,
+    options: [
+      { value: '1', label: 'Yes' },
+      { value: '0', label: 'No' }
+    ]
+  },
+];
 
-function InventoryPage() {
+// Filter columns
+const filterColumns = [
+  { key: 'name', label: 'NAME' },
+  { key: 'active', label: 'ACTIVE' },
+];
+
+function CategoriesPage() {
 
   const { token } = useAuth();
   const [dataList, setDataList] = useState([]);
-  const [categoriesList, setCategoriesList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
-  const formFields = [
-    { key: 'category_id', label: 'Category', type: 'select', options: [{ value: '', label: 'Select Category' }, ...categoriesList.map(category => ({ value: category.id, label: category.name }))], required: true },
-    { key: 'name', label: 'name', type: 'text', required: true },
-    { key: 'code', label: 'Code', type: 'text', required: true },
-    { key: 'cost_price', label: 'Cost Price', type: 'number', required: true },
-    { key: 'selling_price', label: 'Selling Price', type: 'number', required: true },
-    { key: 'quantity', label: 'Quantity', type: 'number', required: true },
-    { key: 'expiry_date', label: 'Expiry Date', type: 'date', required: true },
-    { key: 'description', label: 'Description', type: 'textarea', required: true },
-    {
-      key: 'active',
-      label: 'Active',
-      type: 'select',
-      required: true,
-      options: [
-        { value: '1', label: 'Yes' },
-        { value: '0', label: 'No' }
-      ]
-    },
-  ];
-
-  // Filter columns
-  const filterColumns = [
-    { key: 'category_id', label: 'Category', type: 'select', options: [{ value: '', label: 'Select Category' }, ...categoriesList.map(category => ({ value: category.id, label: category.name }))], required: true },
-    { key: 'name', label: 'NAME' },
-    { key: 'code', label: 'CODE' },
-    { key: 'quantity', label: 'QUANTITY' },
-    {
-      key: 'active',
-      label: 'ACTIVE',
-      type: 'select',
-      required: true,
-      options: [
-        { value: '1', label: 'Yes' },
-        { value: '0', label: 'No' }
-      ]
-    },
-  ];
-
   function getData(perpage = 5, page = 1, filters = {}) {
     setLoading(true);
     config.initAPI(token);
-    config.getData(`/inventory/list?perpage=${perpage}&page=${page}&category_id=${filters.category_id || ''}&name=${filters.name || ''}&code=${filters.code || ''}&quantity=${filters.quantity || ''}&active=${filters.active || ''}`)
+    config.getData(`/categories/list?perpage=${perpage}&page=${page}&Categoryname=${filters.Categoryname || ''}&email=${filters.email || ''}&role=${filters.role || ''}&verified=${filters.verified || ''}`)
       .then(data => {
         const _data = data.data.data.map(item => {
           item.active = item.active === 1 ? 'Yes' : 'No';
           return item;
         });
         setDataList(_data);
-        setCategoriesList(data.data.categories);
         setTotalItems(data.data.meta.total);
         setCurrentPage(data.data.meta.page);
         setItemsPerPage(data.data.meta.perpage);
@@ -109,8 +77,8 @@ function InventoryPage() {
 
   return (
     <CrudTemplate
-      title="Inventory"
-      description="Manage inventory"
+      title="Categories"
+      description="Manage inventory categories"
       icon="lucide:boxes"
       loading={loading}
       columns={columns}
@@ -136,22 +104,22 @@ function InventoryPage() {
         console.log('Save patient:', data, 'isEditing:', isEditing);
         if (isEditing) {
           // Update existing Category
-          config.postData(`/inventory/edit?id=${data.id}`, data)
+          config.postData(`/categories/edit?id=${data.id}`, data)
             .then(response => {
-              console.log('Inventory updated:', response.data);
+              console.log('Category updated:', response.data);
               setDataList(dataList.map(item => item.id === data.id ? data : item));
-              toast.success('Inventory updated successfully!');
+              toast.success('Category updated successfully!');
             })
             .catch(error => {
               console.error('Error updating Category:', error);
             });
         } else {
           // Create new Category
-          config.postData('/inventory/create', data)
+          config.postData('/categories/create', data)
             .then(response => {
-              console.log('Inventory created:', response.data.category);
+              console.log('Category created:', response.data.category);
               setDataList([...dataList, response.data.category]);
-              toast.success('Inventory created successfully!');
+              toast.success('Category created successfully!');
             })
             .catch(error => {
               console.error('Error creating Category:', error);
@@ -159,19 +127,19 @@ function InventoryPage() {
         }
       }}
       onDelete={(item) => {
-        config.postData(`/inventory/delete?id=${item.id}`, item)
+        config.postData(`/categories/delete?id=${item.id}`, item)
           .then(response => {
-            console.log('Inventory deleted:', response.data);
+            console.log('Category deleted:', response.data);
             setDataList(dataList.filter(filterItem => filterItem.id !== item.id));
-            toast.success('Inventory deleted successfully!');
+            toast.success('Category deleted successfully!');
           })
           .catch(error => {
             console.error('Error deleting Category:', error);
           });
-        console.log('Delete Item:', item);
+        console.log('Delete patient:', item);
       }}
     />
   );
 }
 
-export default InventoryPage;
+export default CategoriesPage;

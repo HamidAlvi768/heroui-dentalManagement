@@ -36,9 +36,16 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold">Profile</h1>
-          <p className="text-muted-foreground">Manage your personal information</p>
+        <div className="mb-6 flex justify-between items-center">
+          <div className="">
+            <h1 className="text-2xl font-semibold">Profile</h1>
+            <p className="text-muted-foreground">Manage your personal information</p>
+          </div>
+          <Button
+            variant="outline"
+            className="ml-auto btn bg-primary text-white"
+            onClick={() => window.history.back()}
+          >Back</Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

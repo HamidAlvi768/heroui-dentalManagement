@@ -15,6 +15,7 @@ import SignupPage from './pages/signup';
 import UsersPage from './pages/users-page';
 import InvoicesPage from './pages/invoices-page';
 import ExpensePage from './pages/expense-page';
+import CategoriesPage from './pages/categories-page';
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -92,6 +93,13 @@ export default function App() {
           <PrivateRoute>
             <AppLayout>
               <PrescriptionPage />
+            </AppLayout>
+          </PrivateRoute>
+        } />
+        <Route path="/categories" element={
+          <PrivateRoute>
+            <AppLayout>
+              <CategoriesPage />
             </AppLayout>
           </PrivateRoute>
         } />

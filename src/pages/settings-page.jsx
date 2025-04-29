@@ -51,10 +51,11 @@ export default function SettingsPage() {
             <h1 className="text-2xl font-semibold">Settings</h1>
             <p className="text-muted-foreground">Manage your website settings</p>
           </div>
-          <div className="flex items-center gap-2 bg-card rounded-full px-4 py-1">
-            <Icon icon="lucide:settings" className="text-primary" width={16} />
-            <span className="text-foreground">Settings</span>
-          </div>
+          <Button
+            variant="outline"
+            className="ml-auto btn bg-primary text-white"
+            onClick={() => window.history.back()}
+          >Back</Button>
         </div>
 
         <Card className="mb-6">

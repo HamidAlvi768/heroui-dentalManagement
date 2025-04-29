@@ -114,15 +114,16 @@ export function Header() {
           >
             {[
               { label: 'Dashboard', path: '/dashboard' },
+              { label: 'Users', path: '/users' },
               { label: 'Doctors', path: '/doctors' },
               { label: 'Patients', path: '/patients' },
               { label: 'Appointments', path: '/appointments' },
               { label: 'Prescriptions', path: '/prescriptions' },
+              { label: 'Categories', path: '/categories' },
               { label: 'Inventory', path: '/inventory' },
               { label: 'Reports', path: '/reports' },
               { label: 'Invoices', path: '/invoices' },
               { label: 'Expenses', path: '/expenses' },
-              { label: 'Users', path: '/users' },
               { label: 'Settings', path: '/settings' },
             ].map((item) => (
               <a
