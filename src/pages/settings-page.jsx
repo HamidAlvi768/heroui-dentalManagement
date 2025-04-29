@@ -1,217 +1,62 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Icon } from '@iconify/react';
-import { Card, CardBody, Button, Input, Avatar } from '@heroui/react';
-import { useAuth } from '@/auth/AuthContext';
+import { Card, CardBody } from '@heroui/react';
+import { useNavigate } from 'react-router-dom';
+import { Header } from '../components/header';
 
 export default function SettingsPage() {
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    websiteName: 'Dental Doc',
-    registrationNumber: 'REG123456789',
-    contactEmail: 'contact@dentaldoc.com',
-    contactPhone: '+1 (555) 123-4567',
-    whatsappNumber: '+1 (555) 987-6543',
-    address: '123 Medical Center Street',
-    city: 'New York',
-    state: 'NY',
-    postalCode: '10001',
-    country: 'United States',
-    logo: 'https://img.heroui.chat/image/avatar?w=200&h=200&u=1',
-    favicon: 'https://img.heroui.chat/image/avatar?w=32&h=32&u=1'
-  });
+  const navigate = useNavigate();
 
-  const handleChange = (key, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  };
-
-  const handleSave = () => {
-    // Here you would typically save to backend
-    setIsEditing(false);
-  };
-
-  const handleFileChange = (key) => (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        handleChange(key, reader.result);
-      };
-      reader.readAsDataURL(file);
+  const settingsSections = [
+    {
+      title: 'Application Settings',
+      description: 'Configure your website name, contact details, and branding',
+      icon: 'lucide:settings',
+      path: '/settings/application'
+    },
+    {
+      title: 'Configuration Settings',
+      description: 'Configure system preferences and general configurations',
+      icon: 'lucide:sliders',
+      path: '/settings/configuration'
+    },
+    {
+      title: 'Add New Entity',
+      description: 'Create and configure new system entities',
+      icon: 'lucide:plus-circle',
+      path: '/settings/new-entity'
     }
-  };
+  ];
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
       <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-semibold">Settings</h1>
-            <p className="text-muted-foreground">Manage your website settings</p>
-          </div>
-          <Button
-            variant="outline"
-            className="ml-auto btn bg-primary text-white"
-            onClick={() => window.history.back()}
-          >Back</Button>
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold">Settings</h1>
+          <p className="text-muted-foreground">Manage your system settings</p>
         </div>
 
-        <Card className="mb-6">
-          <CardBody className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold">Website Configuration</h3>
-              <Button
-                variant={isEditing ? "default" : "outline"}
-                onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-              >
-                {isEditing ? (
-                  <>
-                    <Icon icon="lucide:check" width={16} className="mr-2" />
-                    Save Changes
-                  </>
-                ) : (
-                  <>
-                    <Icon icon="lucide:edit" width={16} className="mr-2" />
-                    Edit Settings
-                  </>
-                )}
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Basic Information */}
-              <Input
-                label="Website Name"
-                value={formData.websiteName}
-                onChange={(e) => handleChange('websiteName', e.target.value)}
-                disabled={!isEditing}
-              />
-              <Input
-                label="Registration Number"
-                value={formData.registrationNumber}
-                onChange={(e) => handleChange('registrationNumber', e.target.value)}
-                disabled={!isEditing}
-              />
-
-              {/* Contact Information */}
-              <Input
-                label="Contact Email"
-                type="email"
-                value={formData.contactEmail}
-                onChange={(e) => handleChange('contactEmail', e.target.value)}
-                disabled={!isEditing}
-              />
-              <Input
-                label="Contact Phone"
-                value={formData.contactPhone}
-                onChange={(e) => handleChange('contactPhone', e.target.value)}
-                disabled={!isEditing}
-              />
-              <Input
-                label="WhatsApp Number"
-                value={formData.whatsappNumber}
-                onChange={(e) => handleChange('whatsappNumber', e.target.value)}
-                disabled={!isEditing}
-              />
-
-              {/* Address Information */}
-              <Input
-                label="Address"
-                value={formData.address}
-                onChange={(e) => handleChange('address', e.target.value)}
-                disabled={!isEditing}
-              />
-              <Input
-                label="City"
-                value={formData.city}
-                onChange={(e) => handleChange('city', e.target.value)}
-                disabled={!isEditing}
-              />
-              <Input
-                label="State"
-                value={formData.state}
-                onChange={(e) => handleChange('state', e.target.value)}
-                disabled={!isEditing}
-              />
-              <Input
-                label="Postal Code"
-                value={formData.postalCode}
-                onChange={(e) => handleChange('postalCode', e.target.value)}
-                disabled={!isEditing}
-              />
-              <Input
-                label="Country"
-                value={formData.country}
-                onChange={(e) => handleChange('country', e.target.value)}
-                disabled={!isEditing}
-              />
-
-              {/* Logo & Favicon */}
-              <div className="col-span-full">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Logo</label>
-                    <div className="flex items-center gap-4">
-                      <Avatar
-                        src={formData.logo}
-                        className="w-20 h-20"
-                      />
-                      {isEditing && (
-                        <div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileChange('logo')}
-                            className="hidden"
-                            id="logo-upload"
-                          />
-                          <Button
-                            as="label"
-                            htmlFor="logo-upload"
-                            variant="outline"
-                          >
-                            <Icon icon="lucide:upload" width={16} className="mr-2" />
-                            Upload Logo
-                          </Button>
-                        </div>
-                      )}
-                    </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {settingsSections.map((section) => (
+            <Card 
+              key={section.title}
+              className="cursor-pointer hover:border-primary transition-colors"
+            >
+              <CardBody className="p-6" onClick={() => navigate(section.path)}>
+                <div className="flex items-start gap-4">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Icon icon={section.icon} className="text-primary w-6 h-6" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Favicon</label>
-                    <div className="flex items-center gap-4">
-                      <Avatar
-                        src={formData.favicon}
-                        className="w-8 h-8"
-                      />
-                      {isEditing && (
-                        <div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileChange('favicon')}
-                            className="hidden"
-                            id="favicon-upload"
-                          />
-                          <Button
-                            as="label"
-                            htmlFor="favicon-upload"
-                            variant="outline"
-                          >
-                            <Icon icon="lucide:upload" width={16} className="mr-2" />
-                            Upload Favicon
-                          </Button>
-                        </div>
-                      )}
-                    </div>
+                    <h3 className="font-semibold mb-2">{section.title}</h3>
+                    <p className="text-sm text-muted-foreground">{section.description}</p>
                   </div>
                 </div>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );
