@@ -93,7 +93,7 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
                 id="remember-me"
@@ -109,17 +109,21 @@ export default function LoginPage() {
             </div>
 
             <div className="text-sm">
-              <a href="#" className="font-medium text-primary hover:text-primary/80">
+              <button
+                type="button"
+                onClick={() => navigate('/forgot-password')}
+                className="font-medium text-primary hover:text-primary/80"
+              >
                 Forgot your password?
-              </a>
+              </button>
             </div>
-          </div> */}
+          </div>
 
           <Button type="submit" className="w-full">
             {isSending ? 'Signing in...' : 'Sign in'}
           </Button>
 
-          {/* <p className="text-center text-sm text-gray-600">
+          <p className="text-center text-sm text-gray-600">
             Don't have an account?{' '}
             <button
               type="button"
@@ -128,7 +132,7 @@ export default function LoginPage() {
             >
               Sign up
             </button>
-          </p> */}
+          </p>
         </form>
       </Card>
     </div>

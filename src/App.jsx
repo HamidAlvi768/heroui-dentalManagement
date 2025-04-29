@@ -17,6 +17,7 @@ import UsersPage from './pages/users-page';
 import InvoicesPage from './pages/invoices-page';
 import ExpensePage from './pages/expense-page';
 import CategoriesPage from './pages/categories-page';
+import ForgotPasswordPage from './pages/forgot-password';
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -58,6 +59,11 @@ export default function App() {
         <Route path="/signup" element={
           <PublicRoute>
             <SignupPage />
+          </PublicRoute>
+        } />
+        <Route path="/forgot-password" element={
+          <PublicRoute>
+            <ForgotPasswordPage />
           </PublicRoute>
         } />
 
