@@ -57,7 +57,7 @@ function DoctorsPage() {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
   const handleViewDetail = (doctor) => {
     setSelectedDoctor({
@@ -111,8 +111,7 @@ function DoctorsPage() {
     getUsers(5, 1);
   }, []);
 
-  return
-  <>
+  return (<>
     <CrudTemplate
       title="Doctors"
       description="Manage doctors records"
@@ -185,7 +184,7 @@ function DoctorsPage() {
         onEdit={() => console.log('Edit doctor:', selectedDoctor)}
       />
     )}
-  </>
+  </>)
 }
 
 export default DoctorsPage;
