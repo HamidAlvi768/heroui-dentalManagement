@@ -131,12 +131,6 @@ export function CrudDialog({
     return acc;
   }, { regularFields: [], textareaFields: [] }) || { regularFields: [], textareaFields: [] };
 
-  // Group regular fields into rows of 3
-  const regularRows = [];
-  for (let i = 0; i < regularFields.length; i += 3) {
-    regularRows.push(regularFields.slice(i, i + 3));
-  }
-
   return (
     <Modal
       isOpen={isOpen}
@@ -153,18 +147,22 @@ export function CrudDialog({
             <ModalHeader className="flex flex-col gap-1">{title}</ModalHeader>
             <ModalBody>
               <div className="space-y-6">
-                {/* Regular input fields in rows of 3 */}
-                {regularRows.map((row, rowIndex) => (
-                  <div key={rowIndex} className="grid grid-cols-3 gap-4">
-                    {row.map((field) => renderFormField(field))}
-                  </div>
-                ))}
-                {/* Textarea fields in a single row */}
+                {/* Regular input fields in an auto-fit grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-auto">
+                  {regularFields.map((field, index) => (
+                    <div key={index} className="w-full">
+                      {renderFormField(field)}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Textarea fields */}
                 {textareaFields.length > 0 && (
                   <div className="flex gap-4">
                     {textareaFields.map((field) => renderFormField(field, true))}
                   </div>
                 )}
+
                 {/* Medicine Entry Table for Prescription */}
                 {Array.isArray(form.medicines) && (
                   <div>
