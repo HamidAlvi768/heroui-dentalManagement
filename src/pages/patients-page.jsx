@@ -1,9 +1,9 @@
 import React, { use, useEffect, useState } from 'react';
 import { CrudTemplate } from '../components/crud-template';
-import { Avatar } from '@heroui/react';
 import config from '../config/config';
 import { useAuth } from '../auth/AuthContext';
-import { showToast } from '../utils/toast';
+import { useNavigate } from 'react-router-dom';
+
 
 const columns = [
   { key: 'full_name', label: 'FULL NAME' },
@@ -51,6 +51,7 @@ const filterColumns = [
 
 function PatientsPage() {
 
+  const navigate = useNavigate();
   const { token } = useAuth();
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,6 +85,18 @@ function PatientsPage() {
     getPatients(5, 1);
   }, []);
 
+  const handleViewDetail = (patient) => {
+    navigate(`/patients/${patient.id}`, { state: { patient } });
+  };
+
+  const customActions = (item) => [
+    {
+      label: "View Details",
+      icon: "lucide:eye",
+      handler: () => handleViewDetail(item)
+    }
+  ];
+
   return (
     <CrudTemplate
       title="Patients"
@@ -109,6 +122,9 @@ function PatientsPage() {
         console.log('Page:', page, 'Perpage:', perpage);
         getPatients(perpage, page);
       }}
+      addButtonLabel="Add Patient"
+      customRowActions={customActions}
+      onRowClick={handleViewDetail}
       onSave={(data, isEditing) => {
         console.log('Save patient:', data, 'isEditing:', isEditing);
         if (isEditing) {

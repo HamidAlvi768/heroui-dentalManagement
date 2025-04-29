@@ -23,8 +23,11 @@ export function CrudTemplate({
   onExport,
   onDelete,
   filterColumns,
-  onFilterChange,
-  addButtonLabel = 'Add New',
+  addButtonLabel = "Add New",
+  DetailDialog, // New prop for custom detail dialog
+  customRowActions, // New prop for custom row actions
+  onRowClick, // New prop for row click handling
+  onFilterChange
 }) {
   const [items, setItems] = React.useState(data);
   const [currentItem, setCurrentItem] = React.useState(null);
@@ -36,6 +39,7 @@ export function CrudTemplate({
     onOpenChange: onDeleteOpenChange
   } = useDisclosure();
   const [itemToDelete, setItemToDelete] = React.useState(null);
+  const [viewItem, setViewItem] = React.useState(null);
 
   React.useEffect(() => {
     setItems(data);
@@ -67,28 +71,30 @@ export function CrudTemplate({
   };
 
   const handleView = (item) => {
-    // View functionality can be added here
-    console.log("View item:", item);
+    if (onRowClick) {
+      onRowClick(item);
+    } else {
+      setViewItem(item);
+    }
   };
 
   const handlePerPageChange = (perPage) => {
     onPerPageChange(perPage);
   };
+
   const handlePaginate = (page, perPage) => {
     onPaginate(page, perPage);
-  }
+  };
 
   const handleSave = (formData) => {
     let updatedItems;
 
     if (isEditing) {
-      // Update existing item
       updatedItems = items.map(item =>
         item.id === formData.id ? { ...item, ...formData } : item
       );
       showToast.success(`${title.slice(0, -1)} updated successfully`);
     } else {
-      // Add new item with a generated ID
       const newItem = {
         ...formData,
         id: Date.now().toString(),
@@ -125,6 +131,7 @@ export function CrudTemplate({
         onPaginate={handlePaginate}
         onExport={onExport}
         filterColumns={filterColumns}
+        customRowActions={customRowActions}
         onFilterChange={(filters) => {
           onFilterChange(filters);
         }}
@@ -137,7 +144,14 @@ export function CrudTemplate({
         formFields={formFields}
         onSave={handleSave}
       />
-
+      {DetailDialog && !onRowClick && viewItem && (
+        <DetailDialog
+          isOpen={!!viewItem}
+          onOpenChange={() => setViewItem(null)}
+          item={viewItem}
+          onEdit={handleEdit}
+        />
+      )}
       <DeleteDialog
         isOpen={isDeleteOpen}
         onOpenChange={onDeleteOpenChange}

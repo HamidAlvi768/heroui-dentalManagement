@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CrudTemplate } from '../components/crud-template';
+import { EntityDetailDialog } from '../components/entity-detail-dialog';
+import { CrudDialog } from '../components/crud-dialog';
+import { useDisclosure } from '@heroui/react';
 
 // Filter columns
 const filterColumns = [
@@ -97,18 +100,101 @@ const mockData = [
 ];
 
 function PrescriptionPage() {
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedPrescription, setSelectedPrescription] = useState(null);
+  const { isOpen: isEditOpen, onOpen: onEditOpen, onOpenChange: onEditOpenChange } = useDisclosure();
+
+  const handleViewDetail = (prescription) => {
+    // Map additional fields needed for the detail view
+    const mappedPrescription = {
+      ...prescription,
+      prescriptionId: '0039',
+      doctorName: 'Super Admin',
+      patientName: 'test Patient',
+      phone: '1234567899',
+      mrnNumber: '2504150',
+      date: '25 Apr 2025',
+      medicines: [
+        { name: 'Parodontax', description: '1+1', duration: '' },
+        { name: 'Enziclor', description: '1+1+1', duration: '' }
+      ],
+      note: ''  // Empty note field at the bottom
+    };
+    setSelectedPrescription(mappedPrescription);
+    setIsDetailOpen(true);
+  };
+
+  const handleEdit = () => {
+    // Convert the prescription data to match the form fields format
+    const formData = {
+      patientId: selectedPrescription.patientName,
+      examination: selectedPrescription.examination,
+      prescriptionDate: selectedPrescription.date,
+      note: selectedPrescription.note,
+      medicines: selectedPrescription.medicines.map(med => ({
+        medicineType: 'tablet', // Default type since it's not in the detail view
+        medicineName: med.name,
+        description: med.description,
+        days: '',
+        weeks: '',
+        months: ''
+      }))
+    };
+    setSelectedPrescription({ ...selectedPrescription, ...formData });
+    setIsDetailOpen(false);
+    onEditOpen();
+  };
+
+  const handleSave = (updatedData) => {
+    // Here you would typically save to backend
+    console.log('Saving prescription:', updatedData);
+    onEditOpenChange(false);
+  };
+
+  const customActions = (item) => [
+    {
+      label: "View Details",
+      icon: "lucide:eye",
+      handler: () => handleViewDetail(item)
+    }
+  ];
+
   return (
-    <CrudTemplate
-      title="Prescriptions"
-      description="Manage patient prescriptions"
-      icon="lucide:pill"
-      columns={columns}
-      data={mockData}
-      initialFormData={initialFormData}
-      formFields={formFields}
-      addButtonLabel="Add Prescription"
-      filterColumns={filterColumns}
-    />
+    <>
+      <CrudTemplate
+        title="Prescriptions"
+        description="Manage patient prescriptions"
+        icon="lucide:pill"
+        columns={columns}
+        data={mockData}
+        initialFormData={initialFormData}
+        formFields={formFields}
+        addButtonLabel="Add Prescription"
+        filterColumns={filterColumns}
+        customRowActions={customActions}
+        onRowClick={handleViewDetail}
+      />
+      {selectedPrescription && (
+        <>
+          <EntityDetailDialog
+            isOpen={isDetailOpen}
+            onOpenChange={setIsDetailOpen}
+            entity={selectedPrescription}
+            title="Prescription Details"
+            onEdit={handleEdit}
+            entityType="prescription"
+          />
+          <CrudDialog
+            isOpen={isEditOpen}
+            onOpenChange={onEditOpenChange}
+            title="Edit Prescription"
+            formData={selectedPrescription}
+            formFields={formFields}
+            onSave={handleSave}
+          />
+        </>
+      )}
+    </>
   );
 }
 

@@ -1,9 +1,9 @@
 import React, { use, useEffect, useState } from 'react';
 import { CrudTemplate } from '../components/crud-template';
-import { Avatar } from '@heroui/react';
 import config from '../config/config';
 import { useAuth } from '../auth/AuthContext';
-import { showToast } from '../utils/toast';
+import { EntityDetailDialog } from '../components/entity-detail-dialog';
+import { useNavigate } from 'react-router-dom';
 
 const columns = [
   { key: 'username', label: 'USER NAME' },
@@ -55,6 +55,36 @@ function DoctorsPage() {
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const navigate=useNavigate();
+
+  const handleViewDetail = (doctor) => {
+    setSelectedDoctor({
+      ...doctor,
+      appointments: [
+        {
+          id: 'APT250465',
+          patient: 'test Patient',
+          status: 'Checked In',
+          problem: '',
+          startTime: '10:00:00',
+          endTime: '11:15:00',
+          date: '26-Apr-2025',
+        },
+      ]
+    });
+    setIsDetailOpen(true);
+  };
+
+  const customActions = (item) => [
+    {
+      label: "View Details",
+      icon: "lucide:eye",
+      handler: () => handleViewDetail(item)
+    }
+  ];
+
 
   function getUsers(perpage = 5, page = 1, filters = {}) {
     setLoading(true);
@@ -77,12 +107,12 @@ function DoctorsPage() {
       });
   }
 
-
   useEffect(() => {
     getUsers(5, 1);
   }, []);
 
-  return (
+  return
+  <>
     <CrudTemplate
       title="Doctors"
       description="Manage doctors records"
@@ -95,7 +125,8 @@ function DoctorsPage() {
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}
       formFields={formFields}
-      filterColumns={filterColumns}
+      filterColumns={filterColumns} customRowActions={customActions}
+      onRowClick={handleViewDetail}
       onFilterChange={(filters) => {
         console.log('Filters:', filters);
         getUsers(itemsPerPage, 1, filters);
@@ -144,9 +175,17 @@ function DoctorsPage() {
             console.error('Error deleting user:', error);
           });
         console.log('Delete patient:', item);
-      }}
-    />
-  );
+      }} />
+    {selectedDoctor && (
+      <EntityDetailDialog
+        isOpen={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+        entity={selectedDoctor}
+        entityType="doctor"
+        onEdit={() => console.log('Edit doctor:', selectedDoctor)}
+      />
+    )}
+  </>
 }
 
 export default DoctorsPage;

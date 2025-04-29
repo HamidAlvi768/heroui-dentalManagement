@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CrudTemplate } from '../components/crud-template';
 import { Avatar } from '@heroui/react';
+import { EntityDetailDialog } from '../components/entity-detail-dialog';
 
 // Filter columns
 const filterColumns = [
@@ -120,18 +121,66 @@ const mockData = [
 ];
 
 function AppointmentsPage() {
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+
+  const handleViewDetail = (appointment) => {
+    const mappedAppointment = {
+      ...appointment,
+      mrnNumber: '2504150',
+      gender: 'male',
+      problem: appointment.problem || '',
+      patientName: appointment.patientName || 'test Patient',
+      doctorName: appointment.doctorName || 'Test User',
+      status: appointment.status || 'Checked In'
+    };
+    setSelectedAppointment(mappedAppointment);
+    setIsDetailOpen(true);
+  };
+
+  const handleStatusChange = (newStatus) => {
+    setSelectedAppointment(prev => ({
+      ...prev,
+      status: newStatus
+    }));
+    // Here you would typically update the status in your backend
+  };
+
+  const customActions = (item) => [
+    {
+      label: "View Details",
+      icon: "lucide:eye",
+      handler: () => handleViewDetail(item)
+    }
+  ];
+
   return (
-    <CrudTemplate
-      title="Appointments"
-      description="Manage patient appointments"
-      icon="lucide:calendar"
-      columns={columns}
-      data={mockData}
-      initialFormData={initialFormData}
-      formFields={formFields}
-      addButtonLabel="Add Appointment"
-      filterColumns={filterColumns}
-    />
+    <>
+      <CrudTemplate
+        title="Appointments"
+        description="Manage patient appointments"
+        icon="lucide:calendar"
+        columns={columns}
+        data={mockData}
+        initialFormData={initialFormData}
+        formFields={formFields}
+        addButtonLabel="Add Appointment"
+        filterColumns={filterColumns}
+        customRowActions={customActions}
+        onRowClick={handleViewDetail}
+      />
+      {selectedAppointment && (
+        <EntityDetailDialog
+          isOpen={isDetailOpen}
+          onOpenChange={setIsDetailOpen}
+          entity={selectedAppointment}
+          title={`Appointment Details - ${selectedAppointment.patientName}`}
+          onEdit={() => console.log('Edit appointment:', selectedAppointment)}
+          onStatusChange={handleStatusChange}
+          entityType="appointment"
+        />
+      )}
+    </>
   );
 }
 

@@ -118,7 +118,7 @@ export function DataTable({
 
     if (columnKey === 'actions') {
       return (
-        <div className="flex gap-2 justify-end">
+        <div className="flex gap-2 justify-start">
           {onView && (
             <Button isIconOnly variant="light" size="sm" onPress={() => onView(item)} title="View">
               <Icon icon="lucide:eye" width={16} />
@@ -149,8 +149,8 @@ export function DataTable({
     <div className="space-y-4">
       <Card>
         <CardBody>
-          <div className="space-y-4">
-            <div className="flex flex-wrap gap-4 pb-2">
+          <div className="space-y-2">
+            <div className="flex gap-4 pb-2">
               {filterableColumns.map((column) => (
                 <div key={column.key} className="flex-1">
                   {renderFilterInput(column)}
@@ -182,7 +182,7 @@ export function DataTable({
         </CardBody>
       </Card>
 
-      <div className="bg-content1 p-6 rounded-lg shadow-sm">
+      <div className="bg-content1 p-4 rounded-lg shadow-sm">
         <div className="flex justify-between items-center mb-4">
           <div className="flex flex-col gap-2">
             <span className="text-sm text-default-400">

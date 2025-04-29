@@ -3,7 +3,9 @@ import { CrudTemplate } from '../components/crud-template';
 import { Avatar } from '@heroui/react';
 import config from '../config/config';
 import { useAuth } from '../auth/AuthContext';
-import { showToast } from '../utils/toast';
+import { EntityDetailDialog } from '../components/entity-detail-dialog';
+import { CrudDialog } from '../components/crud-dialog';
+import { useDisclosure } from '@heroui/react';
 
 const columns = [
   { key: 'category_name', label: 'Category' },
@@ -40,6 +42,55 @@ function InventoryPage() {
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const { isOpen: isEditOpen, onOpen: onEditOpen, onOpenChange: onEditOpenChange } = useDisclosure();
+
+  const handleViewDetail = (item) => {
+    // Map the item data to match our detail view fields
+    const mappedItem = {
+      ...item,
+      consumptionHistory: [], // Empty consumption history as specified
+      additionHistory: [
+        {
+          username: "Safeer",
+          additionQty: 21,
+          unitPrice: 1,
+          time: "2024-09-17 13:44:43"
+        }
+      ]
+    };
+    setSelectedItem(mappedItem);
+    setIsDetailOpen(true);
+  };
+
+  const handleEdit = () => {
+    // Convert the item data to match the form fields format
+    setSelectedItem(prevItem => ({
+      ...prevItem,
+      category: prevItem.category,
+      subCategory: prevItem.subCategory,
+      item: prevItem.item,
+      quantity: prevItem.quantity,
+      unitPrice: prevItem.unitPrice
+    }));
+    setIsDetailOpen(false);
+    onEditOpen();
+  };
+
+  const handleSave = (updatedData) => {
+    // Here you would typically save to backend
+    console.log('Saving item:', updatedData);
+    onEditOpenChange(false);
+  };
+
+  const customActions = (item) => [
+    {
+      label: "View Details",
+      icon: "lucide:eye",
+      handler: () => handleViewDetail(item)
+    }
+  ];
 
   const formFields = [
     { key: 'category_id', label: 'Category', type: 'select', options: [{ value: '', label: 'Select Category' }, ...categoriesList.map(category => ({ value: category.id, label: category.name }))], required: true },
@@ -107,7 +158,7 @@ function InventoryPage() {
     getData(5, 1);
   }, []);
 
-  return (
+  return <>
     <CrudTemplate
       title="Inventory"
       description="Manage inventory"
@@ -121,6 +172,8 @@ function InventoryPage() {
       initialFormData={initialFormData}
       formFields={formFields}
       filterColumns={filterColumns}
+      customRowActions={customActions}
+      onRowClick={handleViewDetail}
       onFilterChange={(filters) => {
         console.log('Filters:', filters);
         getData(itemsPerPage, 1, filters);
@@ -171,7 +224,27 @@ function InventoryPage() {
         console.log('Delete Item:', item);
       }}
     />
-  );
+    {selectedItem && (
+      <>
+        <EntityDetailDialog
+          isOpen={isDetailOpen}
+          onOpenChange={setIsDetailOpen}
+          entity={selectedItem}
+          title={selectedItem.item}
+          onEdit={handleEdit}
+          entityType="inventory"
+        />
+        <CrudDialog
+          isOpen={isEditOpen}
+          onOpenChange={onEditOpenChange}
+          title="Edit Item"
+          formData={selectedItem}
+          formFields={formFields}
+          onSave={handleSave}
+        />
+      </>
+    )}
+  </>
 }
 
 export default InventoryPage;

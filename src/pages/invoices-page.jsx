@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CrudTemplate } from '../components/crud-template';
+import { EntityDetailDialog } from '../components/entity-detail-dialog';
 
 // Table columns
 const columns = [
@@ -85,16 +86,64 @@ const mockData = [
 ];
 
 export default function InvoicesPage() {
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+
+  const handleViewDetail = (invoice) => {
+    // Map the invoice data to match the expected format
+    const mappedInvoice = {
+      ...invoice,
+      invoiceNumber: invoice.id,
+      patientName: invoice.patient,
+      services: [
+        {
+          procedure: 'Service-1',
+          description: 'Medical service',
+          quantity: 1,
+          price: invoice.total,
+          subTotal: invoice.total
+        }
+      ],
+      totalAmount: invoice.total,
+      cashPaid: invoice.paid,
+      receivable: invoice.due
+    };
+    setSelectedInvoice(mappedInvoice);
+    setIsDetailOpen(true);
+  };
+
+  const customActions = (item) => [
+    {
+      label: "View Details",
+      icon: "lucide:eye",
+      handler: () => handleViewDetail(item)
+    }
+  ];
+
   return (
-    <CrudTemplate
-      title="Invoices"
-      icon="lucide:receipt"
-      columns={columns}
-      data={mockData}
-      initialFormData={initialFormData}
-      formFields={formFields}
-      filterColumns={filterColumns}
-      addButtonLabel="Add Invoice"
-    />
+    <>
+      <CrudTemplate
+        title="Invoices"
+        icon="lucide:receipt"
+        columns={columns}
+        data={mockData}
+        initialFormData={initialFormData}
+        formFields={formFields}
+        filterColumns={filterColumns}
+        addButtonLabel="Add Invoice"
+        customRowActions={customActions}
+        onRowClick={handleViewDetail}
+      />
+      {selectedInvoice && (
+        <EntityDetailDialog
+          isOpen={isDetailOpen}
+          onOpenChange={setIsDetailOpen}
+          entity={selectedInvoice}
+          title={`Invoice Details - ${selectedInvoice.invoiceNumber}`}
+          onEdit={() => console.log('Edit invoice:', selectedInvoice)}
+          entityType="invoice"
+        />
+      )}
+    </>
   );
-} 
+}
