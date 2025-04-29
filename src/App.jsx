@@ -40,7 +40,6 @@ function AppLayout({ children }) {
   );
 }
 
-
 export default function App() {
   return (
     // <Router basename='/jantrah/react/dental/'>
