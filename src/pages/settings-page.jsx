@@ -15,28 +15,28 @@ export default function SettingsPage() {
       path: '/settings/application'
     },
     {
-      title: 'Configuration Settings',
-      description: 'Configure system preferences and general configurations',
-      icon: 'lucide:sliders',
-      path: '/settings/configuration'
-    },
-    {
       title: 'Add New Entity',
       description: 'Create and configure new system entities',
       icon: 'lucide:plus-circle',
       path: '/settings/new-entity'
     },
     {
+      title: 'Configuration Settings',
+      description: 'Configure system preferences and general configurations',
+      icon: 'lucide:sliders',
+      path: '/settings/configuration'
+    },
+    {
       title: 'Users',
       description: 'Create and configure new system entities',
-      icon: 'lucide:plus-circle',
-      path: '/settings/users'
+      icon: 'lucide:users',
+      path: '/users'
     },
     {
       title: 'Categories',
       description: 'Create and configure new system entities',
-      icon: 'lucide:plus-circle',
-      path: '/settings/users'
+      icon: 'lucide:blocks',
+      path: '/categories'
     }
   ];
 
@@ -51,7 +51,7 @@ export default function SettingsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {settingsSections.map((section) => (
-            <Card 
+            <Card
               key={section.title}
               className="cursor-pointer hover:border-primary transition-colors"
             >

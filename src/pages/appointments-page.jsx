@@ -7,14 +7,43 @@ import { EntityDetailDialog } from '../components/entity-detail-dialog';
 const filterColumns = [
   { key: 'aptNo', label: 'APT NO' },
   { key: 'doctorName', label: 'DOCTOR' },
-  { key: 'patientName', label: 'PATIENT' },
-  { key: 'startDate', label: 'START DATE', type: 'date' },
-  { key: 'endDate', label: 'END DATE', type: 'date' },
-  { key: 'status', label: 'STATUS', type: 'select', options: [
-    { value: 'Scheduled', label: 'Scheduled' },
-    { value: 'Completed', label: 'Completed' },
-    { value: 'Cancelled', label: 'Cancelled' }
-  ]},
+  { key: 'patientName', label: 'PATIENT' }, {
+    key: 'appointmentDate',
+    label: 'Appointment Date',
+    type: 'date',
+    required: true
+  },
+  {
+    key: 'startTime',
+    label: 'Start Time',
+    type: 'select',
+    required: true,
+    options: Array.from({ length: 24 * 4 }, (_, i) => {
+      const hours = Math.floor(i / 4).toString().padStart(2, '0');
+      const minutes = (i % 4 * 15).toString().padStart(2, '0');
+      const time = `${hours}:${minutes}`;
+      return { value: time, label: time };
+    })
+  },
+  {
+    key: 'endTime',
+    label: 'End Time',
+    type: 'select',
+    required: true,
+    options: Array.from({ length: 24 * 4 }, (_, i) => {
+      const hours = Math.floor(i / 4).toString().padStart(2, '0');
+      const minutes = (i % 4 * 15).toString().padStart(2, '0');
+      const time = `${hours}:${minutes}`;
+      return { value: time, label: time };
+    })
+  },
+  {
+    key: 'status', label: 'STATUS', type: 'select', options: [
+      { value: 'Scheduled', label: 'Scheduled' },
+      { value: 'Completed', label: 'Completed' },
+      { value: 'Cancelled', label: 'Cancelled' }
+    ]
+  },
 ];
 
 const columns = [
@@ -24,8 +53,8 @@ const columns = [
   { key: 'aptDate', label: 'APT DATE' },
   { key: 'aptTime', label: 'APT TIME' },
   { key: 'status', label: 'APT STATUS' },
-  { 
-    key: 'emailReminder', 
+  {
+    key: 'emailReminder',
     label: 'EMAIL REMINDER',
     render: (item) => (
       <div className={`text-${item.emailReminder ? 'success' : 'danger'}`}>
@@ -47,49 +76,61 @@ const initialFormData = {
 };
 
 const formFields = [
-  { 
-    key: 'patientId', 
-    label: 'Select Patient', 
-    type: 'select', 
+  {
+    key: 'patientId',
+    label: 'Select Patient',
+    type: 'select',
     required: true,
     options: [
       { value: 'P1001', label: 'John Doe' },
       { value: 'P1002', label: 'Jane Smith' }
     ]
   },
-  { 
-    key: 'doctorId', 
-    label: 'Select Doctor', 
-    type: 'select', 
+  {
+    key: 'doctorId',
+    label: 'Select Doctor',
+    type: 'select',
     required: true,
     options: [
       { value: 'D1001', label: 'Dr. John Smith' },
       { value: 'D1002', label: 'Dr. Sarah Johnson' }
     ]
   },
-  { 
-    key: 'appointmentDate', 
-    label: 'Appointment Date', 
-    type: 'date', 
-    required: true 
+  {
+    key: 'appointmentDate',
+    label: 'Appointment Date',
+    type: 'date',
+    required: true
   },
-  { 
-    key: 'startTime', 
-    label: 'Start Time', 
-    type: 'time', 
-    required: true 
+  {
+    key: 'startTime',
+    label: 'Start Time',
+    type: 'select',
+    required: true,
+    options: Array.from({ length: 24 * 4 }, (_, i) => {
+      const hours = Math.floor(i / 4).toString().padStart(2, '0');
+      const minutes = (i % 4 * 15).toString().padStart(2, '0');
+      const time = `${hours}:${minutes}`;
+      return { value: time, label: time };
+    })
   },
-  { 
-    key: 'endTime', 
-    label: 'End Time', 
-    type: 'time', 
-    required: true 
+  {
+    key: 'endTime',
+    label: 'End Time',
+    type: 'select',
+    required: true,
+    options: Array.from({ length: 24 * 4 }, (_, i) => {
+      const hours = Math.floor(i / 4).toString().padStart(2, '0');
+      const minutes = (i % 4 * 15).toString().padStart(2, '0');
+      const time = `${hours}:${minutes}`;
+      return { value: time, label: time };
+    })
   },
-  { 
-    key: 'problem', 
-    label: 'Problem', 
-    type: 'textarea', 
-    required: true 
+  {
+    key: 'problem',
+    label: 'Problem',
+    type: 'textarea',
+    required: true
   }
 ];
 
