@@ -93,8 +93,14 @@ export function Header() {
   return (
     <header className="bg-primary h-16 flex items-center justify-between px-6">
       <div className="flex items-center gap-8">
-        <Icon icon="lucide:activity" className="text-white mr-2" width={24} />
-        <span className="text-white text-xl font-semibold">{config.appName}</span>
+        <div 
+          className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" 
+          onClick={() => navigate('/dashboard')}
+        >
+          <Icon icon="lucide:activity" className="text-white mr-2" width={24} />
+          <span className="text-white text-xl font-semibold">{config.appName}</span>
+        </div>
+
         {/* Scrollable Nav Tabs */}
         <div className="relative w-[70vw] max-w-5xl">
           {showLeftArrow && (
@@ -113,13 +119,12 @@ export function Header() {
             style={{ scrollBehavior: 'auto' }} 
           >
             {[
-              { label: 'Dashboard', path: '/dashboard' },
-              { label: 'Users', path: '/users' },
+              // { label: 'Dashboard', path: '/dashboard' },
+              // { label: 'Users', path: '/users' },
               { label: 'Doctors', path: '/doctors' },
               { label: 'Patients', path: '/patients' },
               { label: 'Appointments', path: '/appointments' },
               { label: 'Prescriptions', path: '/prescriptions' },
-              { label: 'Categories', path: '/categories' },
               { label: 'Inventory', path: '/inventory' },
               { label: 'Reports', path: '/reports' },
               { label: 'Invoices', path: '/invoices' },

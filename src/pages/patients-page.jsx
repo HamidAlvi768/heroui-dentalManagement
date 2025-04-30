@@ -28,7 +28,7 @@ const formFields = [
   { key: 'email', label: 'Email', type: 'email', required: true },
   { key: 'contact_number', label: 'Contact Number', type: 'text', required: true },
   { key: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female', 'Unknown'], required: true },
-  { key: 'age', label: 'Age', type: 'number', required: true },
+  { key: 'date_of_birth', label: 'Date of Birth', type: 'date', required: true },
   { key: 'address', label: 'Addres', type: 'textarea', required: true },
   { key: 'allergies', label: 'Allergies', type: 'textarea', required: true },
   { key: 'medical_history', label: 'Medical History', type: 'textarea', required: true },

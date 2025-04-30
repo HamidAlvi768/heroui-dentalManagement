@@ -1,0 +1,88 @@
+/* Fix for autocomplete hover highlighting issue */
+
+/* Base styling for all autocomplete components */
+.medicine-type-autocomplete, 
+.medicine-name-autocomplete {
+  isolation: isolate;
+}
+
+/* Ensure popover containers don't affect each other */
+[class^="medicine-type-"][class$="-container"],
+[class^="medicine-name-"][class$="-container"] {
+  isolation: isolate;
+  position: relative;
+}
+
+/* Prevent hover states from propagating to other elements */
+[class^="medicine-type-"][class$="-trigger"]:hover,
+[class^="medicine-name-"][class$="-trigger"]:hover {
+  z-index: 10;
+}
+
+/* Ensure each dropdown has its own stacking context */
+.medicine-type-popover,
+.medicine-name-popover {
+  isolation: isolate;
+  position: relative;
+  z-index: 1000;
+}
+
+/* Fix for hover effects on items */
+[class^="medicine-type-"][class$="-item"]:hover,
+[class^="medicine-name-"][class$="-item"]:hover {
+  background-color: rgba(0, 0, 0, 0.04); /* Light gray highlight */
+  z-index: 5;
+}
+
+/* Reset any unintended highlighting on non-hovered inputs */
+[class^="medicine-type-"][class$="-input"],
+[class^="medicine-name-"][class$="-input"] {
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+/* Each popover gets its own z-index to avoid overlap */
+[class^="medicine-type-"][class$="-popover-wrapper"],
+[class^="medicine-name-"][class$="-popover-wrapper"] {
+  position: absolute;
+  isolation: isolate;
+}
+
+/* Ensure listboxes don't have hover effects propagating */
+[class^="medicine-type-"][class$="-listbox"],
+[class^="medicine-name-"][class$="-listbox"] {
+  isolation: isolate;
+}
+
+/* Ensure item wrappers don't propagate hover effects */
+[class^="medicine-type-"][class$="-item-wrapper"]:hover,
+[class^="medicine-name-"][class$="-item-wrapper"]:hover {
+  z-index: 5;
+}
+
+/* Create a specific z-index system for each row */
+tr:nth-child(1) [class^="medicine-type-"] .medicine-type-popover { z-index: 1000; }
+tr:nth-child(2) [class^="medicine-type-"] .medicine-type-popover { z-index: 999; }
+tr:nth-child(3) [class^="medicine-type-"] .medicine-type-popover { z-index: 998; }
+tr:nth-child(4) [class^="medicine-type-"] .medicine-type-popover { z-index: 997; }
+tr:nth-child(5) [class^="medicine-type-"] .medicine-type-popover { z-index: 996; }
+
+tr:nth-child(1) [class^="medicine-name-"] .medicine-name-popover { z-index: 995; }
+tr:nth-child(2) [class^="medicine-name-"] .medicine-name-popover { z-index: 994; }
+tr:nth-child(3) [class^="medicine-name-"] .medicine-name-popover { z-index: 993; }
+tr:nth-child(4) [class^="medicine-name-"] .medicine-name-popover { z-index: 992; }
+tr:nth-child(5) [class^="medicine-name-"] .medicine-name-popover { z-index: 991; }
+
+/* Fix for hover effects potentially coming from parent elements */
+table tr:hover td {
+  background-color: transparent; /* Override any table row hover effects */
+}
+
+/* Target the autocomplete when it has focus or is open */
+[data-focus=true] {
+  z-index: 1010 !important; /* Ensure focused element is above all others */
+}
+
+/* Ensure overflow behavior doesn't cause stacking issues */
+.overflow-x-auto {
+  isolation: isolate;
+}

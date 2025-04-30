@@ -18,6 +18,7 @@ import { AppointmentsChart } from "./hospital-survey-chart";
 import { Header } from "./header";
 import { useAuth } from "../auth/AuthContext";
 import config from "../config/config";
+import { useNavigate } from 'react-router-dom';
 
 export function Dashboard() {
   const [selected, setSelected] = React.useState("chart");
@@ -34,6 +35,8 @@ export function Dashboard() {
   });
 
   const { token } = useAuth();
+  const navigate = useNavigate();
+
   useEffect(() => {
     config.initAPI(token);
     config
@@ -107,46 +110,55 @@ export function Dashboard() {
             value={stats.users_count}
             label="Users"
             icon="lucide:users"
+            onViewAll={() => navigate('/users')}
           />
           <StatsCard
             value={stats.doctors_count}
             label="Doctors"
             icon="lucide:stethoscope"
+            onViewAll={() => navigate('/doctors')}
           />
           <StatsCard
             value={stats.patients_count}
             label="Patients"
             icon="lucide:user"
+            onViewAll={() => navigate('/patients')}
           />
           <StatsCard
             value={stats.appointments_count}
             label="Appointments"
             icon="lucide:calendar"
+            onViewAll={() => navigate('/appointments')}
           />
           <StatsCard
             value={stats.prescriptions_count}
             label="Prescriptions"
             icon="lucide:pill"
+            onViewAll={() => navigate('/prescriptions')}
           />
           <StatsCard
             value={stats.inventory_count}
             label="Inventory"
             icon="lucide:package"
+            onViewAll={() => navigate('/inventory')}
           />
           <StatsCard
             value={stats.reports_count}
             label="Reports"
             icon="lucide:file-text"
+            onViewAll={() => navigate('/reports')}
           />
           <StatsCard
             value={stats.invoices_count}
             label="Invoices"
             icon="lucide:receipt"
+            onViewAll={() => navigate('/invoices')}
           />
           <StatsCard
             value={stats.expenses_count}
             label="Expenses"
             icon="lucide:credit-card"
+            onViewAll={() => navigate('/expenses')}
           />
         </div>
 

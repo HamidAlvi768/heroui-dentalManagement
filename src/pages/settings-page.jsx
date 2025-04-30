@@ -25,6 +25,18 @@ export default function SettingsPage() {
       description: 'Create and configure new system entities',
       icon: 'lucide:plus-circle',
       path: '/settings/new-entity'
+    },
+    {
+      title: 'Users',
+      description: 'Create and configure new system entities',
+      icon: 'lucide:plus-circle',
+      path: '/settings/users'
+    },
+    {
+      title: 'Categories',
+      description: 'Create and configure new system entities',
+      icon: 'lucide:plus-circle',
+      path: '/settings/users'
     }
   ];
 
