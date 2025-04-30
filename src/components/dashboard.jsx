@@ -32,6 +32,7 @@ export function Dashboard() {
     appointments_count: 0,
     prescriptions_count: 0,
     reports_count: 0,
+    today_appointments_count: 0
   });
 
   const { token } = useAuth();
@@ -43,7 +44,7 @@ export function Dashboard() {
       .getData("/dashboard")
       .then((data) => {
         console.log(data.data.data);
-        const _stats=data.data.data;
+        const _stats = data.data.data;
         setStats({
           users_count: _stats.users_count || 0,
           patients_count: _stats.patients_count || 0,
@@ -54,6 +55,7 @@ export function Dashboard() {
           appointments_count: _stats.appointments_count || 0,
           prescriptions_count: _stats.prescriptions_count || 0,
           reports_count: _stats.reports_count || 0,
+          today_appointments_count: _stats.today_appointments_count || 0
         });
       })
       .catch((error) => {
@@ -96,6 +98,8 @@ export function Dashboard() {
     );
   };
 
+
+
   return (
     <div className="min-h-screen bg-content2">
       <Header />
@@ -129,6 +133,12 @@ export function Dashboard() {
             label="Appointments"
             icon="lucide:calendar"
             onViewAll={() => navigate('/appointments')}
+          />
+          <StatsCard
+            value={stats.today_appointments_count}
+            label="Today's Appts"
+            icon="lucide:calendar-check"
+            onViewAll={() => navigate('/appointments?date=today')}
           />
           <StatsCard
             value={stats.prescriptions_count}
