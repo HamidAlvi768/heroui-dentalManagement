@@ -126,9 +126,9 @@ export function Header() {
               { label: 'Appointments', path: '/appointments' },
               { label: 'Prescriptions', path: '/prescriptions' },
               { label: 'Inventory', path: '/inventory' },
-              { label: 'Reports', path: '/reports' },
-              { label: 'Invoices', path: '/invoices' },
-              { label: 'Expenses', path: '/expenses' },
+              // { label: 'Reports', path: '/reports' },
+              // { label: 'Invoices', path: '/invoices' },
+              // { label: 'Expenses', path: '/expenses' },
               { label: 'Settings', path: '/settings' },
             ].map((item) => (
               <a

@@ -21,20 +21,20 @@ import './CrudDialogStyles.css';
 
 // Define medicine types with descriptions
 const medicineTypes = [
-  {label: "Tablet", key: "tablet", description: "Solid dosage form containing medication"},
-  {label: "Syrup", key: "syrup", description: "Liquid medication usually containing sugar"},
-  {label: "Injection", key: "injection", description: "Medication administered via needle"},
-  {label: "Capsule", key: "capsule", description: "Small case containing medicine dose"}
+  { label: "Tablet", key: "tablet", description: "Solid dosage form containing medication" },
+  { label: "Syrup", key: "syrup", description: "Liquid medication usually containing sugar" },
+  { label: "Injection", key: "injection", description: "Medication administered via needle" },
+  { label: "Capsule", key: "capsule", description: "Small case containing medicine dose" }
 ];
 
 // Expanded list of medicines with descriptions
 const medicineNames = [
-  {label: "Paracetamol", key: "paracetamol", description: "Pain reliever and fever reducer"},
-  {label: "Amoxicillin", key: "amoxicillin", description: "Antibiotic medication"},
-  {label: "Ibuprofen", key: "ibuprofen", description: "Anti-inflammatory drug"},
-  {label: "Aspirin", key: "aspirin", description: "Pain reliever and blood thinner"},
-  {label: "Omeprazole", key: "omeprazole", description: "Reduces stomach acid production"},
-  {label: "Cetirizine", key: "cetirizine", description: "Antihistamine for allergies"}
+  { label: "Paracetamol", key: "paracetamol", description: "Pain reliever and fever reducer" },
+  { label: "Amoxicillin", key: "amoxicillin", description: "Antibiotic medication" },
+  { label: "Ibuprofen", key: "ibuprofen", description: "Anti-inflammatory drug" },
+  { label: "Aspirin", key: "aspirin", description: "Pain reliever and blood thinner" },
+  { label: "Omeprazole", key: "omeprazole", description: "Reduces stomach acid production" },
+  { label: "Cetirizine", key: "cetirizine", description: "Antihistamine for allergies" }
 ];
 
 export function CrudDialog({
@@ -86,23 +86,34 @@ export function CrudDialog({
 
     if (shouldUseAutocomplete) {
       // Convert options to format needed for Autocomplete if necessary
-      const autocompleteItems = options.map(option => 
-        typeof option === 'object' ? option : { key: option, label: option }
-      );
-      
+      // const autocompleteItems = options.map(option =>
+      //   typeof option === 'object' ? option : { key: option, label: option }
+      // );
+
       return (
         <div className="flex-1 min-w-[200px]">
           <Autocomplete
             {...commonProps}
-            defaultItems={autocompleteItems}
-            selectedKey={form[key] || ''}
-            onSelectionChange={(newKey) => handleChange(key, newKey)}
+            value={form[key] || ''} // Current selected value (string or object)
+            onChange={(value) => handleChange(key, value)} // Handle selection change
+            options={options} // List of options to filter
+            getOptionLabel={(option) => option.label || option} // Display label for each option
+            filterOptions={(options, { inputValue }) =>
+              options.filter((option) =>
+                (option.label || option)
+                  .toLowerCase()
+                  .includes(inputValue.toLowerCase())
+              )
+            } // Filter logic
           >
-            {(item) => (
-              <AutocompleteItem key={item.key || item} textValue={item.label || item}>
-                {item.label || item}
+            {options?.map((option) => (
+              <AutocompleteItem
+                key={option.value || option}
+                value={option.value || option}
+              >
+                {option.label || option}
               </AutocompleteItem>
-            )}
+            ))}
           </Autocomplete>
         </div>
       );
@@ -114,6 +125,14 @@ export function CrudDialog({
       case 'tel':
       case 'number':
       case 'date':
+      case 'datetime':
+      case 'password':
+      case 'search':
+      case 'url':
+      case 'time':
+      case 'week':
+      case 'month':
+      case 'color':
         return (
           <div className="flex-1 min-w-[200px]">
             <Input
@@ -372,9 +391,9 @@ export function CrudDialog({
                                   selectedKeys={med.days ? [med.days] : []}
                                   onChange={(e) => handleTimePeriodChange(idx, 'days', e.target.value)}
                                   className="w-20"
-                                  aria-label={`Days for medicine ${idx+1}`}
+                                  aria-label={`Days for medicine ${idx + 1}`}
                                 >
-                                  {[...Array(15).keys()].map(i => 
+                                  {[...Array(15).keys()].map(i =>
                                     <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
                                   )}
                                 </Select>
@@ -385,9 +404,9 @@ export function CrudDialog({
                                   selectedKeys={med.weeks ? [med.weeks] : []}
                                   onChange={(e) => handleTimePeriodChange(idx, 'weeks', e.target.value)}
                                   className="w-20"
-                                  aria-label={`Weeks for medicine ${idx+1}`}
+                                  aria-label={`Weeks for medicine ${idx + 1}`}
                                 >
-                                  {[...Array(5).keys()].map(i => 
+                                  {[...Array(5).keys()].map(i =>
                                     <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
                                   )}
                                 </Select>
@@ -398,9 +417,9 @@ export function CrudDialog({
                                   selectedKeys={med.months ? [med.months] : []}
                                   onChange={(e) => handleTimePeriodChange(idx, 'months', e.target.value)}
                                   className="w-20"
-                                  aria-label={`Months for medicine ${idx+1}`}
+                                  aria-label={`Months for medicine ${idx + 1}`}
                                 >
-                                  {[...Array(3).keys()].map(i => 
+                                  {[...Array(3).keys()].map(i =>
                                     <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
                                   )}
                                 </Select>
