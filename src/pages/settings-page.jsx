@@ -1,31 +1,53 @@
-import React from 'react';
+import React, { use, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { Card, CardBody } from '@heroui/react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/header';
+import { get } from 'react-hook-form';
+import config from '../config/config';
+import { useAuth } from '../auth/AuthContext';
+import {
+  Button,
+} from '@heroui/react';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
+  const [dataLis, setDataList] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const { token } = useAuth();
+
+  function getDataList(perpage = 5, page = 1, filters = {}) {
+    setLoading(true);
+    config.initAPI(token);
+    config.getData(`/genericentities/list?perpage=${perpage}&page=${page}&username=${filters.username || ''}&email=${filters.email || ''}&role=${filters.role || ''}&verified=${filters.verified || ''}`)
+      .then(data => {
+        const _datalist = data.data.data.map(item => {
+          item.verified = item.verified === 1 ? 'Yes' : 'No';
+          return item;
+        });
+        setDataList(_datalist);
+        setLoading(false);
+
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }
+
+  useEffect(() => {
+    getDataList(100, 1);
+
+  }, []);
+
 
   const settingsSections = [
-    {
-      title: 'Application Settings',
-      description: 'Configure your website name, contact details, and branding',
-      icon: 'lucide:settings',
-      path: '/settings/application'
-    },
-    {
-      title: 'Add New Entity',
-      description: 'Create and configure new system entities',
-      icon: 'lucide:plus-circle',
-      path: '/settings/new-entity'
-    },
-    {
-      title: 'Configuration Settings',
-      description: 'Configure system preferences and general configurations',
-      icon: 'lucide:sliders',
-      path: '/settings/configuration'
-    },
+    // entities
+    ...dataLis.map((entity) => ({
+      title: entity.entity_name,
+      description: `Manage ${entity.entity_name} settings`,
+      icon: 'lucide:box', // Better icon for generic entities
+      path: `/settings/generic-records/${entity.entity_type}`,
+    })),
     {
       title: 'Users',
       description: 'Create and configure new system entities',
@@ -33,20 +55,33 @@ export default function SettingsPage() {
       path: '/users'
     },
     {
-      title: 'Categories',
-      description: 'Create and configure new system entities',
-      icon: 'lucide:blocks',
-      path: '/categories'
-    }
+      title: 'Application Settings',
+      description: 'Configure your website name, contact details, and branding',
+      icon: 'lucide:settings-2', // More detailed settings icon
+      path: '/settings/application'
+    },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold">Settings</h1>
-          <p className="text-muted-foreground">Manage your system settings</p>
+        <div className="w-full flex justify-between mb-6" >
+          <div>
+            <h1 className="text-2xl font-semibold">Settings</h1>
+            <p className="text-muted-foreground">Manage your system settings</p>
+          </div>
+          <div className="">
+            <Button
+              size="sm"
+              color="primary"
+              variant="flat"
+              startContent={<Icon icon="lucide:plus" width={16} />}
+              onPress={() => navigate('/settings/entities')}
+            >
+              Add New Entity
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

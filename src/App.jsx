@@ -19,8 +19,9 @@ import ExpensePage from './pages/expense-page';
 import CategoriesPage from './pages/categories-page';
 import ForgotPasswordPage from './pages/forgot-password';
 import ApplicationSettings from './pages/settings/application-settings';
-import ConfigurationSettings from './pages/settings/configuration-settings';
-import NewEntityPage from './pages/settings/new-entity';
+import ConfigurationSettings from './pages/settings/generic-records';
+import EntitiesPage from './pages/settings/entities-page';
+import GenericRecordsPage from './pages/settings/generic-records';
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -162,17 +163,17 @@ export default function App() {
             </AppLayout>
           </PrivateRoute>
         } />
-        <Route path="/settings/configuration" element={
+        <Route path="/settings/generic-records/:entityType" element={
           <PrivateRoute>
             <AppLayout>
-              <ConfigurationSettings />
+              <GenericRecordsPage />
             </AppLayout>
           </PrivateRoute>
         } />
-        <Route path="/settings/new-entity" element={
+        <Route path="/settings/entities" element={
           <PrivateRoute>
             <AppLayout>
-              <NewEntityPage />
+              <EntitiesPage />
             </AppLayout>
           </PrivateRoute>
         } />

@@ -43,7 +43,8 @@ export function CrudDialog({
   title,
   formData,
   formFields,
-  onSave
+  onSave,
+  onInputChange,
 }) {
   const [form, setForm] = React.useState(formData || {});
 
@@ -54,6 +55,9 @@ export function CrudDialog({
   }, [formData]);
 
   const handleChange = (key, value) => {
+   console.log('Key:', key, 'Value:', value); // Debugging line
+   form[key] = value; // Directly set the value in the form object
+   onInputChange(form); // Call the onInputChange prop function
     setForm(prev => ({
       ...prev,
       [key]: value
@@ -65,20 +69,22 @@ export function CrudDialog({
   };
 
   const renderFormField = (field, isInRow = false) => {
-    const { key, label, type, options, required, placeholder } = field;
+    const { key, label, type, options, required, placeholder, disabled, readonly } = field;
 
+    // Define commonProps without the key
     const commonProps = {
-      key,
       label,
       size: "sm",
       labelPlacement: "outside",
       placeholder: placeholder || `Enter ${label.toLowerCase()}`,
       isRequired: required,
+      isDisabled: disabled,
+      isReadOnly: readonly,
       classNames: {
         base: "w-full",
         input: "text-sm",
-        label: "text-sm font-medium"
-      }
+        label: "text-sm font-medium",
+      },
     };
 
     // Check if we should use Autocomplete instead of Select
