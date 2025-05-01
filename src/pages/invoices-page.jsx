@@ -112,12 +112,15 @@ export default function InvoicesPage() {
     setIsDetailOpen(true);
   };
 
-  const customActions = (item) => [
+  const customActions = [
     {
-      label: "View Details",
-      icon: "lucide:eye",
-      handler: () => handleViewDetail(item)
-    }
+      label: "Print",
+      icon: "lucide:printer",
+      onClick: (item) => {
+        navigate(`/invoices/${item.id}`, { state: { item } });
+        console.log("Print action clicked");
+      },
+    },
   ];
 
   return (

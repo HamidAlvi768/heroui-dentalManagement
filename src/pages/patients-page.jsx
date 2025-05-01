@@ -91,11 +91,11 @@ function PatientsPage() {
 
   const customActions = [
     {
-      label: "Print",
-      icon: "lucide:printer",
+      label: "Create Invoice",
+      icon: "lucide:file-plus",
       onClick: (item) => {
-        navigate(`/invoices/${item.id}`, { state: { item } });
-        console.log("Print action clicked");
+        navigate(`/invoices/${item.id}`, { state: { patient: item } });
+        console.log("Create invoice for patient:", item);
       },
     },
   ];
