@@ -12,6 +12,7 @@ export function CrudTemplate({
   loading,
   columns,
   data,
+  customActions,
   totalItems,
   currentPage,
   itemsPerPage,
@@ -122,6 +123,7 @@ export function CrudTemplate({
         loading={loading}
         columns={columns}
         data={items}
+        customActions={customActions}
         totalItems={totalItems}
         currentPage={currentPage}
         rowsPerPage={itemsPerPage}

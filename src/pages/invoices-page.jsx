@@ -131,7 +131,7 @@ export default function InvoicesPage() {
         formFields={formFields}
         filterColumns={filterColumns}
         addButtonLabel="Add Invoice"
-        customRowActions={customActions}
+        customActions={customActions}
         onRowClick={handleViewDetail}
       />
       {selectedInvoice && (
