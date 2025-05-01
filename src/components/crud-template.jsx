@@ -1,10 +1,10 @@
-import React from 'react';
-import { PageTemplate } from './page-template';
-import { DataTable } from './data-table';
-import { CrudDialog } from './crud-dialog';
-import { DeleteDialog } from './delete-dialog';
-import { useDisclosure } from '@heroui/react';
-import { showToast } from '../utils/toast';
+import React from "react";
+import { PageTemplate } from "./page-template";
+import { DataTable } from "./data-table";
+import { CrudDialog } from "./crud-dialog";
+import { DeleteDialog } from "./delete-dialog";
+import { useDisclosure } from "@heroui/react";
+import { showToast } from "../utils/toast";
 
 export function CrudTemplate({
   title,
@@ -38,7 +38,7 @@ export function CrudTemplate({
   const {
     isOpen: isDeleteOpen,
     onOpen: onDeleteOpen,
-    onOpenChange: onDeleteOpenChange
+    onOpenChange: onDeleteOpenChange,
   } = useDisclosure();
   const [itemToDelete, setItemToDelete] = React.useState(null);
   const [viewItem, setViewItem] = React.useState(null);
@@ -65,7 +65,7 @@ export function CrudTemplate({
   };
 
   const confirmDelete = () => {
-    const updatedItems = items.filter(i => i.id !== itemToDelete.id);
+    const updatedItems = items.filter((i) => i.id !== itemToDelete.id);
     setItems(updatedItems);
     if (onDelete) onDelete(itemToDelete);
     setItemToDelete(null);
@@ -92,7 +92,7 @@ export function CrudTemplate({
     let updatedItems;
 
     if (isEditing) {
-      updatedItems = items.map(item =>
+      updatedItems = items.map((item) =>
         item.id === formData.id ? { ...item, ...formData } : item
       );
       showToast.success(`${title.slice(0, -1)} updated successfully`);
@@ -142,7 +142,11 @@ export function CrudTemplate({
       <CrudDialog
         isOpen={isOpen}
         onOpenChange={onOpenChange}
-        title={isEditing ? `Edit ${title.slice(0, -1)}` : `Add New ${title.slice(0, -1)}`}
+        title={
+          isEditing
+            ? `Edit ${title.slice(0, -1)}`
+            : `Add New ${title.slice(0, -1)}`
+        }
         formData={currentItem}
         formFields={formFields}
         onSave={handleSave}
