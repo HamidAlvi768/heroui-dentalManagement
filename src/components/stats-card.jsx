@@ -17,14 +17,6 @@ export function StatsCard({ value, label, icon, onViewAll }) {
               View All
             </Button>
           </div>
-          <div className="flex">
-            <div className="text-base font-medium text-foreground">{label}</div>
-          </div>
-          <div className="md:ml-auto">
-            <Button size="sm" variant="light" color="primary" onPress={onViewAll}>
-              View All
-            </Button>
-          </div>
         </div>
       </CardBody>
     </Card>

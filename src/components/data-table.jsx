@@ -25,6 +25,7 @@ export function DataTable({
   title,
   columns,
   data,
+  customActions,
   totalItems,
   currentPage,
   rowsPerPage,
@@ -53,7 +54,7 @@ export function DataTable({
     { value: 100, label: '100 per page' }
   ];
 
-  
+
 
   const filterableColumns = filterColumns.filter(col => col.key !== 'actions');
 
@@ -119,6 +120,20 @@ export function DataTable({
     if (columnKey === 'actions') {
       return (
         <div className="flex gap-2 justify-start">
+          {/* Show Custom buttons */}
+          {Array.isArray(customActions) && customActions.map((button, index) => (
+            <Button
+              key={index}
+              isIconOnly
+              variant="light"
+              size="sm"
+              color={button.color || 'primary'}
+              onPress={() => button.onClick(item)}
+              title={button.label}
+            >
+              <Icon icon={button.icon} width={16} />
+            </Button>
+          ))}
           {onView && (
             <Button isIconOnly variant="light" size="sm" onPress={() => onView(item)} title="View">
               <Icon icon="lucide:eye" width={16} />

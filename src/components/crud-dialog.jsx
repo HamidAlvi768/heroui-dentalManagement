@@ -57,11 +57,13 @@ export function CrudDialog({
   const handleChange = (key, value) => {
    console.log('Key:', key, 'Value:', value); // Debugging line
    form[key] = value; // Directly set the value in the form object
-   onInputChange(form); // Call the onInputChange prop function
-    setForm(prev => ({
-      ...prev,
-      [key]: value
-    }));
+  if (onInputChange) {
+    onInputChange(form);
+  }
+  setForm(prev => ({
+    ...prev,
+    [key]: value
+  }));
   };
 
   const handleSubmit = () => {

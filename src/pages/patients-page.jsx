@@ -89,12 +89,15 @@ function PatientsPage() {
     navigate(`/patients/${patient.id}`, { state: { patient } });
   };
 
-  const customActions = (item) => [
+  const customActions = [
     {
-      label: "View Details",
-      icon: "lucide:eye",
-      handler: () => handleViewDetail(item)
-    }
+      label: "Print",
+      icon: "lucide:printer",
+      onClick: (item) => {
+        navigate(`/invoices/${item.id}`, { state: { item } });
+        console.log("Print action clicked");
+      },
+    },
   ];
 
   return (
@@ -105,6 +108,7 @@ function PatientsPage() {
       loading={loading}
       columns={columns}
       data={patients}
+      customActions={customActions}
       totalItems={totalItems}
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
