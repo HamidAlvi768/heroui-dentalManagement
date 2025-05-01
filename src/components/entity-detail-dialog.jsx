@@ -60,20 +60,20 @@ const formatValue = (value, format) => {
 };
 
 const renderList = (section, entity) => (
-  <Card>
-    <CardBody className="p-4">
-      <div className="space-y-3">
-        {section.fields.map((field, index) => (
-          <div key={index} className="flex justify-between items-center">
-            <span className="text-default-500">{field.label}</span>
-            <span className="font-medium">
-              {formatValue(entity[field.key], field.format)}
-            </span>
-          </div>
-        ))}
-      </div>
-    </CardBody>
-  </Card>
+  <Card className="w-full">
+  <CardBody className="p-4">
+    <div className="flex items-center justify-between overflow-x-auto gap-x-4 min-w-0">
+      {section.fields.map((field, index) => (
+        <div key={index} className="flex items-center min-w-0 shrink-0">
+          <span className="text-default-500 text-xs mr-1">{field.label}:</span>
+          <span className="font-medium text-xs">
+            {formatValue(entity[field.key], field.format)}
+          </span>
+        </div>
+      ))}
+    </div>
+  </CardBody>
+</Card>
 );
 
 const renderTable = (section, entity) => (
@@ -315,6 +315,7 @@ const entityConfigs = {
         onPress: () => { onEdit(); onClose(); },
         icon: 'lucide:edit',
       },
+      { label: 'Print Invoice', color: 'primary', onPress: handlePrint, icon: 'lucide:printer' }
     ],
   },
   inventory: {

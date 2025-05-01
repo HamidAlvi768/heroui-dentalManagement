@@ -94,10 +94,10 @@ export function Header() {
     <header className="bg-primary h-16 flex items-center justify-between px-6">
       <div className="flex items-center gap-8">
         <div 
-          className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" 
+          className="flex items-center cursor-pointer hover:opacity-80 transition-opacity" 
           onClick={() => navigate('/dashboard')}
         >
-          <Icon icon="lucide:activity" className="text-white mr-2" width={24} />
+          <Icon icon="lucide:activity" className="text-white mr-2" width={20} />
           <span className="text-white text-xl font-semibold">{config.appName}</span>
         </div>
 
@@ -115,7 +115,7 @@ export function Header() {
           <nav
             id="nav-slider"
             ref={navRef}
-            className="flex gap-2 ml-8 overflow-x-auto scrollbar-hide px-8"
+            className="flex gap-2 overflow-x-auto scrollbar-hide"
             style={{ scrollBehavior: 'auto' }} 
           >
             {[
@@ -127,7 +127,7 @@ export function Header() {
               { label: 'Prescriptions', path: '/prescriptions' },
               { label: 'Inventory', path: '/inventory' },
               // { label: 'Reports', path: '/reports' },
-              // { label: 'Invoices', path: '/invoices' },
+              { label: 'Invoices', path: '/invoices' },
               // { label: 'Expenses', path: '/expenses' },
               { label: 'Settings', path: '/settings' },
             ].map((item) => (
