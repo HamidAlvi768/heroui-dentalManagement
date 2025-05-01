@@ -27,7 +27,8 @@ export function CrudTemplate({
   DetailDialog, // New prop for custom detail dialog
   customRowActions, // New prop for custom row actions
   onRowClick, // New prop for row click handling
-  onFilterChange
+  onFilterChange,
+  onInputChange,
 }) {
   const [items, setItems] = React.useState(data);
   const [currentItem, setCurrentItem] = React.useState(null);
@@ -143,6 +144,7 @@ export function CrudTemplate({
         formData={currentItem}
         formFields={formFields}
         onSave={handleSave}
+        onInputChange={onInputChange}
       />
       {DetailDialog && !onRowClick && viewItem && (
         <DetailDialog

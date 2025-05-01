@@ -13,6 +13,12 @@ export function StatsCard({ value, label, icon, onViewAll }) {
               <div className="text-4xl font-bold whitespace-nowrap">{value}</div>
               <div className="text-base font-medium text-foreground truncate">{label}</div>
             </div>
+            <Button size="sm" variant="light" color="primary" onPress={onViewAll}>
+              View All
+            </Button>
+          </div>
+          <div className="flex">
+            <div className="text-base font-medium text-foreground">{label}</div>
           </div>
           <div className="md:ml-auto">
             <Button size="sm" variant="light" color="primary" onPress={onViewAll}>

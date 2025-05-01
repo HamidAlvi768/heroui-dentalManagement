@@ -77,6 +77,7 @@ export default function LoginPage() {
               onChange={handleChange}
               className="mt-1"
               placeholder="Enter your email"
+              required
             />
           </div>
 
@@ -90,6 +91,7 @@ export default function LoginPage() {
               onChange={handleChange}
               className="mt-1"
               placeholder="Enter your password"
+              required
             />
           </div>
 
