@@ -4,10 +4,19 @@ import { Avatar } from '@heroui/react';
 import config from '../../config/config';
 import { useAuth } from '../../auth/AuthContext';
 import { showToast } from '../../utils/toast';
+import { toast } from 'react-toastify';
 
 const columns = [
-  { key: 'entity_name', label: 'ENTITY NAME' },
+  {
+    key: 'entity_name', label: 'ENTITY NAME',
+    render: (item) => (
+      <div>
+        <div className="font-medium">{item.entity_name}</div>
+      </div>
+    )
+  },
   { key: 'entity_type', label: 'TYPE' },
+  { key: 'items', label: 'ITEMS' },
   { key: 'active', label: 'ACTIVE' },
   { key: 'actions', label: 'ACTIONS' }
 ];
@@ -47,9 +56,10 @@ function EntitiesPage() {
     config.getData(`/genericentities/list?perpage=${perpage}&page=${page}&username=${filters.username || ''}&email=${filters.email || ''}&role=${filters.role || ''}&verified=${filters.verified || ''}`)
       .then(data => {
         const _datalist = data.data.data.map(item => {
-          item.verified = item.verified === 1 ? 'Yes' : 'No';
+          item.active = item.active === 1 ? 'Yes' : 'No';
           return item;
         });
+        console.log(_datalist)
         setDataList(_datalist);
         setTotalItems(data.data.meta.total);
         setCurrentPage(data.data.meta.page);
@@ -90,34 +100,33 @@ function EntitiesPage() {
       }}
       onFilterChange={(filters) => {
         console.log('Filters:', filters);
-        getUsers(itemsPerPage, 1, filters);
+        getDataList(itemsPerPage, 1, filters);
       }}
       onPerPageChange={(perPage) => {
-        getUsers(perPage, 1);
+        getDataList(perPage, 1);
       }}
       onPaginate={(page, perpage) => {
         console.log('Page:', page, 'Perpage:', perpage);
-        getUsers(perpage, page);
+        getDataList(perpage, page);
       }}
       onSave={(data, isEditing) => {
-        console.log('Save patient:', data, 'isEditing:', isEditing);
         if (isEditing) {
-          // Update existing user
+          // Update existing item
           config.postData(`/genericentities/edit?id=${data.id}`, data)
             .then(response => {
               console.log('Item updated:', response.data);
-              setDataList(users.map(user => user.id === data.id ? data : user));
+              setDataList(dataList.map(item => item.id === data.id ? data : item));
               toast.success('Item updated successfully!');
             })
             .catch(error => {
-              console.error('Error updating user:', error);
+              console.error('Error updating item:', error);
             });
         } else {
-          // Create new user
+          // Create new item
           config.postData('/genericentities/create', data)
             .then(response => {
-              console.log('Item created:', response.data.user);
-              setDataList([...users, response.data.user]);
+              console.log('Item created:', response.data.item);
+              setDataList([...dataList, response.data.item]);
               toast.success('Item created successfully!');
             })
             .catch(error => {
@@ -128,14 +137,18 @@ function EntitiesPage() {
       onDelete={(item) => {
         config.postData(`/genericentities/delete?id=${item.id}`, item)
           .then(response => {
-            console.log('Item deleted:', response.data);
-            setDataList(users.filter(user => user.id !== item.id));
-            toast.success('Item deleted successfully!');
+            console.log('Item deleted:', response.data.success);
+            if (response.data.success === true) {
+              setDataList(dataList.filter(item => item.id !== data.item.id));
+              toast.success(response.data.message);
+            }
+            else {
+              toast.error(response.data.message);
+            }
           })
           .catch(error => {
-            console.error('Error deleting user:', error);
+            console.error('Error deleting item:', error);
           });
-        console.log('Delete patient:', item);
       }}
     />
   );

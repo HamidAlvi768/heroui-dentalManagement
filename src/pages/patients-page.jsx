@@ -146,9 +146,12 @@ function PatientsPage() {
           // Create new user
           config.postData('/patients/create', data)
             .then(response => {
-              console.log('Patient created:', response.data.user);
-              setPatients([...patients, response.data.user]);
-              toast.success('Patient created successfully!');
+              if (response.data.success == true) {
+                setUsers([...users, response.data.user]);
+                toast.success(response.data.message);
+              } else {
+                toast.error(response.data.message);
+              }
             })
             .catch(error => {
               console.error('Error creating user:', error);

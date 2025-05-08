@@ -2,7 +2,8 @@ import axios from 'axios';
 
 const config = {
   appName: 'Al Shifa',
-  baseURL: 'http://192.168.18.26/jantrah/dentaldoc/api',
+  baseURL: 'http://192.168.18.53/jantrah/dentaldoc/api',
+  // baseURL: 'https://leightonbuzzardairportcabs.co.uk/dental/api',
 
   initAPI(token = null) {
     this.api = axios.create({

@@ -40,17 +40,27 @@ export default function SettingsPage() {
   }, []);
 
 
-  const settingsSections = [
+  const entitiesSettingsSections = [
     // entities
     ...dataLis.map((entity) => ({
+      items: entity.items ?? 0,
       title: entity.entity_name,
       description: `Manage ${entity.entity_name} settings`,
       icon: 'lucide:box', // Better icon for generic entities
       path: `/settings/generic-records/${entity.entity_type}`,
     })),
+  ];
+
+  const settingsSections = [
+    {
+      title: 'Categories',
+      description: 'Create new inventory categories.',
+      icon: 'lucide:boxes',
+      path: '/categories'
+    },
     {
       title: 'Users',
-      description: 'Create and configure new system entities',
+      description: 'Create new users.',
       icon: 'lucide:users',
       path: '/users'
     },
@@ -76,14 +86,49 @@ export default function SettingsPage() {
               size="sm"
               color="primary"
               variant="flat"
-              startContent={<Icon icon="lucide:plus" width={16} />}
+              startContent={<Icon icon="lucide:list" width={16} />}
               onPress={() => navigate('/settings/entities')}
             >
-              Add New Entity
+              Entities List
             </Button>
           </div>
         </div>
 
+        <div className="row">
+          <div className="col-md-12">
+            <p className="text-muted-foreground mb-2">Entities Settings</p>
+          </div>
+        </div>
+
+        {/* <Row> */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {entitiesSettingsSections.map((en) => (
+            <Card
+              key={en.title}
+              className="cursor-pointer hover:border-primary transition-colors"
+            >
+              <CardBody className="p-6" onClick={() => navigate(en.path)}>
+                <div className="flex items-start gap-4">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Icon icon={en.icon} className="text-primary w-6 h-6" />
+                  </div>
+                  <div className='w-full'>
+                    <div className='flex justify-between'><h3 className="font-semibold mb-2">{en.title}</h3>
+                      <small className='text-xs text-muted-foreground'>{en.items}</small>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{en.description}</p>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
+        <br />
+        <div className="row">
+          <div className="col-md-12">
+            <p className="text-muted-foreground mb-2">Static Settings</p>
+          </div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {settingsSections.map((section) => (
             <Card
@@ -104,6 +149,7 @@ export default function SettingsPage() {
             </Card>
           ))}
         </div>
+        {/* </Row> */}
       </div>
     </div>
   );

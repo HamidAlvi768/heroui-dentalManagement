@@ -4,6 +4,7 @@ import config from '../config/config';
 import { useAuth } from '../auth/AuthContext';
 import { EntityDetailDialog } from '../components/entity-detail-dialog';
 import { useNavigate } from 'react-router-dom';
+import { form } from '@heroui/theme';
 
 const columns = [
   { key: 'username', label: 'USER NAME' },
@@ -14,31 +15,61 @@ const columns = [
 ];
 
 const initialFormData = {
+  role: 'doctor',
   username: '',
   email: '',
   password: '',
-  role: '',
+  gender: '',
+  date_of_birth: '',
+  blood_group: '',
+  phone: '',
+  address: '',
+  specialization: '',
+  qualification: '',
+  experience: '',
+  commission_percentage: '',
 };
 
 const formFields = [
+  { key: 'role', label: 'Role', type: 'hidden', required: true },
   { key: 'username', label: 'Username', type: 'text', required: true },
   { key: 'email', label: 'Email', type: 'email', required: true },
   { key: 'password', label: 'Password', type: 'text', required: true },
-  // { key: 'role', label: 'Role', type: 'select', options: ['Admin', 'Moderator', 'Doctor', 'User'], required: true },
+  {
+    key: 'gender', label: 'Gender', type: 'select', options: [
+      { value: 'Male', label: 'Male' },
+      { value: 'Female', label: 'Female' },
+      { value: 'Unknown', label: 'Unknown' }
+    ]
+  },
+  { key: 'date_of_birth', label: 'Date of Birth', type: 'date' },
+  { key: 'blood_group', label: 'Blood Group', type: 'select', options: [{ value: 'A+', label: 'A+' }, { value: 'A-', label: 'A-' }, { value: 'B+', label: 'B+' }, { value: 'B-', label: 'B-' }, { value: 'AB+', label: 'AB+' }, { value: 'AB-', label: 'AB-' }, { value: 'O+', label: 'O+' }, { value: 'O-', label: 'O-' }] },
+  { key: 'phone', label: 'Phone', type: 'text' },
+  { key: 'address', label: 'Address', type: 'text' },
+  { key: 'specialization', label: 'Specialization', type: 'text' },
+  { key: 'qualification', label: 'Qualification', type: 'text' },
+  { key: 'experience', label: 'Experience', type: 'number' },
+  {
+    key: 'commission_percentage', label: 'Commission Percentage', type: 'select', options: [
+      { value: '0', label: '0%' },
+      { value: '10', label: '10%' },
+      { value: '20', label: '20%' },
+      { value: '30', label: '30%' },
+      { value: '40', label: '40%' },
+      { value: '50', label: '50%' },
+      { value: '60', label: '60%' },
+      { value: '70', label: '70%' },
+      { value: '80', label: '80%' },
+      { value: '90', label: '90%' },
+      { value: '100', label: '100%' }
+    ]
+  },
 ];
 
 // Filter columns
 const filterColumns = [
   { key: 'username', label: 'USER NAME' },
   { key: 'email', label: 'EMAIL' },
-  // {
-  //   key: 'role', label: 'ROLE', type: 'select', options: [
-  //     { value: 'Admin', label: 'Admin' },
-  //     { value: 'Moderator', label: 'Moderator' },
-  //     { value: 'Doctor', label: 'Doctor' },
-  //     { value: 'User', label: 'User' }
-  //   ]
-  // },
   {
     key: 'verified', label: 'VERIFIED', type: 'select', options: [
       { value: true, label: 'Yes' },
@@ -138,7 +169,7 @@ function DoctorsPage() {
         getUsers(perpage, page);
       }}
       onSave={(data, isEditing) => {
-        console.log('Save patient:', data, 'isEditing:', isEditing);
+        console.log("FORM DATA", data)
         if (isEditing) {
           // Update existing user
           config.postData(`/users/edit?id=${data.id}`, data)
@@ -154,12 +185,17 @@ function DoctorsPage() {
           // Create new user
           config.postData('/users/create', data)
             .then(response => {
-              console.log('User created:', response.data.user);
-              setUsers([...users, response.data.user]);
-              toast.success('User created successfully!');
+              console.log('User created:', response.data.success);
+              if (response.data.success == true) {
+                setUsers([...users, response.data.user]);
+                toast.success(response.data.message);
+              } else {
+                toast.error(response.data.message);
+              }
             })
             .catch(error => {
               console.error('Error creating user:', error);
+              toast.error('Error creating doctor.');
             });
         }
       }}
