@@ -16,6 +16,7 @@ const columns = [
   { key: 'selling_price', label: 'SELLING PRICE' },
   { key: 'quantity', label: 'QUANTITY' },
   { key: 'expiry_date', label: 'EXPIRY DATE' },
+  { key: 'is_expired', label: 'Expired' },
   { key: 'active', label: 'ACTIVE' },
   { key: 'actions', label: 'ACTIONS' }
 ];
@@ -136,8 +137,13 @@ function InventoryPage() {
     config.initAPI(token);
     config.getData(`/inventory/list?perpage=${perpage}&page=${page}&category_id=${filters.category_id || ''}&name=${filters.name || ''}&code=${filters.code || ''}&quantity=${filters.quantity || ''}&active=${filters.active || ''}`)
       .then(data => {
+        const today = new Date();
         const _data = data.data.data.map(item => {
           item.active = item.active === 1 ? 'Yes' : 'No';
+          let expiryDate = new Date(item.expiry_date);
+          const timeDiff = expiryDate.getTime() - today.getTime();
+          const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+          item.is_expired = dayDiff < 0 ? 'Expired' : dayDiff <= 7 ? `Expired in ${dayDiff} days` : 'No';
           return item;
         });
         setDataList(_data);

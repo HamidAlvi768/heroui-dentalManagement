@@ -55,15 +55,14 @@ export function CrudDialog({
   }, [formData]);
 
   const handleChange = (key, value) => {
-   console.log('Key:', key, 'Value:', value); // Debugging line
-   form[key] = value; // Directly set the value in the form object
-  if (onInputChange) {
-    onInputChange(form);
-  }
-  setForm(prev => ({
-    ...prev,
-    [key]: value
-  }));
+    const newForm = {
+      ...form,
+      [key]: value
+    };
+    setForm(newForm);
+    if (onInputChange) {
+      onInputChange(newForm);
+    }
   };
 
   const handleSubmit = () => {
@@ -71,7 +70,7 @@ export function CrudDialog({
   };
 
   const renderFormField = (field, isInRow = false) => {
-    const { key, label, type, options, required, placeholder, disabled, readonly } = field;
+    const { key, label, type, value, options, required, placeholder, disabled, readonly } = field;
 
     // Define commonProps without the key
     const commonProps = {
@@ -103,7 +102,16 @@ export function CrudDialog({
           <Autocomplete
             {...commonProps}
             value={form[key] || ''} // Current selected value (string or object)
-            onChange={(value) => handleChange(key, value)} // Handle selection change
+            onInputChange={(v) => {
+              console.log("SELECTED...");
+              handleChange(key, v)
+            }
+            }
+            onSelectionChange={(v) => {
+              console.log("SELECTED...");
+              handleChange(key, v)
+            }
+            }
             options={options} // List of options to filter
             getOptionLabel={(option) => option.label || option} // Display label for each option
             filterOptions={(options, { inputValue }) =>
@@ -128,12 +136,13 @@ export function CrudDialog({
     }
 
     switch (type) {
+      case 'hidden':
       case 'text':
       case 'email':
       case 'tel':
       case 'number':
       case 'date':
-      case 'datetime':
+      case 'datetime-local':
       case 'password':
       case 'search':
       case 'url':
@@ -141,12 +150,14 @@ export function CrudDialog({
       case 'week':
       case 'month':
       case 'color':
+      case 'range':
+      case 'file':
         return (
           <div className="flex-1 min-w-[200px]">
             <Input
               {...commonProps}
               type={type}
-              value={form[key] || ''}
+              value={(value || (form[key] || ''))}
               onValueChange={(value) => handleChange(key, value)}
             />
           </div>
@@ -278,7 +289,7 @@ export function CrudDialog({
                 {/* Regular input fields in an auto-fit grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-auto">
                   {regularFields.map((field, index) => (
-                    <div key={index} className="w-full">
+                    <div key={index} className="w-full" style={{ display: field.type === "hidden" ? "none" : "" }}>
                       {renderFormField(field)}
                     </div>
                   ))}

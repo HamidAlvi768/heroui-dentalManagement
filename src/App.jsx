@@ -177,6 +177,13 @@ export default function App() {
             </AppLayout>
           </PrivateRoute>
         } />
+        <Route path="/invoices" element={
+          <PrivateRoute>
+            <AppLayout>
+              <InvoicesPage />
+            </AppLayout>
+          </PrivateRoute>
+        } />
         <Route path="/invoices/:userid" element={
           <PrivateRoute>
             <AppLayout>

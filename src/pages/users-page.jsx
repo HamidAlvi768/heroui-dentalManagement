@@ -124,9 +124,12 @@ function UsersPage() {
           // Create new user
           config.postData('/users/create', data)
             .then(response => {
-              console.log('User created:', response.data.user);
-              setUsers([...users, response.data.user]);
-              toast.success('User created successfully!');
+              if (response.data.success == true) {
+                setUsers([...users, response.data.user]);
+                toast.success(response.data.message);
+              } else {
+                toast.error(response.data.message);
+              }
             })
             .catch(error => {
               console.error('Error creating user:', error);

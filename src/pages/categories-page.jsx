@@ -52,7 +52,7 @@ function CategoriesPage() {
   function getData(perpage = 5, page = 1, filters = {}) {
     setLoading(true);
     config.initAPI(token);
-    config.getData(`/categories/list?perpage=${perpage}&page=${page}&Categoryname=${filters.Categoryname || ''}&email=${filters.email || ''}&role=${filters.role || ''}&verified=${filters.verified || ''}`)
+    config.getData(`/categories/list?perpage=${perpage}&page=${page}&name=${filters.name || ''}&active=${filters.active || ''}`)
       .then(data => {
         const _data = data.data.data.map(item => {
           item.active = item.active === 1 ? 'Yes' : 'No';
