@@ -9,7 +9,7 @@ import { form } from '@heroui/theme';
 const columns = [
   { key: 'username', label: 'USER NAME' },
   { key: 'email', label: 'EMAIL' },
-  // { key: 'role', label: 'ROLE' },
+  { key: 'role', label: 'ROLE' },
   { key: 'verified', label: 'VERIFIED' },
   { key: 'actions', label: 'ACTIONS' }
 ];

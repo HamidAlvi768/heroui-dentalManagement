@@ -11,17 +11,19 @@ const filterColumns = [
   { key: 'patientName', label: 'PATIENT' },
   { key: 'startDate', label: 'START DATE', type: 'date' },
   { key: 'endDate', label: 'END DATE', type: 'date' },
-  { key: 'medicineType', label: 'MEDICINE TYPE', type: 'select', options: [
-    { value: 'tablet', label: 'Tablet' },
-    { value: 'syrup', label: 'Syrup' },
-    { value: 'injection', label: 'Injection' },
-    { value: 'capsule', label: 'Capsule' }
-  ]},
+  {
+    key: 'medicineType', label: 'MEDICINE TYPE', type: 'select', options: [
+      { value: 'tablet', label: 'Tablet' },
+      { value: 'syrup', label: 'Syrup' },
+      { value: 'injection', label: 'Injection' },
+      { value: 'capsule', label: 'Capsule' }
+    ]
+  },
 ];
 
 const columns = [
-  { 
-    key: 'examination', 
+  {
+    key: 'examination',
     label: 'EXAM INVESTIGATION',
     render: (item) => (
       <div>
@@ -54,20 +56,20 @@ const initialFormData = {
 };
 
 const formFields = [
-  { 
-    key: 'patientId', 
-    label: 'Select Patient', 
-    type: 'select', 
+  {
+    key: 'patientId',
+    label: 'Select Patient',
+    type: 'select',
     required: true,
     options: [
       { value: 'P1001', label: 'John Doe' },
       { value: 'P1002', label: 'Jane Smith' }
     ]
   },
-  { 
-    key: 'examination', 
-    label: 'Select Examination', 
-    type: 'select', 
+  {
+    key: 'examination',
+    label: 'Select Examination',
+    type: 'select',
     required: true,
     options: [
       { value: 'general', label: 'General Checkup' },
@@ -75,15 +77,15 @@ const formFields = [
       { value: 'specialist', label: 'Specialist Consultation' }
     ]
   },
-  { 
-    key: 'prescriptionDate', 
-    label: 'Prescription Date', 
-    type: 'date', 
-    required: true 
+  {
+    key: 'prescriptionDate',
+    label: 'Prescription Date',
+    type: 'date',
+    required: true
   },
-  { 
-    key: 'note', 
-    label: 'Note', 
+  {
+    key: 'note',
+    label: 'Note',
     type: 'textarea'
   }
 ];
