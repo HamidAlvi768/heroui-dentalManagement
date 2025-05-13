@@ -104,7 +104,7 @@ function PatientsPage() {
     <CrudTemplate
       title="Patients"
       description="Manage patients records"
-      icon="lucide:patients"
+      icon="lucide:users"
       loading={loading}
       columns={columns}
       data={patients}
