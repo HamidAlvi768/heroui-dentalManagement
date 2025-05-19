@@ -85,6 +85,15 @@ const mockData = [
   },
 ];
 
+const invoiceForm = {
+  sections: [
+    {
+      title: 'Invoice Info',
+      fields: formFields
+    }
+  ]
+};
+
 export default function InvoicesPage() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
@@ -112,16 +121,16 @@ export default function InvoicesPage() {
     setIsDetailOpen(true);
   };
 
-  const customActions = [
-    {
-      label: "Print",
-      icon: "lucide:printer",
-      onClick: (item) => {
-        navigate(`/invoices/${item.id}`, { state: { item } });
-        console.log("Print action clicked");
-      },
-    },
-  ];
+  // const customActions = [
+  //   {
+  //     label: "Print",
+  //     icon: "lucide:printer",
+  //     onClick: (item) => {
+  //       navigate(`/invoices/${item.id}`, { state: { item } });
+  //       console.log("Print action clicked");
+  //     },
+  //   },
+  // ];
 
   return (
     <>
@@ -131,10 +140,10 @@ export default function InvoicesPage() {
         columns={columns}
         data={mockData}
         initialFormData={initialFormData}
-        formFields={formFields}
+        form={invoiceForm}
         filterColumns={filterColumns}
         addButtonLabel="Add Invoice"
-        customActions={customActions}
+        // customActions={customActions}
         onRowClick={handleViewDetail}
       />
       {selectedInvoice && (

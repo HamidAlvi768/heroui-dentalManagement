@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Modal,
   ModalContent,
@@ -21,6 +21,7 @@ import {
   Badge,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import PrintPreviewDialog from './print-preview-dialog';
 
 const clinicInfo = {
   name: "AL-SHIFA DENTAL SPECIALISTS",
@@ -515,8 +516,16 @@ export function EntityDetailDialog({
   entityType,
   onStatusChange,
 }) {
+  // Print preview dialog state
+  const [isPrintPreviewOpen, setPrintPreviewOpen] = useState(false);
+
+  // Open print preview for invoice or prescription, otherwise fallback to window.print
   const handlePrint = () => {
-    window.print();
+    if (entityType === 'invoice' || entityType === 'prescription') {
+      setPrintPreviewOpen(true);
+    } else {
+      window.print();
+    }
   };
 
   const config = entityConfigs[entityType] || {
@@ -534,43 +543,54 @@ export function EntityDetailDialog({
   };
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="4xl" scrollBehavior="inside">
-      <ModalContent>
-        {(onClose) => (
-          <>
-            <ModalHeader className="flex flex-col gap-1 py-2">
-              {renderHeader(config.title)}
-            </ModalHeader>
-            <ModalBody>
-              {config.renderBody ? 
-                config.renderBody(entity, onStatusChange) : 
-                (
-                  <div className="space-y-6">
-                    {config.sections.map((section, index) => (
-                      <div key={index}>
-                        {renderSection(section, entity)}
-                      </div>
-                    ))}
-                  </div>
-                )
-              }
-            </ModalBody>
-            <ModalFooter>
-              {config.footerActions(onClose, handlePrint, onEdit, entity).map((action, index) => (
-                <Button
-                  key={index}
-                  color={action.color}
-                  variant={action.variant}
-                  onPress={action.onPress}
-                  startContent={action.icon ? <Icon icon={action.icon} width={16} /> : null}
-                >
-                  {action.label}
-                </Button>
-              ))}
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
-    </Modal>
+    <>
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="4xl" scrollBehavior="inside">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1 py-2">
+                {renderHeader(config.title)}
+              </ModalHeader>
+              <ModalBody>
+                {config.renderBody ? 
+                  config.renderBody(entity, onStatusChange) : 
+                  (
+                    <div className="space-y-6">
+                      {config.sections.map((section, index) => (
+                        <div key={index}>
+                          {renderSection(section, entity)}
+                        </div>
+                      ))}
+                    </div>
+                  )
+                }
+              </ModalBody>
+              <ModalFooter>
+                {config.footerActions(onClose, handlePrint, onEdit, entity).map((action, index) => (
+                  <Button
+                    key={index}
+                    color={action.color}
+                    variant={action.variant}
+                    onPress={action.onPress}
+                    startContent={action.icon ? <Icon icon={action.icon} width={16} /> : null}
+                  >
+                    {action.label}
+                  </Button>
+                ))}
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+      {/* Print Preview Dialog for Invoice or Prescription */}
+      {(entityType === 'invoice' || entityType === 'prescription') && (
+        <PrintPreviewDialog
+          isOpen={isPrintPreviewOpen}
+          onClose={() => setPrintPreviewOpen(false)}
+          entity={entity}
+          type={entityType}
+        />
+      )}
+    </>
   );
 }

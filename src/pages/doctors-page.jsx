@@ -78,6 +78,15 @@ const filterColumns = [
   },
 ];
 
+const doctorForm = {
+  sections: [
+    {
+      title: 'Doctor Info',
+      fields: formFields
+    }
+  ]
+};
+
 function DoctorsPage() {
 
   const { token } = useAuth();
@@ -154,7 +163,7 @@ function DoctorsPage() {
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}
-      formFields={formFields}
+      form={doctorForm}
       filterColumns={filterColumns} customRowActions={customActions}
       onRowClick={handleViewDetail}
       onFilterChange={(filters) => {

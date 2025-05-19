@@ -55,40 +55,53 @@ const initialFormData = {
   ]
 };
 
-const formFields = [
-  {
-    key: 'patientId',
-    label: 'Select Patient',
-    type: 'select',
-    required: true,
-    options: [
-      { value: 'P1001', label: 'John Doe' },
-      { value: 'P1002', label: 'Jane Smith' }
-    ]
-  },
-  {
-    key: 'examination',
-    label: 'Select Examination',
-    type: 'select',
-    required: true,
-    options: [
-      { value: 'general', label: 'General Checkup' },
-      { value: 'followup', label: 'Follow-up' },
-      { value: 'specialist', label: 'Specialist Consultation' }
-    ]
-  },
-  {
-    key: 'prescriptionDate',
-    label: 'Prescription Date',
-    type: 'date',
-    required: true
-  },
-  {
-    key: 'note',
-    label: 'Note',
-    type: 'textarea'
-  }
-];
+const prescriptionForm = {
+  sections: [
+    {
+      title: 'Prescription Info',
+      fields: [
+        {
+          key: 'patientId',
+          label: 'Select Patient',
+          type: 'select',
+          required: true,
+          options: [
+            { value: 'P1001', label: 'John Doe' },
+            { value: 'P1002', label: 'Jane Smith' }
+          ]
+        },
+        {
+          key: 'examination',
+          label: 'Select Examination',
+          type: 'select',
+          required: true,
+          options: [
+            { value: 'general', label: 'General Checkup' },
+            { value: 'followup', label: 'Follow-up' },
+            { value: 'specialist', label: 'Specialist Consultation' }
+          ]
+        },
+        {
+          key: 'prescriptionDate',
+          label: 'Prescription Date',
+          type: 'date',
+          required: true
+        },
+        {
+          key: 'note',
+          label: 'Note',
+          type: 'textarea'
+        }
+      ]
+    },
+    {
+      title: 'Medicines',
+      fields: [
+        { key: 'medicines', type: 'medicines-table' }
+      ]
+    }
+  ]
+};
 
 const mockData = [
   {
@@ -170,7 +183,7 @@ function PrescriptionPage() {
         columns={columns}
         data={mockData}
         initialFormData={initialFormData}
-        formFields={formFields}
+        form={prescriptionForm}
         addButtonLabel="Add Prescription"
         filterColumns={filterColumns}
         customRowActions={customActions}
@@ -191,7 +204,7 @@ function PrescriptionPage() {
             onOpenChange={onEditOpenChange}
             title="Edit Prescription"
             formData={selectedPrescription}
-            formFields={formFields}
+            form={prescriptionForm}
             onSave={handleSave}
           />
         </>

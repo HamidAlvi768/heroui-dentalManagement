@@ -49,6 +49,15 @@ const filterColumns = [
   },
 ];
 
+const patientForm = {
+  sections: [
+    {
+      title: 'Patient Info',
+      fields: formFields
+    }
+  ]
+};
+
 function PatientsPage() {
 
   const navigate = useNavigate();
@@ -113,7 +122,7 @@ function PatientsPage() {
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}
-      formFields={formFields}
+      form={patientForm}
       filterColumns={filterColumns}
       onFilterChange={(filters) => {
         console.log('Filters:', filters);

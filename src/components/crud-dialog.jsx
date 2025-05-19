@@ -42,31 +42,31 @@ export function CrudDialog({
   onOpenChange,
   title,
   formData,
-  formFields,
+  form,
   onSave,
   onInputChange,
 }) {
-  const [form, setForm] = React.useState(formData || {});
+  const [formState, setFormState] = React.useState(formData || {});
 
   React.useEffect(() => {
     if (formData) {
-      setForm(formData);
+      setFormState(formData);
     }
   }, [formData]);
 
   const handleChange = (key, value) => {
     const newForm = {
-      ...form,
+      ...formState,
       [key]: value
     };
-    setForm(newForm);
+    setFormState(newForm);
     if (onInputChange) {
       onInputChange(newForm);
     }
   };
 
   const handleSubmit = () => {
-    onSave(form);
+    onSave(formState);
   };
 
   const renderFormField = (field, isInRow = false) => {
@@ -101,7 +101,7 @@ export function CrudDialog({
         <div className="flex-1 min-w-[200px]">
           <Autocomplete
             {...commonProps}
-            value={form[key] || ''} // Current selected value (string or object)
+            value={formState[key] || ''} // Current selected value (string or object)
             onInputChange={(v) => {
               console.log("SELECTED...");
               handleChange(key, v)
@@ -157,7 +157,7 @@ export function CrudDialog({
             <Input
               {...commonProps}
               type={type}
-              value={(value || (form[key] || ''))}
+              value={(value || (formState[key] || ''))}
               onValueChange={(value) => handleChange(key, value)}
             />
           </div>
@@ -168,7 +168,7 @@ export function CrudDialog({
           <div className="flex-1 min-w-[200px]">
             <Select
               {...commonProps}
-              selectedKeys={form[key] ? [form[key]] : []}
+              selectedKeys={formState[key] ? [formState[key]] : []}
               onChange={(e) => handleChange(key, e.target.value)}
             >
               {options?.map((option) => (
@@ -184,7 +184,7 @@ export function CrudDialog({
         return (
           <div className="flex-1 min-w-[200px]">
             <Checkbox
-              isSelected={form[key] || false}
+              isSelected={formState[key] || false}
               onValueChange={(value) => handleChange(key, value)}
             >
               {label}
@@ -197,7 +197,7 @@ export function CrudDialog({
           <div className={isInRow ? "flex-1" : "w-full col-span-3"}>
             <Textarea
               {...commonProps}
-              value={form[key] || ''}
+              value={formState[key] || ''}
               onValueChange={(value) => handleChange(key, value)}
               minRows={3}
             />
@@ -209,19 +209,9 @@ export function CrudDialog({
     }
   };
 
-  // Separate regular fields from textarea fields
-  const { regularFields, textareaFields } = formFields?.reduce((acc, field) => {
-    if (field.type === 'textarea') {
-      acc.textareaFields.push(field);
-    } else {
-      acc.regularFields.push(field);
-    }
-    return acc;
-  }, { regularFields: [], textareaFields: [] }) || { regularFields: [], textareaFields: [] };
-
   // Handle medicine type change with specific index
   const handleMedicineTypeChange = (idx, key) => {
-    setForm(prev => ({
+    setFormState(prev => ({
       ...prev,
       medicines: prev.medicines.map((m, i) => i === idx ? { ...m, medicineType: key } : m)
     }));
@@ -229,7 +219,7 @@ export function CrudDialog({
 
   // Handle medicine name change with specific index
   const handleMedicineNameChange = (idx, key) => {
-    setForm(prev => ({
+    setFormState(prev => ({
       ...prev,
       medicines: prev.medicines.map((m, i) => i === idx ? { ...m, medicineName: key } : m)
     }));
@@ -237,7 +227,7 @@ export function CrudDialog({
 
   // Handle medicine description change
   const handleDescriptionChange = (idx, value) => {
-    setForm(prev => ({
+    setFormState(prev => ({
       ...prev,
       medicines: prev.medicines.map((m, i) => i === idx ? { ...m, description: value } : m)
     }));
@@ -245,7 +235,7 @@ export function CrudDialog({
 
   // Handle time period changes (days, weeks, months)
   const handleTimePeriodChange = (idx, field, value) => {
-    setForm(prev => ({
+    setFormState(prev => ({
       ...prev,
       medicines: prev.medicines.map((m, i) => i === idx ? { ...m, [field]: value } : m)
     }));
@@ -253,7 +243,7 @@ export function CrudDialog({
 
   // Add new medicine row
   const addMedicineRow = () => {
-    setForm(prev => ({
+    setFormState(prev => ({
       ...prev,
       medicines: [
         ...prev.medicines,
@@ -264,17 +254,226 @@ export function CrudDialog({
 
   // Remove medicine row
   const removeMedicineRow = (idx) => {
-    setForm(prev => ({
+    setFormState(prev => ({
       ...prev,
       medicines: prev.medicines.filter((_, i) => i !== idx)
     }));
   };
 
+  // Render all sections
+  const renderSections = () => {
+    if (!form?.sections) return null;
+    return form.sections.map((section, sectionIdx) => (
+      <div key={section.title || sectionIdx} className="mb-6">
+        {section.title && <div className="font-semibold text-lg mb-2">{section.title}</div>}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-auto">
+          {section.fields.map((field, idx) => {
+            if (field.type === 'medicines-table') {
+              // Render the custom medicines table
+              return (
+                <div key={field.key} className="col-span-3">
+                  {/* Medicines Table (copy from previous implementation) */}
+                  {Array.isArray(formState.medicines) && (
+                    <div>
+                      <div className="font-semibold mb-2">Medicine Entry</div>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full border text-sm">
+                          <thead>
+                            <tr className="bg-muted">
+                              <th className="p-2 border">Medicine Type</th>
+                              <th className="p-2 border">Medicine Name</th>
+                              <th className="p-2 border">Description</th>
+                              <th className="p-2 border">Days</th>
+                              <th className="p-2 border">Weeks</th>
+                              <th className="p-2 border">Months</th>
+                              <th className="p-2 border">Add/Remove</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {formState.medicines.map((med, idx) => (
+                              <tr key={`med-row-${idx}`}>
+                                <td className="p-2 border">
+                                  <Autocomplete
+                                    id={`medicine-type-${idx}`}
+                                    key={`medicine-type-${idx}`}
+                                    size="sm"
+                                    defaultItems={medicineTypes}
+                                    selectedKey={med.medicineType}
+                                    onSelectionChange={(key) => handleMedicineTypeChange(idx, key)}
+                                    className="w-32 medicine-type-autocomplete"
+                                    popoverProps={{
+                                      shouldBlockScroll: true,
+                                      placement: "bottom",
+                                      offset: 10,
+                                      classNames: {
+                                        content: "z-[1000] medicine-type-popover",
+                                        base: `medicine-type-${idx}-container`,
+                                        trigger: `medicine-type-${idx}-trigger`
+                                      }
+                                    }}
+                                    classNames={{
+                                      listbox: `medicine-type-${idx}-listbox`,
+                                      popover: `medicine-type-${idx}-popover-wrapper`,
+                                      item: `medicine-type-${idx}-item`,
+                                      itemWrapper: `medicine-type-${idx}-item-wrapper`,
+                                      input: `medicine-type-${idx}-input`
+                                    }}
+                                  >
+                                    {(item) => (
+                                      <AutocompleteItem key={item.key} textValue={item.label}>
+                                        <div className="flex flex-col">
+                                          <span>{item.label}</span>
+                                          <span className="text-xs text-default-400">{item.description}</span>
+                                        </div>
+                                      </AutocompleteItem>
+                                    )}
+                                  </Autocomplete>
+                                </td>
+                                <td className="p-2 border">
+                                  <Autocomplete
+                                    id={`medicine-name-${idx}`}
+                                    key={`medicine-name-${idx}`}
+                                    size="sm"
+                                    defaultItems={medicineNames}
+                                    selectedKey={med.medicineName}
+                                    onSelectionChange={(key) => handleMedicineNameChange(idx, key)}
+                                    className="w-32 medicine-name-autocomplete"
+                                    popoverProps={{
+                                      shouldBlockScroll: true,
+                                      placement: "bottom",
+                                      offset: 10,
+                                      classNames: {
+                                        content: "z-[1000] medicine-name-popover",
+                                        base: `medicine-name-${idx}-container`,
+                                        trigger: `medicine-name-${idx}-trigger`
+                                      }
+                                    }}
+                                    classNames={{
+                                      listbox: `medicine-name-${idx}-listbox`,
+                                      popover: `medicine-name-${idx}-popover-wrapper`,
+                                      item: `medicine-name-${idx}-item`,
+                                      itemWrapper: `medicine-name-${idx}-item-wrapper`,
+                                      input: `medicine-name-${idx}-input`
+                                    }}
+                                  >
+                                    {(item) => (
+                                      <AutocompleteItem key={item.key} textValue={item.label}>
+                                        <div className="flex flex-col">
+                                          <span>{item.label}</span>
+                                          <span className="text-xs text-default-400">{item.description}</span>
+                                        </div>
+                                      </AutocompleteItem>
+                                    )}
+                                  </Autocomplete>
+                                </td>
+                                <td className="p-2 border">
+                                  <Input
+                                    size="sm"
+                                    value={med.description || ''}
+                                    onValueChange={(value) => handleDescriptionChange(idx, value)}
+                                    className="w-32"
+                                  />
+                                </td>
+                                <td className="p-2 border">
+                                  <Select
+                                    size="sm"
+                                    selectedKeys={med.days ? [med.days] : []}
+                                    onChange={(e) => handleTimePeriodChange(idx, 'days', e.target.value)}
+                                    className="w-20"
+                                    aria-label={`Days for medicine ${idx + 1}`}
+                                  >
+                                    {[...Array(15).keys()].map(i =>
+                                      <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
+                                    )}
+                                  </Select>
+                                </td>
+                                <td className="p-2 border">
+                                  <Select
+                                    size="sm"
+                                    selectedKeys={med.weeks ? [med.weeks] : []}
+                                    onChange={(e) => handleTimePeriodChange(idx, 'weeks', e.target.value)}
+                                    className="w-20"
+                                    aria-label={`Weeks for medicine ${idx + 1}`}
+                                  >
+                                    {[...Array(5).keys()].map(i =>
+                                      <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
+                                    )}
+                                  </Select>
+                                </td>
+                                <td className="p-2 border">
+                                  <Select
+                                    size="sm"
+                                    selectedKeys={med.months ? [med.months] : []}
+                                    onChange={(e) => handleTimePeriodChange(idx, 'months', e.target.value)}
+                                    className="w-20"
+                                    aria-label={`Months for medicine ${idx + 1}`}
+                                  >
+                                    {[...Array(3).keys()].map(i =>
+                                      <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
+                                    )}
+                                  </Select>
+                                </td>
+                                <td className="p-2 border text-center">
+                                  {formState.medicines.length > 1 && (
+                                    <Button
+                                      isIconOnly
+                                      size="sm"
+                                      variant="light"
+                                      onPress={() => removeMedicineRow(idx)}
+                                      className="text-danger"
+                                    >
+                                      <Icon icon="lucide:trash-2" width={18} />
+                                    </Button>
+                                  )}
+                                  {idx === formState.medicines.length - 1 && (
+                                    <Button
+                                      isIconOnly
+                                      size="sm"
+                                      variant="light"
+                                      onPress={addMedicineRow}
+                                      className="ml-2 text-success"
+                                    >
+                                      <Icon icon="lucide:plus" width={18} />
+                                    </Button>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            // Render normal fields
+            return (
+              <div key={field.key} className="w-full" style={{ display: field.type === "hidden" ? "none" : "" }}>
+                {renderFormField(field)}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    ));
+  };
+
+  // Debug logs for form structure
+  console.log('CrudDialog: form prop:', form);
+  console.log('CrudDialog: form.sections:', form?.sections);
+  if (form?.sections) {
+    form.sections.forEach((section, idx) => {
+      console.log(`Section ${idx}:`, section);
+      console.log(`Section ${idx} fields:`, section.fields);
+    });
+  }
+
   return (
     <Modal
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      size={Array.isArray(form.medicines) ? "5xl" : "3xl"}
+      size={Array.isArray(formState.medicines) ? "5xl" : "3xl"}
       scrollBehavior="inside"
       classNames={{
         base: "max-h-[90vh] min-w-[900px]"
@@ -286,194 +485,7 @@ export function CrudDialog({
             <ModalHeader className="flex flex-col gap-1">{title}</ModalHeader>
             <ModalBody>
               <div className="space-y-6">
-                {/* Regular input fields in an auto-fit grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-auto">
-                  {regularFields.map((field, index) => (
-                    <div key={index} className="w-full" style={{ display: field.type === "hidden" ? "none" : "" }}>
-                      {renderFormField(field)}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Textarea fields */}
-                {textareaFields.length > 0 && (
-                  <div className="flex gap-4">
-                    {textareaFields.map((field) => renderFormField(field, true))}
-                  </div>
-                )}
-
-                {/* Medicine Entry Table for Prescription with Autocomplete */}
-                {Array.isArray(form.medicines) && (
-                  <div>
-                    <div className="font-semibold mb-2">Medicine Entry</div>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full border text-sm">
-                        <thead>
-                          <tr className="bg-muted">
-                            <th className="p-2 border">Medicine Type</th>
-                            <th className="p-2 border">Medicine Name</th>
-                            <th className="p-2 border">Description</th>
-                            <th className="p-2 border">Days</th>
-                            <th className="p-2 border">Weeks</th>
-                            <th className="p-2 border">Months</th>
-                            <th className="p-2 border">Add/Remove</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {form.medicines.map((med, idx) => (
-                            <tr key={`med-row-${idx}`}>
-                              <td className="p-2 border">
-                                <Autocomplete
-                                  id={`medicine-type-${idx}`}
-                                  key={`medicine-type-${idx}`}
-                                  size="sm"
-                                  defaultItems={medicineTypes}
-                                  selectedKey={med.medicineType}
-                                  onSelectionChange={(key) => handleMedicineTypeChange(idx, key)}
-                                  className="w-32 medicine-type-autocomplete"
-                                  popoverProps={{
-                                    shouldBlockScroll: true,
-                                    placement: "bottom",
-                                    offset: 10,
-                                    classNames: {
-                                      content: "z-[1000] medicine-type-popover",
-                                      base: `medicine-type-${idx}-container`,
-                                      trigger: `medicine-type-${idx}-trigger`
-                                    }
-                                  }}
-                                  classNames={{
-                                    listbox: `medicine-type-${idx}-listbox`,
-                                    popover: `medicine-type-${idx}-popover-wrapper`,
-                                    item: `medicine-type-${idx}-item`,
-                                    itemWrapper: `medicine-type-${idx}-item-wrapper`,
-                                    input: `medicine-type-${idx}-input`
-                                  }}
-                                >
-                                  {(item) => (
-                                    <AutocompleteItem key={item.key} textValue={item.label}>
-                                      <div className="flex flex-col">
-                                        <span>{item.label}</span>
-                                        <span className="text-xs text-default-400">{item.description}</span>
-                                      </div>
-                                    </AutocompleteItem>
-                                  )}
-                                </Autocomplete>
-                              </td>
-                              <td className="p-2 border">
-                                <Autocomplete
-                                  id={`medicine-name-${idx}`}
-                                  key={`medicine-name-${idx}`}
-                                  size="sm"
-                                  defaultItems={medicineNames}
-                                  selectedKey={med.medicineName}
-                                  onSelectionChange={(key) => handleMedicineNameChange(idx, key)}
-                                  className="w-32 medicine-name-autocomplete"
-                                  popoverProps={{
-                                    shouldBlockScroll: true,
-                                    placement: "bottom",
-                                    offset: 10,
-                                    classNames: {
-                                      content: "z-[1000] medicine-name-popover",
-                                      base: `medicine-name-${idx}-container`,
-                                      trigger: `medicine-name-${idx}-trigger`
-                                    }
-                                  }}
-                                  classNames={{
-                                    listbox: `medicine-name-${idx}-listbox`,
-                                    popover: `medicine-name-${idx}-popover-wrapper`,
-                                    item: `medicine-name-${idx}-item`,
-                                    itemWrapper: `medicine-name-${idx}-item-wrapper`,
-                                    input: `medicine-name-${idx}-input`
-                                  }}
-                                >
-                                  {(item) => (
-                                    <AutocompleteItem key={item.key} textValue={item.label}>
-                                      <div className="flex flex-col">
-                                        <span>{item.label}</span>
-                                        <span className="text-xs text-default-400">{item.description}</span>
-                                      </div>
-                                    </AutocompleteItem>
-                                  )}
-                                </Autocomplete>
-                              </td>
-                              <td className="p-2 border">
-                                <Input
-                                  size="sm"
-                                  value={med.description || ''}
-                                  onValueChange={(value) => handleDescriptionChange(idx, value)}
-                                  className="w-32"
-                                />
-                              </td>
-                              <td className="p-2 border">
-                                <Select
-                                  size="sm"
-                                  selectedKeys={med.days ? [med.days] : []}
-                                  onChange={(e) => handleTimePeriodChange(idx, 'days', e.target.value)}
-                                  className="w-20"
-                                  aria-label={`Days for medicine ${idx + 1}`}
-                                >
-                                  {[...Array(15).keys()].map(i =>
-                                    <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
-                                  )}
-                                </Select>
-                              </td>
-                              <td className="p-2 border">
-                                <Select
-                                  size="sm"
-                                  selectedKeys={med.weeks ? [med.weeks] : []}
-                                  onChange={(e) => handleTimePeriodChange(idx, 'weeks', e.target.value)}
-                                  className="w-20"
-                                  aria-label={`Weeks for medicine ${idx + 1}`}
-                                >
-                                  {[...Array(5).keys()].map(i =>
-                                    <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
-                                  )}
-                                </Select>
-                              </td>
-                              <td className="p-2 border">
-                                <Select
-                                  size="sm"
-                                  selectedKeys={med.months ? [med.months] : []}
-                                  onChange={(e) => handleTimePeriodChange(idx, 'months', e.target.value)}
-                                  className="w-20"
-                                  aria-label={`Months for medicine ${idx + 1}`}
-                                >
-                                  {[...Array(3).keys()].map(i =>
-                                    <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
-                                  )}
-                                </Select>
-                              </td>
-                              <td className="p-2 border text-center">
-                                {form.medicines.length > 1 && (
-                                  <Button
-                                    isIconOnly
-                                    size="sm"
-                                    variant="light"
-                                    onPress={() => removeMedicineRow(idx)}
-                                    className="text-danger"
-                                  >
-                                    <Icon icon="lucide:trash-2" width={18} />
-                                  </Button>
-                                )}
-                                {idx === form.medicines.length - 1 && (
-                                  <Button
-                                    isIconOnly
-                                    size="sm"
-                                    variant="light"
-                                    onPress={addMedicineRow}
-                                    className="ml-2 text-success"
-                                  >
-                                    <Icon icon="lucide:plus" width={18} />
-                                  </Button>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
+                {renderSections()}
               </div>
             </ModalBody>
             <ModalFooter>

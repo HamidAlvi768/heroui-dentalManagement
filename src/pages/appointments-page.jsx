@@ -134,6 +134,15 @@ const formFields = [
   }
 ];
 
+const appointmentForm = {
+  sections: [
+    {
+      title: 'Appointment Info',
+      fields: formFields
+    }
+  ]
+};
+
 const mockData = [
   {
     id: 'A1001',
@@ -204,7 +213,7 @@ function AppointmentsPage() {
         columns={columns}
         data={mockData}
         initialFormData={initialFormData}
-        formFields={formFields}
+        form={appointmentForm}
         addButtonLabel="Add Appointment"
         filterColumns={filterColumns}
         customRowActions={customActions}

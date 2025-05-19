@@ -114,6 +114,15 @@ function InventoryPage() {
     },
   ];
 
+  const inventoryForm = {
+    sections: [
+      {
+        title: 'Inventory Item',
+        fields: formFields
+      }
+    ]
+  };
+
   // Filter columns
   const filterColumns = [
     { key: 'category_id', label: 'Category', type: 'select', options: [{ value: '', label: 'Select Category' }, ...categoriesList.map(category => ({ value: category.id, label: category.name }))], required: true },
@@ -176,7 +185,7 @@ function InventoryPage() {
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}
-      formFields={formFields}
+      form={inventoryForm}
       filterColumns={filterColumns}
       customRowActions={customActions}
       onRowClick={handleViewDetail}
@@ -245,7 +254,7 @@ function InventoryPage() {
           onOpenChange={onEditOpenChange}
           title="Edit Item"
           formData={selectedItem}
-          formFields={formFields}
+          form={inventoryForm}
           onSave={handleSave}
         />
       </>

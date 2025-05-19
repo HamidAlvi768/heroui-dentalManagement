@@ -30,6 +30,7 @@ export function CrudTemplate({
   onRowClick, // New prop for row click handling
   onFilterChange,
   onInputChange,
+  form,
 }) {
   const [items, setItems] = React.useState(data);
   const [currentItem, setCurrentItem] = React.useState(null);
@@ -148,7 +149,8 @@ export function CrudTemplate({
             : `Add New ${title.slice(0, -1)}`
         }
         formData={currentItem}
-        formFields={formFields}
+        form={form || undefined}
+        formFields={!form ? formFields : undefined}
         onSave={handleSave}
         onInputChange={onInputChange}
       />
