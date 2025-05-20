@@ -87,7 +87,7 @@ function CategoriesPage() {
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}
-      formFields={formFields}
+      form={formFields}
       filterColumns={filterColumns}
       onFilterChange={(filters) => {
         console.log('Filters:', filters);

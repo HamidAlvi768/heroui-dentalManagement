@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { CrudTemplate } from '../components/crud-template';
 import { EntityDetailDialog } from '../components/entity-detail-dialog';
 import { CrudDialog } from '../components/crud-dialog';
 import { useDisclosure } from '@heroui/react';
+import config from '../config/config.js';
+import { useAuth } from '../auth/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 // Filter columns
 const filterColumns = [
-  { key: 'examination', label: 'EXAM INVESTIGATION' },
+  { key: 'diagnosis', label: 'DIAGNOSIS' },
   { key: 'doctorName', label: 'DOCTOR' },
   { key: 'patientName', label: 'PATIENT' },
   { key: 'startDate', label: 'START DATE', type: 'date' },
@@ -23,11 +26,11 @@ const filterColumns = [
 
 const columns = [
   {
-    key: 'examination',
-    label: 'EXAM INVESTIGATION',
+    key: 'diagnosis',
+    label: 'DIAGNOSIS',
     render: (item) => (
       <div>
-        <div className="font-medium">{item.examination}</div>
+        <div className="font-medium">{item.diagnosis}</div>
         <div className="text-default-500 text-xs">{item.description}</div>
       </div>
     )
@@ -40,7 +43,7 @@ const columns = [
 
 const initialFormData = {
   patientId: '',
-  examination: '',
+  diagnosis: '',
   prescriptionDate: '',
   note: '',
   medicines: [
@@ -71,8 +74,8 @@ const prescriptionForm = {
           ]
         },
         {
-          key: 'examination',
-          label: 'Select Examination',
+          key: 'diagnosis',
+          label: 'Select Diagnosis',
           type: 'select',
           required: true,
           options: [
@@ -103,67 +106,76 @@ const prescriptionForm = {
   ]
 };
 
-const mockData = [
-  {
-    id: '1',
-    examination: 'General Checkup',
-    description: 'Regular health examination',
-    doctorName: 'Dr. John Smith',
-    patientName: 'Emma Wilson',
-    date: '2025-04-24'
-  }
-];
-
 function PrescriptionPage() {
+  const navigate = useNavigate();
+  const { token } = useAuth();
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [totalItems, setTotalItems] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
   const { isOpen: isEditOpen, onOpen: onEditOpen, onOpenChange: onEditOpenChange } = useDisclosure();
 
+  function getPrescriptions(perpage = 5, page = 1, filters = {}) {
+    setLoading(true);
+    config.initAPI(token);
+    config.getData(`/prescriptions/list?perpage=${perpage}&page=${page}&diagnosis=${filters.diagnosis || ''}&doctorName=${filters.doctorName || ''}&patientName=${filters.patientName || ''}`)
+      .then(data => {
+        // Ensure data is properly structured for the table
+        const formattedData = data.data.data.map(prescription => ({
+          ...prescription,
+          id: prescription.id || prescription._id, // Ensure id exists
+          key: prescription.id || prescription._id, // Add key for React
+          diagnosis: prescription.diagnosis || '',
+          doctorName: prescription.doctorName || '',
+          patientName: prescription.patientName || '',
+          date: prescription.date || prescription.prescriptionDate || '',
+          description: prescription.description || ''
+        }));
+        setPrescriptions(formattedData);
+        setTotalItems(data.data.meta.total);
+        setCurrentPage(data.data.meta.page);
+        setItemsPerPage(data.data.meta.perpage);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching prescriptions:', error);
+        setLoading(false);
+      });
+  }
+
+  useEffect(() => {
+    getPrescriptions(5, 1);
+  }, []);
+
   const handleViewDetail = (prescription) => {
-    // Map additional fields needed for the detail view
-    const mappedPrescription = {
-      ...prescription,
-      prescriptionId: '0039',
-      doctorName: 'Super Admin',
-      patientName: 'test Patient',
-      phone: '1234567899',
-      mrnNumber: '2504150',
-      date: '25 Apr 2025',
-      medicines: [
-        { name: 'Parodontax', description: '1+1', duration: '' },
-        { name: 'Enziclor', description: '1+1+1', duration: '' }
-      ],
-      note: ''  // Empty note field at the bottom
-    };
-    setSelectedPrescription(mappedPrescription);
+    setSelectedPrescription(prescription);
     setIsDetailOpen(true);
   };
 
   const handleEdit = () => {
-    // Convert the prescription data to match the form fields format
-    const formData = {
-      patientId: selectedPrescription.patientName,
-      examination: selectedPrescription.examination,
-      prescriptionDate: selectedPrescription.date,
-      note: selectedPrescription.note,
-      medicines: selectedPrescription.medicines.map(med => ({
-        medicineType: 'tablet', // Default type since it's not in the detail view
-        medicineName: med.name,
-        description: med.description,
-        days: '',
-        weeks: '',
-        months: ''
-      }))
-    };
-    setSelectedPrescription({ ...selectedPrescription, ...formData });
+    setSelectedPrescription(selectedPrescription);
     setIsDetailOpen(false);
     onEditOpen();
   };
 
   const handleSave = (updatedData) => {
-    // Here you would typically save to backend
-    console.log('Saving prescription:', updatedData);
-    onEditOpenChange(false);
+    if (selectedPrescription) {
+      config.postData(`/prescriptions/edit?id=${selectedPrescription.id}`, updatedData)
+        .then(response => {
+          setPrescriptions(prescriptions.map(prescription => 
+            prescription.id === selectedPrescription.id ? updatedData : prescription
+          ));
+          toast.success('Prescription updated successfully!');
+          onEditOpenChange(false);
+        })
+        .catch(error => {
+          console.error('Error updating prescription:', error);
+          toast.error('Failed to update prescription');
+        });
+    }
   };
 
   const customActions = (item) => [
@@ -171,6 +183,13 @@ function PrescriptionPage() {
       label: "View Details",
       icon: "lucide:eye",
       handler: () => handleViewDetail(item)
+    },
+    {
+      label: "Create Invoice",
+      icon: "lucide:file-plus",
+      handler: () => {
+        navigate(`/invoices/${item.id}`, { state: { prescription: item } });
+      }
     }
   ];
 
@@ -180,14 +199,67 @@ function PrescriptionPage() {
         title="Prescriptions"
         description="Manage patient prescriptions"
         icon="lucide:pill"
+        loading={loading}
         columns={columns}
-        data={mockData}
+        data={prescriptions}
         initialFormData={initialFormData}
         form={prescriptionForm}
         addButtonLabel="Add Prescription"
         filterColumns={filterColumns}
         customRowActions={customActions}
         onRowClick={handleViewDetail}
+        totalItems={totalItems}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        onFilterChange={(filters) => {
+          getPrescriptions(itemsPerPage, 1, filters);
+        }}
+        onPerPageChange={(perPage) => {
+          getPrescriptions(perPage, 1);
+        }}
+        onPaginate={(page, perpage) => {
+          getPrescriptions(perpage, page);
+        }}
+        onSave={(data, isEditing) => {
+          if (isEditing) {
+            config.postData(`/prescriptions/edit?id=${data.id}`, data)
+              .then(response => {
+                setPrescriptions(prescriptions.map(prescription => 
+                  prescription.id === data.id ? data : prescription
+                ));
+                toast.success('Prescription updated successfully!');
+              })
+              .catch(error => {
+                console.error('Error updating prescription:', error);
+                toast.error('Failed to update prescription');
+              });
+          } else {
+            config.postData('/prescriptions/create', data)
+              .then(response => {
+                if (response.data.success) {
+                  setPrescriptions([...prescriptions, response.data.prescription]);
+                  toast.success(response.data.message);
+                } else {
+                  toast.error(response.data.message);
+                }
+              })
+              .catch(error => {
+                console.error('Error creating prescription:', error);
+                toast.error('Failed to create prescription');
+              });
+          }
+        }}
+        onDelete={(item) => {
+          config.postData(`/prescriptions/delete?id=${item.id}`, item)
+            .then(response => {
+              setPrescriptions(prescriptions.filter(prescription => prescription.id !== item.id));
+              toast.success('Prescription deleted successfully!');
+            })
+            .catch(error => {
+              console.error('Error deleting prescription:', error);
+              toast.error('Failed to delete prescription');
+            });
+        }}
       />
       {selectedPrescription && (
         <>

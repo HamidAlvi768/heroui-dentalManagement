@@ -113,6 +113,8 @@ export function CrudTemplate({
     setIsEditing(false);
   };
 
+  console.log("Items:", items);
+
   return (
     <PageTemplate
       title={title}
