@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CrudTemplate } from '../components/crud-template';
 import { EntityDetailDialog } from '../components/entity-detail-dialog';
+import config from '../config/config';
+import { useAuth } from '../auth/AuthContext';
 
 // Table columns
 const columns = [
@@ -88,7 +90,7 @@ const mockData = [
 const invoiceForm = {
   sections: [
     {
-      title: 'Invoice Info',
+      // title: 'Invoice Info',
       fields: formFields
     }
   ]
@@ -97,6 +99,12 @@ const invoiceForm = {
 export default function InvoicesPage() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [dataList, setDataList] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [loading, setLoading] = useState(false);
+  const { token } = useAuth();
 
   const handleViewDetail = (invoice) => {
     // Map the invoice data to match the expected format
@@ -121,6 +129,38 @@ export default function InvoicesPage() {
     setIsDetailOpen(true);
   };
 
+
+  function getData(perpage = 5, page = 1, filters = {}) {
+    setLoading(true);
+    config.initAPI(token);
+    config.getData(`/invoices/list`)
+      .then(data => {
+        const today = new Date();
+        const _data = data.data.data.map(item => {
+          item.active = item.active === 1 ? 'Yes' : 'No';
+          let expiryDate = new Date(item.expiry_date);
+          const timeDiff = expiryDate.getTime() - today.getTime();
+          const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+          item.is_expired = dayDiff < 0 ? 'Expired' : dayDiff <= 7 ? `Expired in ${dayDiff} days` : 'No';
+          return item;
+        });
+        setDataList(_data);
+        setCategoriesList(data.data.categories);
+        setTotalItems(data.data.meta.total);
+        setCurrentPage(data.data.meta.page);
+        setItemsPerPage(data.data.meta.perpage);
+        setLoading(false);
+
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }
+
+  useEffect(() => {
+    getData(5, 1);
+  }, []);
+
   // const customActions = [
   //   {
   //     label: "Print",
@@ -138,7 +178,7 @@ export default function InvoicesPage() {
         title="Invoices"
         icon="lucide:receipt"
         columns={columns}
-        data={mockData}
+        data={dataList}
         initialFormData={initialFormData}
         form={invoiceForm}
         filterColumns={filterColumns}

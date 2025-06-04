@@ -170,6 +170,7 @@ function InventoryPage() {
 
 
   useEffect(() => {
+    console.log('useEffect');
     getData(5, 1);
   }, []);
 

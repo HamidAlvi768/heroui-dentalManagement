@@ -70,7 +70,7 @@ export function CrudDialog({
   };
 
   const renderFormField = (field, isInRow = false) => {
-    const { key, label, type, value, options, required, placeholder, disabled, readonly } = field;
+    const { key, label, type, value, options, required, placeholder, disabled, readonly, className } = field;
 
     // Define commonProps without the key
     const commonProps = {
@@ -92,35 +92,22 @@ export function CrudDialog({
     const shouldUseAutocomplete = type === 'select' && options && options.length > 3;
 
     if (shouldUseAutocomplete) {
-      // Convert options to format needed for Autocomplete if necessary
-      // const autocompleteItems = options.map(option =>
-      //   typeof option === 'object' ? option : { key: option, label: option }
-      // );
-
       return (
-        <div className="flex-1 min-w-[200px]">
+        <div className={`flex-1 min-w-[200px] ${className || ''}`}>
           <Autocomplete
             {...commonProps}
-            value={formState[key] || ''} // Current selected value (string or object)
-            onInputChange={(v) => {
-              console.log("SELECTED...");
-              handleChange(key, v)
-            }
-            }
-            onSelectionChange={(v) => {
-              console.log("SELECTED...");
-              handleChange(key, v)
-            }
-            }
-            options={options} // List of options to filter
-            getOptionLabel={(option) => option.label || option} // Display label for each option
+            value={formState[key] || ''}
+            onInputChange={(v) => handleChange(key, v)}
+            onSelectionChange={(v) => handleChange(key, v)}
+            options={options}
+            getOptionLabel={(option) => option.label || option}
             filterOptions={(options, { inputValue }) =>
               options.filter((option) =>
                 (option.label || option)
                   .toLowerCase()
                   .includes(inputValue.toLowerCase())
               )
-            } // Filter logic
+            }
           >
             {options?.map((option) => (
               <AutocompleteItem
@@ -153,7 +140,7 @@ export function CrudDialog({
       case 'range':
       case 'file':
         return (
-          <div className="flex-1 min-w-[200px]">
+          <div className={`flex-1 min-w-[200px] ${className || ''}`}>
             <Input
               {...commonProps}
               type={type}
@@ -165,7 +152,7 @@ export function CrudDialog({
 
       case 'select':
         return (
-          <div className="flex-1 min-w-[200px]">
+          <div className={`flex-1 min-w-[200px] ${className || ''}`}>
             <Select
               {...commonProps}
               selectedKeys={formState[key] ? [formState[key]] : []}
@@ -182,7 +169,7 @@ export function CrudDialog({
 
       case 'checkbox':
         return (
-          <div className="flex-1 min-w-[200px]">
+          <div className={`flex-1 min-w-[200px] ${className || ''}`}>
             <Checkbox
               isSelected={formState[key] || false}
               onValueChange={(value) => handleChange(key, value)}
@@ -194,7 +181,7 @@ export function CrudDialog({
 
       case 'textarea':
         return (
-          <div className={isInRow ? "flex-1" : "w-full col-span-3"}>
+          <div className={`${isInRow ? "flex-1" : "w-full col-span-3"} ${className || ''}`}>
             <Textarea
               {...commonProps}
               value={formState[key] || ''}

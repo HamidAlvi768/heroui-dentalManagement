@@ -1,0 +1,23 @@
+  invoice = {
+   invoice_number,
+    invoice_date,
+    total_amount,
+    discount_amount,
+    net_amount,
+    paid,
+    payment_method,
+    notes,
+  items: [
+    {
+      item_type,
+      item_description,
+      quantity,
+      unit_price,
+      discount,
+      total_price
+    }
+    // …more line items…
+  ]
+}
+
+  
