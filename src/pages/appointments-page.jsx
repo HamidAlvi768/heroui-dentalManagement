@@ -26,18 +26,14 @@ const filterColumns = [
 
 const columns = [
   {
-    key: 'diagnosis',
-    label: 'DIAGNOSIS',
-    render: (item) => (
-      <div>
-        <div className="font-medium">{item.diagnosis}</div>
-        <div className="text-default-500 text-xs">{item.description}</div>
-      </div>
-    )
+    key: 'patient_id',
+    label: 'Patient',
   },
-  { key: 'doctorName', label: 'DOCTOR' },
-  { key: 'patientName', label: 'PATIENT' },
-  { key: 'date', label: 'DATE' },
+  { key: 'scheduled_by', label: 'DOCTOR' },
+  { key: 'appointment_date', label: 'DATE' },
+  { key: 'appointment_reason', label: 'REASON' },
+  { key: 'status', label: 'STATUS' },
+  { key: 'notes', label: 'NOTES' },
   { key: 'actions', label: 'ACTIONS' }
 ];
 
@@ -275,10 +271,8 @@ function AppointmentsPage() {
     config.initAPI(token);
     config
       .getData(
-        `/appointments/list?perpage=${perpage}&page=${page}&category_id=${
-          filters.category_id || ""
-        }&name=${filters.name || ""}&code=${filters.code || ""}&quantity=${
-          filters.quantity || ""
+        `/appointments/list?perpage=${perpage}&page=${page}&category_id=${filters.category_id || ""
+        }&name=${filters.name || ""}&code=${filters.code || ""}&quantity=${filters.quantity || ""
         }&active=${filters.active || ""}`
       )
       .then((data) => {

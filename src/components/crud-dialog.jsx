@@ -55,10 +55,12 @@ export function CrudDialog({
   }, [formData]);
 
   const handleChange = (key, value) => {
+    console.log("FORM KE VALUE", key, value)
     const newForm = {
       ...formState,
       [key]: value
     };
+    console.log("FORM DATA ", newForm)
     setFormState(newForm);
     if (onInputChange) {
       onInputChange(newForm);
@@ -103,12 +105,11 @@ export function CrudDialog({
             {...commonProps}
             value={formState[key] || ''} // Current selected value (string or object)
             onInputChange={(v) => {
-              console.log("SELECTED...");
-              handleChange(key, v)
+              // console.log("INPUT CHANGE",key,v);
+              // handleChange(key, v)
             }
             }
             onSelectionChange={(v) => {
-              console.log("SELECTED...");
               handleChange(key, v)
             }
             }
@@ -458,16 +459,6 @@ export function CrudDialog({
       </div>
     ));
   };
-
-  // Debug logs for form structure
-  console.log('CrudDialog: form prop:', form);
-  console.log('CrudDialog: form.sections:', form?.sections);
-  if (form?.sections) {
-    form.sections.forEach((section, idx) => {
-      console.log(`Section ${idx}:`, section);
-      console.log(`Section ${idx} fields:`, section.fields);
-    });
-  }
 
   return (
     <Modal
