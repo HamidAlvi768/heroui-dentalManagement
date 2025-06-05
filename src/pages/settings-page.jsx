@@ -101,7 +101,7 @@ export default function SettingsPage() {
         </div>
 
         {/* <Row> */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {entitiesSettingsSections.map((en) => (
             <Card
               key={en.title}
@@ -129,7 +129,7 @@ export default function SettingsPage() {
             <p className="text-muted-foreground mb-2">Static Settings</p>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {settingsSections.map((section) => (
             <Card
               key={section.title}

@@ -152,12 +152,6 @@ function AppointmentsPage() {
       ],
     },
     {
-      key: "scheduled_by",
-      label: "Scheduled By", // This could be a text field or a select for users/doctors
-      type: "text",
-      required: false,
-    },
-    {
       key: "appointment_date",
       label: "Appointment Date",
       type: "date",
@@ -180,12 +174,6 @@ function AppointmentsPage() {
       type: "textarea",
       required: false,
     },
-    // {
-    //   key: "notes",
-    //   label: "Notes",
-    //   type: "textarea",
-    //   required: false,
-    // },
   ], [patientsList]); // Recompute if patientsList changes for the patient_id options
 
   const columns = useMemo(() => [
@@ -196,11 +184,6 @@ function AppointmentsPage() {
         const patient = patientsList.find(p => p.id === item.patient_id);
         return patient ? (patient.username || patient.name) : (item.patient_name || item.patient_id || 'N/A');
       }
-    },
-    {
-      key: 'scheduled_by',
-      label: 'SCHEDULED BY',
-      render: (item) => item.scheduled_by || 'N/A',
     },
     {
       key: 'appointment_date',
@@ -229,22 +212,11 @@ function AppointmentsPage() {
       label: 'STATUS',
       render: (item) => item.status || 'N/A',
     },
-    // { // Uncomment if 'notes' column is desired in the main table
-    //   key: 'notes',
-    //   label: 'NOTES',
-    //   render: (item) => {
-    //     const notes = item.notes;
-    //     if (!notes) return 'N/A';
-    //     const maxLength = 25;
-    //     return notes.length > maxLength ? `${notes.substring(0, maxLength - 3)}...` : notes;
-    //   }
-    // },
     { key: 'actions', label: 'ACTIONS' }
   ], [patientsList]);
 
   const initialAppointmentFormData = {
     patient_id: '',
-    scheduled_by: '',
     appointment_date: '',
     appointment_reason: '',
     status: 'Scheduled',
