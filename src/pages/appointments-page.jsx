@@ -7,15 +7,116 @@ import { useAuth } from "../auth/AuthContext";
 import { EntityDetailDialog } from "../components/entity-detail-dialog";
 import { CrudDialog } from "../components/crud-dialog";
 import { useDisclosure } from "@heroui/react";
-// import { toast } from 'your-toast-library'; // Import your toast library
 
-// This was the original filterColumns definition at the top,
-// it seems unrelated to the appointment formFields.
-// const originalGlobalFilterColumns = [
-//   { key: 'diagnosis', label: 'DIAGNOSIS' },
-//   { key: 'doctorName', label: 'DOCTOR' },
-//   // ... other fields
-// ];
+// Filter columns
+const filterColumns = [
+  { key: 'diagnosis', label: 'DIAGNOSIS' },
+  { key: 'doctorName', label: 'DOCTOR' },
+  { key: 'patientName', label: 'PATIENT' },
+  { key: 'startDate', label: 'START DATE', type: 'date' },
+  { key: 'endDate', label: 'END DATE', type: 'date' },
+  {
+    key: 'medicineType', label: 'MEDICINE TYPE', type: 'select', options: [
+      { value: 'tablet', label: 'Tablet' },
+      { value: 'syrup', label: 'Syrup' },
+      { value: 'injection', label: 'Injection' },
+      { value: 'capsule', label: 'Capsule' }
+    ]
+  },
+];
+
+const columns = [
+  {
+    key: 'diagnosis',
+    label: 'DIAGNOSIS',
+    render: (item) => (
+      <div>
+        <div className="font-medium">{item.diagnosis}</div>
+        <div className="text-default-500 text-xs">{item.description}</div>
+      </div>
+    )
+  },
+  { key: 'doctorName', label: 'DOCTOR' },
+  { key: 'patientName', label: 'PATIENT' },
+  { key: 'date', label: 'DATE' },
+  { key: 'actions', label: 'ACTIONS' }
+];
+
+const initialFormData = {
+  patientId: '',
+  diagnosis: '',
+  prescriptionDate: '',
+  note: '',
+  medicines: [
+    {
+      medicineType: '',
+      medicineName: '',
+      description: '',
+      days: '',
+      weeks: '',
+      months: ''
+    }
+  ]
+};
+
+const prescriptionForm = {
+  sections: [
+    {
+      title: 'Prescription Info',
+      fields: [
+        {
+          key: 'patientId',
+          label: 'Select Patient',
+          type: 'select',
+          required: true,
+          options: [
+            { value: 'P1001', label: 'John Doe' },
+            { value: 'P1002', label: 'Jane Smith' }
+          ]
+        },
+        {
+          key: 'diagnosis',
+          label: 'Select Diagnosis',
+          type: 'select',
+          required: true,
+          options: [
+            { value: 'general', label: 'General Checkup' },
+            { value: 'followup', label: 'Follow-up' },
+            { value: 'specialist', label: 'Specialist Consultation' }
+          ]
+        },
+        {
+          key: 'prescriptionDate',
+          label: 'Prescription Date',
+          type: 'date',
+          required: true
+        },
+        {
+          key: 'note',
+          label: 'Note',
+          type: 'textarea'
+        }
+      ]
+    },
+    {
+      title: 'Medicines',
+      fields: [
+        { key: 'medicines', type: 'medicines-table' }
+      ]
+    }
+  ]
+};
+
+const mockData = [
+  {
+    id: '1',
+    diagnosis: 'General Checkup',
+    description: 'Regular health examination',
+    doctorName: 'Dr. John Smith',
+    patientName: 'Emma Wilson',
+    date: '2025-04-24'
+  }
+];
 
 function AppointmentsPage() {
   const { token } = useAuth();
@@ -173,23 +274,34 @@ function AppointmentsPage() {
     });
 
     config
-      .getData(`/appointments/list?${queryParams.toString()}`) // Ensure your API endpoint is correct
-      .then((response) => {
-        // Assuming response.data contains the main data array and pagination meta
-        // And response.data.patients for the patient dropdown list
-        const responseData = response.data; // Adjust if your API structure is different
-
-        setPatientsList(responseData.patients || []); // For patient dropdowns
-        setDataList(responseData.data || []); // List of appointments
-        
-        if (responseData.meta) {
-          setTotalItems(responseData.meta.total || 0);
-          setCurrentPage(responseData.meta.current_page || responseData.meta.page || 1);
-          setItemsPerPage(responseData.meta.per_page || responseData.meta.perpage || 5);
-        } else {
-          // Fallback if meta structure is different or not present
-          setTotalItems(responseData.data?.length || 0);
-        }
+      .getData(
+        `/appointments/list?perpage=${perpage}&page=${page}&category_id=${
+          filters.category_id || ""
+        }&name=${filters.name || ""}&code=${filters.code || ""}&quantity=${
+          filters.quantity || ""
+        }&active=${filters.active || ""}`
+      )
+      .then((data) => {
+        console.log("Appointments data:", data.data.patients);
+        const today = new Date();
+        const _data = data.data.data.map((item) => {
+          // item.active = item.active === 1 ? "Yes" : "No";
+          // let expiryDate = new Date(item.expiry_date);
+          // const timeDiff = expiryDate.getTime() - today.getTime();
+          // const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+          // item.is_expired =
+          //   dayDiff < 0
+          //     ? "Expired"
+          //     : dayDiff <= 7
+          //     ? `Expired in ${dayDiff} days`
+          //     : "No";
+          return item;
+        });
+        setDataList(_data);
+        setPatientsList(data.data.patients);
+        setTotalItems(data.data.meta.total);
+        setCurrentPage(data.data.meta.page);
+        setItemsPerPage(data.data.meta.perpage);
         setLoading(false);
       })
       .catch((error) => {
