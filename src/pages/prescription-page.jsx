@@ -82,11 +82,13 @@ function PrescriptionPage() {
             label: 'Select Patient',
             type: 'select',
             required: true,
-            options: patients.map(patient => ({
-              key: patient.id,
-              value: patient.id,
-              text: patient.name
-            }))
+            options: [
+              ...patients.map(patient => ({
+                key: patient.id,
+                value: patient.id,
+                label: patient.full_name
+              }))
+            ]
           },
           {
             key: 'diagnosis',
@@ -94,9 +96,9 @@ function PrescriptionPage() {
             type: 'select',
             required: true,
             options: [
-              { key: 'general', value: 'general', text: 'General Checkup' },
-              { key: 'followup', value: 'followup', text: 'Follow-up' },
-              { key: 'specialist', value: 'specialist', text: 'Specialist Consultation' }
+              { key: 'general', value: 'general', label: 'General Checkup' },
+              { key: 'followup', value: 'followup', label: 'Follow-up' },
+              { key: 'specialist', value: 'specialist', label: 'Specialist Consultation' }
             ]
           },
           {
