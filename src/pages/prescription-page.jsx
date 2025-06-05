@@ -186,7 +186,7 @@ function PrescriptionPage() {
     if (selectedPrescription) {
       config.postData(`/prescriptions/edit?id=${selectedPrescription.id}`, updatedData)
         .then(response => {
-          setPrescriptions(prescriptions.map(prescription => 
+          setPrescriptions(prescriptions.map(prescription =>
             prescription.id === selectedPrescription.id ? updatedData : prescription
           ));
           toast.success('Prescription updated successfully!');
@@ -245,7 +245,7 @@ function PrescriptionPage() {
           if (isEditing) {
             config.postData(`/prescriptions/edit?id=${data.id}`, data)
               .then(response => {
-                setPrescriptions(prescriptions.map(prescription => 
+                setPrescriptions(prescriptions.map(prescription =>
                   prescription.id === data.id ? data : prescription
                 ));
                 toast.success('Prescription updated successfully!');
@@ -275,16 +275,16 @@ function PrescriptionPage() {
             '/prescriptions/delete',
             { id: item.id }  // ✅ Send ID in request body
           )
-          .then(response => {
-            setPrescriptions(prescriptions.filter(prescription => prescription.id !== item.id));
-            toast.success('Prescription deleted successfully!');
-          })
-          .catch(error => {
-            console.error('Error deleting prescription:', error);
-            toast.error('Failed to delete prescription');
-          });
+            .then(response => {
+              setPrescriptions(prescriptions.filter(prescription => prescription.id !== item.id));
+              toast.success('Prescription deleted successfully!');
+            })
+            .catch(error => {
+              console.error('Error deleting prescription:', error);
+              toast.error('Failed to delete prescription');
+            });
         }}
-        
+
       />
       {selectedPrescription && (
         <>

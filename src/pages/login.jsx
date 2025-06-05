@@ -58,6 +58,8 @@ export default function LoginPage() {
       });
   };
 
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md p-8">
@@ -83,16 +85,18 @@ export default function LoginPage() {
 
           <div>
             <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="mt-1"
-              placeholder="Enter your password"
-              required
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={handleChange}
+                className="mt-1"
+                placeholder="Enter your password"
+                required
+              />
+            </div>
           </div>
 
           <div className="flex items-center justify-between">

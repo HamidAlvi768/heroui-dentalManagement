@@ -303,10 +303,8 @@ function AppointmentsPage() {
 
     config
       .getData(
-        `/appointments/list?perpage=${perpage}&page=${page}&category_id=${
-          filters.category_id || ""
-        }&name=${filters.name || ""}&code=${filters.code || ""}&quantity=${
-          filters.quantity || ""
+        `/appointments/list?perpage=${perPage}&page=${page}&category_id=${filters.category_id || ""
+        }&name=${filters.name || ""}&code=${filters.code || ""}&quantity=${filters.quantity || ""
         }&active=${filters.active || ""}`
       )
       .then((data) => {
@@ -340,15 +338,15 @@ function AppointmentsPage() {
   }
 
   useEffect(() => {
-    getData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    getData(5,1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Initial fetch
 
   const handleViewDetail = (item) => {
     const mappedItem = {
       ...item,
       // Mock data for detail view if not present in item, adjust as needed
-      consumptionHistory: item.consumptionHistory || [], 
+      consumptionHistory: item.consumptionHistory || [],
       additionHistory: item.additionHistory || [
         // { // Example structure if needed by EntityDetailDialog
         //   username: "System",
@@ -367,7 +365,7 @@ function AppointmentsPage() {
     setIsDetailOpen(false);
     onEditOpen();
   };
-  
+
   const handleAddNew = () => {
     setSelectedItem(null); // Clear selected item for new entry
     onEditOpen();
@@ -378,7 +376,7 @@ function AppointmentsPage() {
     console.log("Saving appointment:", dataFromForm, "Is Editing:", isEditing);
 
     const endpoint = isEditing ? `/appointments/edit?id=${dataFromForm.id}` : "/appointments/create";
-    
+
     config.postData(endpoint, dataFromForm)
       .then(response => {
         // toast.success(`Appointment ${isEditing ? 'updated' : 'created'} successfully!`);
@@ -466,15 +464,15 @@ function AppointmentsPage() {
             title={`Appointment Details`}
             onEdit={() => selectedItem && handleEdit(selectedItem)}
             entityType="appointment"
-            // You might need to pass specific fields or a mapping function to EntityDetailDialog
-            // if its internal structure is rigid.
+          // You might need to pass specific fields or a mapping function to EntityDetailDialog
+          // if its internal structure is rigid.
           />
           <CrudDialog
             isOpen={isEditOpen}
             onOpenChange={onEditOpenChange}
             title={selectedItem?.id ? "Edit Appointment" : "Add New Appointment"}
             // formData should be the item to edit, or initial data for new entry
-            formData={selectedItem || initialAppointmentFormData} 
+            formData={selectedItem || initialAppointmentFormData}
             form={appointmentFormConfig}
             onSave={(data) => handleSave(data, !!selectedItem?.id)}
           />
