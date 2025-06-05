@@ -6,6 +6,7 @@ import { useDisclosure } from '@heroui/react';
 import config from '../config/config.js';
 import { useAuth } from '../auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 // Filter columns
 const filterColumns = [
@@ -58,54 +59,6 @@ const initialFormData = {
   ]
 };
 
-const prescriptionForm = {
-  sections: [
-    {
-      title: 'Prescription Info',
-      fields: [
-        {
-          key: 'patientId',
-          label: 'Select Patient',
-          type: 'select',
-          required: true,
-          options: [
-            { value: 'P1001', label: 'John Doe' },
-            { value: 'P1002', label: 'Jane Smith' }
-          ]
-        },
-        {
-          key: 'diagnosis',
-          label: 'Select Diagnosis',
-          type: 'select',
-          required: true,
-          options: [
-            { value: 'general', label: 'General Checkup' },
-            { value: 'followup', label: 'Follow-up' },
-            { value: 'specialist', label: 'Specialist Consultation' }
-          ]
-        },
-        {
-          key: 'prescriptionDate',
-          label: 'Prescription Date',
-          type: 'date',
-          required: true
-        },
-        {
-          key: 'note',
-          label: 'Note',
-          type: 'textarea'
-        }
-      ]
-    },
-    {
-      title: 'Medicines',
-      fields: [
-        { key: 'medicines', type: 'medicines-table' }
-      ]
-    }
-  ]
-};
-
 function PrescriptionPage() {
   const navigate = useNavigate();
   const { token } = useAuth();
@@ -117,12 +70,67 @@ function PrescriptionPage() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
   const { isOpen: isEditOpen, onOpen: onEditOpen, onOpenChange: onEditOpenChange } = useDisclosure();
+  const [patients, setPatients] = useState([]);
+
+  // Define prescriptionForm inside the component to access patients state
+  const prescriptionForm = {
+    sections: [
+      {
+        fields: [
+          {
+            key: 'patientId',
+            label: 'Select Patient',
+            type: 'select',
+            required: true,
+            options: patients.map(patient => ({
+              key: patient.id,
+              value: patient.id,
+              text: patient.name
+            }))
+          },
+          {
+            key: 'diagnosis',
+            label: 'Select Diagnosis',
+            type: 'select',
+            required: true,
+            options: [
+              { key: 'general', value: 'general', text: 'General Checkup' },
+              { key: 'followup', value: 'followup', text: 'Follow-up' },
+              { key: 'specialist', value: 'specialist', text: 'Specialist Consultation' }
+            ]
+          },
+          {
+            key: 'prescriptionDate',
+            label: 'Prescription Date',
+            type: 'date',
+            required: true
+          },
+          {
+            key: 'note',
+            label: 'Note',
+            type: 'textarea',
+          }
+        ]
+      },
+      {
+        fields: [
+          { key: 'medicines', type: 'medicines-table' }
+        ]
+      }
+    ]
+  };
 
   function getPrescriptions(perpage = 5, page = 1, filters = {}) {
     setLoading(true);
     config.initAPI(token);
     config.getData(`/prescriptions/list?perpage=${perpage}&page=${page}&diagnosis=${filters.diagnosis || ''}&doctorName=${filters.doctorName || ''}&patientName=${filters.patientName || ''}`)
       .then(data => {
+        if (!data.success) {
+          console.error('Error in prescription data:', data.message);
+          toast.error(data.message || 'Failed to fetch prescriptions');
+          setLoading(false);
+          return;
+        }
         // Ensure data is properly structured for the table
         const formattedData = data.data.data.map(prescription => ({
           ...prescription,
@@ -134,6 +142,7 @@ function PrescriptionPage() {
           date: prescription.date || prescription.prescriptionDate || '',
           description: prescription.description || ''
         }));
+        console.log("formattedData", formattedData);
         setPrescriptions(formattedData);
         setTotalItems(data.data.meta.total);
         setCurrentPage(data.data.meta.page);
@@ -142,12 +151,24 @@ function PrescriptionPage() {
       })
       .catch(error => {
         console.error('Error fetching prescriptions:', error);
+        toast.error('Failed to fetch prescriptions. Please try again.');
         setLoading(false);
       });
   }
 
   useEffect(() => {
     getPrescriptions(5, 1);
+
+    //call the patient list api
+    config.initAPI(token);
+    config.getData(`/patients/list`)
+      .then(data => {
+        setPatients(data.data.data);
+        console.log("patient list", data.data.data);
+      })
+      .catch(error => console.error('Error fetching patients:', error));
+
+
   }, []);
 
   const handleViewDetail = (prescription) => {
@@ -250,16 +271,20 @@ function PrescriptionPage() {
           }
         }}
         onDelete={(item) => {
-          config.postData(`/prescriptions/delete?id=${item.id}`, item)
-            .then(response => {
-              setPrescriptions(prescriptions.filter(prescription => prescription.id !== item.id));
-              toast.success('Prescription deleted successfully!');
-            })
-            .catch(error => {
-              console.error('Error deleting prescription:', error);
-              toast.error('Failed to delete prescription');
-            });
+          config.postData(
+            '/prescriptions/delete',
+            { id: item.id }  // ✅ Send ID in request body
+          )
+          .then(response => {
+            setPrescriptions(prescriptions.filter(prescription => prescription.id !== item.id));
+            toast.success('Prescription deleted successfully!');
+          })
+          .catch(error => {
+            console.error('Error deleting prescription:', error);
+            toast.error('Failed to delete prescription');
+          });
         }}
+        
       />
       {selectedPrescription && (
         <>
