@@ -33,6 +33,12 @@ const clinicInfo = {
 
 const formatValue = (value, format) => {
   if (!value) return '-';
+  
+  // Handle nested object properties
+  if (typeof value === 'object' && value !== null) {
+    return value.toString();
+  }
+
   switch (format) {
     case 'date':
       return new Date(value).toLocaleDateString('en-US', {
@@ -60,48 +66,68 @@ const formatValue = (value, format) => {
   }
 };
 
+// Add a helper function to get nested object values
+const getNestedValue = (obj, path) => {
+  return path.split('.').reduce((current, key) => {
+    return current && current[key] !== undefined ? current[key] : '-';
+  }, obj);
+};
+
 const renderList = (section, entity) => (
   <Card className="w-full">
-  <CardBody className="p-4">
-    <div className="flex items-center justify-between overflow-x-auto gap-x-4 min-w-0">
-      {section.fields.map((field, index) => (
-        <div key={index} className="flex items-center min-w-0 shrink-0">
-          <span className="text-default-500 text-xs mr-1">{field.label}:</span>
-          <span className="font-medium text-xs">
-            {formatValue(entity[field.key], field.format)}
-          </span>
-        </div>
-      ))}
-    </div>
-  </CardBody>
-</Card>
-);
-
-const renderTable = (section, entity) => (
-  <Card>
     <CardBody className="p-4">
-      <div className="font-medium mb-4">{section.title}</div>
-      <Table aria-label={section.title}>
-        <TableHeader>
-          {section.columns.map((col, index) => (
-            <TableColumn key={index}>{col.label}</TableColumn>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {(entity[section.dataKey] || []).map((item, rowIndex) => (
-            <TableRow key={rowIndex}>
-              {section.columns.map((col, colIndex) => (
-                <TableCell key={colIndex}>
-                  {col.key === 'index' ? rowIndex + 1 : formatValue(item[col.key], col.format)}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <div className="flex items-center justify-between overflow-x-auto gap-x-4 min-w-0">
+        {section.fields.map((field, index) => (
+          <div key={index} className="flex items-center min-w-0 shrink-0">
+            <span className="text-default-500 text-xs mr-1">{field.label}:</span>
+            <span className="font-medium text-xs">
+              {formatValue(getNestedValue(entity, field.key), field.format)}
+            </span>
+          </div>
+        ))}
+      </div>
     </CardBody>
   </Card>
 );
+
+const renderTable = (section, entity, prescriptionItems) => {
+  console.log("Render Table Props:", { section, entity, prescriptionItems });
+  console.log("DataKey:", section.dataKey);
+  console.log("Items to render:", section.dataKey === 'prescriptionItems' ? prescriptionItems : entity[section.dataKey] || []);
+
+  return (
+    <Card>
+      <CardBody className="p-4">
+        <div className="font-medium mb-4">{section.title}</div>
+        <Table aria-label={section.title}>
+          <TableHeader>
+            {section.columns.map((col, index) => (
+              <TableColumn key={index}>{col.label}</TableColumn>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {(section.dataKey === 'prescriptionItems' ? prescriptionItems : entity[section.dataKey] || []).map((item, rowIndex) => {
+              console.log("Rendering item:", item);
+              return (
+                <TableRow key={rowIndex}>
+                  {section.columns.map((col, colIndex) => {
+                    const value = getNestedValue(item, col.key);
+                    console.log(`Column ${col.key} value:`, value);
+                    return (
+                      <TableCell key={colIndex}>
+                        {col.key === 'index' ? rowIndex + 1 : formatValue(value, col.format)}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </CardBody>
+    </Card>
+  );
+};
 
 const renderTextarea = (section, entity) => (
   <Card>
@@ -119,12 +145,12 @@ const renderTextarea = (section, entity) => (
   </Card>
 );
 
-const renderSection = (section, entity) => {
+const renderSection = (section, entity, prescriptionItems) => {
   switch (section.type) {
     case 'list':
       return renderList(section, entity);
     case 'table':
-      return renderTable(section, entity);
+      return renderTable(section, entity, prescriptionItems);
     case 'textarea':
       return renderTextarea(section, entity);
     default:
@@ -284,28 +310,30 @@ const entityConfigs = {
       {
         type: 'list',
         fields: [
-          { label: 'Prescription ID', key: 'prescriptionId' },
-          { label: 'Date', key: 'date', format: 'date' },
-          { label: 'Doctor', key: 'doctorName' },
-          { label: 'Patient', key: 'patientName' },
-          { label: 'Phone', key: 'phone' },
-          { label: 'MRN no', key: 'mrnNumber' },
+          { label: 'Prescription ID', key: 'id' },
+          { label: 'Date', key: 'prescription_date', format: 'date' },
+          { label: 'Doctor', key: 'doctor.username' },
+          { label: 'Patient', key: 'patient.full_name' },
+          { label: 'Phone', key: 'patient.contact_number' },
+          { label: 'MRN no', key: 'mrn_number' },
         ],
       },
       {
         type: 'table',
         title: 'Medications',
         columns: [
-          { label: 'MEDICINE NAME', key: 'name' },
-          { label: 'DESCRIPTION', key: 'description' },
+          { label: 'MEDICINE NAME', key: 'medicine_name' },
+          { label: 'DESCRIPTION', key: 'instructions' },
           { label: 'DURATION', key: 'duration' },
         ],
-        dataKey: 'medicines',
+        dataKey: 'prescriptionItems',
       },
       {
-        type: 'textarea',
+        type: 'list',
         title: 'Notes',
-        key: 'note',
+        fields: [
+          { label: 'Notes', key: 'notes' }
+        ]
       },
     ],
     footerActions: (onClose, handlePrint, onEdit) => [
@@ -371,8 +399,8 @@ const entityConfigs = {
         type: 'list',
         fields: [
           { label: 'Invoice No', key: 'invoiceNumber' },
-          { label: 'Patient Name', key: 'patientName' },
-          { label: 'Phone', key: 'phone' },
+          { label: 'Patient Name', key: 'patient.full_name' },
+          { label: 'Phone', key: 'patient.contact_number' },
           { label: 'MRN Number', key: 'mrnNumber' },
           { label: 'Date', key: 'date', format: 'date' },
         ],
@@ -382,11 +410,11 @@ const entityConfigs = {
         title: 'Services',
         columns: [
           { label: '#', key: 'index' },
-          { label: 'PROCEDURE', key: 'procedure' },
+          // { label: 'PROCEDURE', key: 'procedure' },
           { label: 'DESCRIPTION', key: 'description' },
           { label: 'QUANTITY', key: 'quantity' },
-          { label: 'PRICE', key: 'price', format: 'currency' },
-          { label: 'SUB TOTAL', key: 'subTotal', format: 'currency' },
+          { label: 'PRICE', key: 'unit_price', format: 'currency' },
+          { label: 'SUB TOTAL', key: 'total_price', format: 'currency' },
         ],
         dataKey: 'services',
       },
@@ -515,7 +543,15 @@ export function EntityDetailDialog({
   onEdit,
   entityType,
   onStatusChange,
+  prescriptionItems,
 }) {
+  console.log("EntityDetailDialog Props:", {
+    entity,
+    entityType,
+    prescriptionItems,
+    isOpen
+  });
+
   // Print preview dialog state
   const [isPrintPreviewOpen, setPrintPreviewOpen] = useState(false);
 
@@ -558,7 +594,7 @@ export function EntityDetailDialog({
                     <div className="space-y-6">
                       {config.sections.map((section, index) => (
                         <div key={index}>
-                          {renderSection(section, entity)}
+                          {renderSection(section, entity, prescriptionItems)}
                         </div>
                       ))}
                     </div>

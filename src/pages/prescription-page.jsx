@@ -71,6 +71,7 @@ function PrescriptionPage() {
   const [selectedPrescription, setSelectedPrescription] = useState(null);
   const { isOpen: isEditOpen, onOpen: onEditOpen, onOpenChange: onEditOpenChange } = useDisclosure();
   const [patients, setPatients] = useState([]);
+  const [prescriptionItems, setPrescriptionItems] = useState([]);
 
   // Define prescriptionForm inside the component to access patients state
   const prescriptionForm = {
@@ -78,7 +79,7 @@ function PrescriptionPage() {
       {
         fields: [
           {
-            key: 'patientId',
+            key: 'patient_id',
             label: 'Select Patient',
             type: 'select',
             required: true,
@@ -102,13 +103,13 @@ function PrescriptionPage() {
             ]
           },
           {
-            key: 'prescriptionDate',
+            key: 'prescription_date',
             label: 'Prescription Date',
             type: 'date',
             required: true
           },
           {
-            key: 'note',
+            key: 'notes',
             label: 'Note',
             type: 'textarea',
           }
@@ -122,34 +123,57 @@ function PrescriptionPage() {
     ]
   };
 
+  // Add data transformation function
+  const transformFormData = (formData) => {
+    return {
+      patient_id: formData.patient_id,
+      diagnosis: formData.diagnosis,
+      prescription_date: formData.prescription_date,
+      notes: formData.notes,
+      medicines: formData.medicines
+    };
+  };
+
   function getPrescriptions(perpage = 5, page = 1, filters = {}) {
     setLoading(true);
     config.initAPI(token);
     config.getData(`/prescriptions/list?perpage=${perpage}&page=${page}&diagnosis=${filters.diagnosis || ''}&doctorName=${filters.doctorName || ''}&patientName=${filters.patientName || ''}`)
-      .then(data => {
-        if (!data.success) {
-          console.error('Error in prescription data:', data.message);
-          toast.error(data.message || 'Failed to fetch prescriptions');
+      .then(response => {
+        // Check if response exists and has the expected structure
+        if (!response || !response.data) {
+          console.error('Invalid response structure:', response);
+          toast.error('Invalid response from server');
           setLoading(false);
           return;
         }
+
+        const { success, message, data, meta } = response.data;
+
+        if (!success) {
+          console.error('Error in prescription data:', message);
+          toast.error(message || 'Failed to fetch prescriptions');
+          setLoading(false);
+          return;
+        }
+
         // Ensure data is properly structured for the table
-        const formattedData = data.data.data.map(prescription => ({
+        const formattedData = data.map(prescription => ({
           ...prescription,
           id: prescription.id || prescription._id, // Ensure id exists
           key: prescription.id || prescription._id, // Add key for React
           diagnosis: prescription.diagnosis || '',
-          doctorName: prescription.doctorName || '',
-          patientName: prescription.patientName || '',
-          date: prescription.date || prescription.prescriptionDate || '',
+          doctorName: prescription.doctor.username || '',
+          patientName: prescription.patient.full_name || '',
+          date: prescription.date || prescription.prescription_date || '',
           description: prescription.description || ''
         }));
-        console.log("formattedData", formattedData);
+
         setPrescriptions(formattedData);
-        setTotalItems(data.data.meta.total);
-        setCurrentPage(data.data.meta.page);
-        setItemsPerPage(data.data.meta.perpage);
+        setTotalItems(meta?.total || 0);
+        setCurrentPage(meta?.page || 1);
+        setItemsPerPage(meta?.perpage || 5);
         setLoading(false);
+        console.log("formattedData", formattedData);
       })
       .catch(error => {
         console.error('Error fetching prescriptions:', error);
@@ -174,8 +198,24 @@ function PrescriptionPage() {
   }, []);
 
   const handleViewDetail = (prescription) => {
-    setSelectedPrescription(prescription);
-    setIsDetailOpen(true);
+    //call the prescription detail api
+    config.initAPI(token);
+    config.getData(`/prescriptions/view?id=${prescription.id}`)
+      .then(response => {
+        console.log("Full API Response:", response);
+        console.log("Prescription Data:", response.data.prescription);
+        response.data.prescription = {
+            ...response.data.prescription,
+            doctor: response.data.doctor,
+            patient: response.data.patient
+        };
+        console.log("Prescription Data:", response.data.doctor);
+        console.log("Prescription Items:", response.data.prescriptionItems);
+        setPrescriptionItems(response.data.prescriptionItems);
+        setSelectedPrescription(response.data.prescription);
+        setIsDetailOpen(true);
+      })
+      .catch(error => console.error('Error fetching prescription details:', error));
   };
 
   const handleEdit = () => {
@@ -244,23 +284,27 @@ function PrescriptionPage() {
           getPrescriptions(perpage, page);
         }}
         onSave={(data, isEditing) => {
+          const transformedData = transformFormData(data);
           if (isEditing) {
-            config.postData(`/prescriptions/edit?id=${data.id}`, data)
+            config.postData(`/prescriptions/edit?id=${data.id}`, transformedData)
               .then(response => {
-                setPrescriptions(prescriptions.map(prescription =>
-                  prescription.id === data.id ? data : prescription
-                ));
-                toast.success('Prescription updated successfully!');
+                if (response.data.success) {
+                  getPrescriptions(itemsPerPage, 1, filters);
+                  toast.success('Prescription updated successfully!');
+                } else {
+                  toast.error(response.data.message);
+                }
               })
               .catch(error => {
                 console.error('Error updating prescription:', error);
                 toast.error('Failed to update prescription');
               });
           } else {
-            config.postData('/prescriptions/create', data)
+            config.postData('/prescriptions/create', transformedData)
               .then(response => {
                 if (response.data.success) {
                   setPrescriptions([...prescriptions, response.data.prescription]);
+                  console.log("prescription created", response.data.prescription);
                   toast.success(response.data.message);
                 } else {
                   toast.error(response.data.message);
@@ -297,6 +341,7 @@ function PrescriptionPage() {
             title="Prescription Details"
             onEdit={handleEdit}
             entityType="prescription"
+            prescriptionItems={prescriptionItems || []}
           />
           <CrudDialog
             isOpen={isEditOpen}

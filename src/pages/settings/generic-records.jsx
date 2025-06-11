@@ -41,14 +41,24 @@ function GenericRecordsPage() {
   const entityType = window.location.pathname.split('/').pop(); // Get the last part of the URL
   const [entityTypeName, setEntityTypeName] = useState(entityType); // Set the entity type name from the URL
 
-  initialFormData.entity_type = entityTypeName; // Set the initial form data entity type to the entity type name
+  // Don't mutate initialFormData directly; use a local copy
+  const localInitialFormData = { ...initialFormData, entity_type: entityTypeName };
 
   const formFields = [
     { key: 'entity_type', label: 'Entity Type', type: 'text', readonly: 'readonly', required: true, },
     { key: 'label', label: 'Label', type: 'text', required: true },
-    { key: 'description', label: 'Description', type: 'textarea', required: true },
     { key: 'active', label: 'Active', type: 'select', options: [{ value: '1', label: 'Yes' }, { value: '0', label: 'No' }], required: true },
+    { key: 'description', label: 'Description', type: 'textarea', required: true },
   ];
+
+  const genericForm = {
+    sections: [
+      {
+        // title: 'Generic Record Info',
+        fields: formFields
+      }
+    ]
+  };
 
   function getDataList(perpage = 5, page = 1, filters = {}) {
     setLoading(true);
@@ -89,8 +99,8 @@ function GenericRecordsPage() {
       totalItems={totalItems}
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
-      initialFormData={formData}
-      formFields={formFields}
+      initialFormData={localInitialFormData}
+      form={genericForm}
       filterColumns={filterColumns}
       onInputChange={(inputFormData) => {
 

@@ -27,6 +27,14 @@ const formFields = [
   { key: 'role', label: 'Role', type: 'select', options: ['Admin', 'Moderator', 'Doctor', 'User'], required: true },
 ];
 
+const userForm = {
+  sections: [
+    {
+      fields: formFields
+    }
+  ]
+};
+
 // Filter columns
 const filterColumns = [
   { key: 'username', label: 'USER NAME' },
@@ -94,7 +102,7 @@ function UsersPage() {
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}
-      formFields={formFields}
+      form={userForm}
       filterColumns={filterColumns}
       onFilterChange={(filters) => {
         console.log('Filters:', filters);

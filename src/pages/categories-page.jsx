@@ -21,7 +21,6 @@ const initialFormData = {
 
 const formFields = [
   { key: 'name', label: 'name', type: 'text', required: true },
-  { key: 'description', label: 'Description', type: 'textarea', required: true },
   { 
     key: 'active', 
     label: 'Active', 
@@ -32,7 +31,16 @@ const formFields = [
       { value: '0', label: 'No' }
     ]
   },
+  { key: 'description', label: 'Description', type: 'textarea', required: true },
 ];
+
+const categoryForm = {
+  sections: [
+    {
+      fields: formFields
+    }
+  ]
+};
 
 // Filter columns
 const filterColumns = [
@@ -87,7 +95,7 @@ function CategoriesPage() {
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}
-      form={formFields}
+      form={categoryForm}
       filterColumns={filterColumns}
       onFilterChange={(filters) => {
         console.log('Filters:', filters);

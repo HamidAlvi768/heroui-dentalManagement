@@ -37,6 +37,23 @@ const medicineNames = [
   { label: "Cetirizine", key: "cetirizine", description: "Antihistamine for allergies" }
 ];
 
+// Add procedure categories with descriptions
+const procedureCategories = [
+  { label: "Consultation", key: "consultation", description: "Doctor consultation and examination" },
+  { label: "Surgery", key: "surgery", description: "Surgical procedures and operations" },
+  { label: "Lab", key: "lab", description: "Laboratory tests and diagnostics" },
+  { label: "Treatment", key: "treatment", description: "Medical treatments and procedures" }
+];
+
+// Add common procedures with descriptions
+const commonProcedures = [
+  { label: "Initial Consultation", key: "initial_consult", description: "First visit consultation", category: "consultation" },
+  { label: "Follow-up Visit", key: "follow_up", description: "Follow-up consultation", category: "consultation" },
+  { label: "Root Canal", key: "root_canal", description: "Root canal treatment", category: "surgery" },
+  { label: "Dental Cleaning", key: "cleaning", description: "Professional dental cleaning", category: "treatment" },
+  { label: "X-Ray", key: "xray", description: "Dental X-ray imaging", category: "lab" }
+];
+
 export function CrudDialog({
   isOpen,
   onOpenChange,
@@ -257,6 +274,79 @@ export function CrudDialog({
     }));
   };
 
+  // Handle procedure category change
+  const handleProcedureCategoryChange = (idx, key) => {
+    setFormState(prev => ({
+      ...prev,
+      procedures: prev.procedures.map((p, i) => i === idx ? { ...p, category: key } : p)
+    }));
+  };
+
+  // Handle procedure change
+  const handleProcedureChange = (idx, key) => {
+    const selectedProcedure = commonProcedures.find(p => p.key === key);
+    setFormState(prev => ({
+      ...prev,
+      procedures: prev.procedures.map((p, i) => i === idx ? { 
+        ...p, 
+        procedure: key,
+        description: selectedProcedure?.description || '',
+        price: selectedProcedure?.price || ''
+      } : p)
+    }));
+  };
+
+  // Handle procedure description change
+  const handleProcedureDescriptionChange = (idx, value) => {
+    setFormState(prev => ({
+      ...prev,
+      procedures: prev.procedures.map((p, i) => i === idx ? { ...p, description: value } : p)
+    }));
+  };
+
+  // Handle quantity change and calculate subtotal
+  const handleQuantityChange = (idx, value) => {
+    setFormState(prev => ({
+      ...prev,
+      procedures: prev.procedures.map((p, i) => i === idx ? { 
+        ...p, 
+        quantity: value,
+        subTotal: (value * (p.price || 0)).toString()
+      } : p)
+    }));
+  };
+
+  // Handle price change and calculate subtotal
+  const handlePriceChange = (idx, value) => {
+    setFormState(prev => ({
+      ...prev,
+      procedures: prev.procedures.map((p, i) => i === idx ? { 
+        ...p, 
+        price: value,
+        subTotal: ((p.quantity || 1) * value).toString()
+      } : p)
+    }));
+  };
+
+  // Add new procedure row
+  const addProcedureRow = () => {
+    setFormState(prev => ({
+      ...prev,
+      procedures: [
+        ...prev.procedures,
+        { category: '', procedure: '', description: '', quantity: 1, price: '', subTotal: '' }
+      ]
+    }));
+  };
+
+  // Remove procedure row
+  const removeProcedureRow = (idx) => {
+    setFormState(prev => ({
+      ...prev,
+      procedures: prev.procedures.filter((_, i) => i !== idx)
+    }));
+  };
+
   // Render all sections
   const renderSections = () => {
     if (!form?.sections) return null;
@@ -433,6 +523,144 @@ export function CrudDialog({
                                       <Icon icon="lucide:plus" width={18} />
                                     </Button>
                                   )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            if (field.type === 'procedures-table') {
+              return (
+                <div key={field.key} className="col-span-3">
+                  {Array.isArray(formState.procedures) && (
+                    <div>
+                      <div className="font-semibold mb-2">Procedure Entry</div>
+                      <div>
+                        <table className="w-full table-auto border text-xs">
+                          <thead>
+                            <tr className="bg-muted">
+                              <th className="p-1 border whitespace-nowrap">Category</th>
+                              <th className="p-1 border whitespace-nowrap">Procedure (CPT)</th>
+                              <th className="p-1 border whitespace-nowrap">Description</th>
+                              <th className="p-1 border whitespace-nowrap">Quantity</th>
+                              <th className="p-1 border whitespace-nowrap">Price</th>
+                              <th className="p-1 border whitespace-nowrap">Subtotal</th>
+                              <th className="p-1 border whitespace-nowrap">Add/Remove</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {formState.procedures.map((proc, idx) => (
+                              <tr key={`proc-row-${idx}`}
+                                  className="align-top">
+                                <td className="p-1 border w-1/6 min-w-0">
+                                  <div className="flex min-w-0">
+                                    <Autocomplete
+                                      size="sm"
+                                      defaultItems={procedureCategories}
+                                      selectedKey={proc.category}
+                                      onSelectionChange={(key) => handleProcedureCategoryChange(idx, key)}
+                                      className="flex-1 min-w-0"
+                                      popoverProps={{ placement: 'bottom', classNames: { content: 'z-[1000]' } }}
+                                      classNames={{ input: 'text-xs', listbox: 'text-xs' }}
+                                    >
+                                      {(item) => (
+                                        <AutocompleteItem key={item.key} textValue={item.label}>
+                                          <span className="truncate">{item.label}</span>
+                                        </AutocompleteItem>
+                                      )}
+                                    </Autocomplete>
+                                  </div>
+                                </td>
+                                <td className="p-1 border w-1/6 min-w-0">
+                                  <div className="flex min-w-0">
+                                    <Autocomplete
+                                      size="sm"
+                                      defaultItems={commonProcedures.filter(p => !proc.category || p.category === proc.category)}
+                                      selectedKey={proc.procedure}
+                                      onSelectionChange={(key) => handleProcedureChange(idx, key)}
+                                      className="flex-1 min-w-0"
+                                      popoverProps={{ placement: 'bottom', classNames: { content: 'z-[1000]' } }}
+                                      classNames={{ input: 'text-xs', listbox: 'text-xs' }}
+                                    >
+                                      {(item) => (
+                                        <AutocompleteItem key={item.key} textValue={item.label}>
+                                          <span className="truncate">{item.label}</span>
+                                        </AutocompleteItem>
+                                      )}
+                                    </Autocomplete>
+                                  </div>
+                                </td>
+                                <td className="p-1 border w-1/5 min-w-0">
+                                  <Input
+                                    size="sm"
+                                    value={proc.description || ''}
+                                    onValueChange={(value) => handleProcedureDescriptionChange(idx, value)}
+                                    className="w-full min-w-0 text-xs"
+                                    classNames={{ input: 'text-xs' }}
+                                  />
+                                </td>
+                                <td className="p-1 border w-1/12 min-w-0">
+                                  <Input
+                                    size="sm"
+                                    type="number"
+                                    value={proc.quantity || 1}
+                                    onValueChange={(value) => handleQuantityChange(idx, value)}
+                                    className="w-full min-w-0 text-xs"
+                                    min={1}
+                                    classNames={{ input: 'text-xs' }}
+                                  />
+                                </td>
+                                <td className="p-1 border w-1/12 min-w-0">
+                                  <Input
+                                    size="sm"
+                                    type="number"
+                                    value={proc.price || ''}
+                                    onValueChange={(value) => handlePriceChange(idx, value)}
+                                    className="w-full min-w-0 text-xs"
+                                    min={0}
+                                    classNames={{ input: 'text-xs' }}
+                                  />
+                                </td>
+                                <td className="p-1 border w-1/12 min-w-0">
+                                  <Input
+                                    size="sm"
+                                    type="number"
+                                    value={proc.subTotal || ''}
+                                    isReadOnly
+                                    className="w-full min-w-0 text-xs"
+                                    classNames={{ input: 'text-xs' }}
+                                  />
+                                </td>
+                                <td className="p-1 border w-1/12 min-w-0 text-center">
+                                  <div className="flex items-center justify-center gap-1">
+                                    {formState.procedures.length > 1 && (
+                                      <Button
+                                        isIconOnly
+                                        size="sm"
+                                        variant="light"
+                                        onPress={() => removeProcedureRow(idx)}
+                                        className="text-danger"
+                                      >
+                                        <Icon icon="lucide:trash-2" width={16} />
+                                      </Button>
+                                    )}
+                                    {idx === formState.procedures.length - 1 && (
+                                      <Button
+                                        isIconOnly
+                                        size="sm"
+                                        variant="light"
+                                        onPress={addProcedureRow}
+                                        className="ml-1 text-success"
+                                      >
+                                        <Icon icon="lucide:plus" width={16} />
+                                      </Button>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             ))}

@@ -6,14 +6,22 @@ import { useAuth } from '../auth/AuthContext';
 
 // Table columns
 const columns = [
-  { key: 'patient', label: 'PATIENT' },
-  { key: 'doctor', label: 'DOCTOR' },
-  { key: 'date', label: 'DATE' },
-  { key: 'total', label: 'TOTAL' },
-  { key: 'discount', label: 'DISCOUNT' },
-  { key: 'afterDiscount', label: 'AFTER DISCOUNT' },
+  {
+    key: 'patient',
+    label: 'PATIENT',
+    render: (item) => item.patient?.full_name || ''
+  },
+  {
+    key: 'doctor',
+    label: 'DOCTOR',
+    render: (item) => item.doctor?.username || ''
+  },
+  { key: 'invoice_date', label: 'DATE' },
+  { key: 'total_amount', label: 'TOTAL' },
+  { key: 'discount_amount', label: 'DISCOUNT' },
+  { key: 'after_discount', label: 'AFTER DISCOUNT' },
   { key: 'paid', label: 'PAID' },
-  { key: 'due', label: 'DUE' },
+  { key: 'due_amount', label: 'DUE' },
   { key: 'actions', label: 'ACTIONS' },
 ];
 
@@ -52,12 +60,19 @@ const formFields = [
 ];
 
 const initialFormData = {
+  patient_id: '',
+  doctor_id: '',
   date: '',
-  category: '',
-  procedure: '',
-  description: '',
-  quantity: 1,
-  price: '',
+  procedures: [
+    {
+      category: '',
+      procedure: '',
+      description: '',
+      quantity: 1,
+      price: '',
+      subTotal: ''
+    }
+  ],
   discount: '',
   paid: '',
 };
@@ -90,11 +105,116 @@ const mockData = [
 const invoiceForm = {
   sections: [
     {
-      // title: 'Invoice Info',
-      fields: formFields
+      fields: [
+        {
+          key: 'patient_id',
+          label: 'Select Patient',
+          type: 'select',
+          required: true,
+          options: [] // Will be populated from API
+        },
+        {
+          key: 'doctor_id',
+          label: 'Select Doctor',
+          type: 'select',
+          required: true,
+          options: [] // Will be populated from API
+        },
+        {
+          key: 'date',
+          label: 'Invoice Date',
+          type: 'date',
+          required: true
+        }
+      ]
+    },
+    {
+      fields: [
+        { key: 'procedures', type: 'procedures-table' }
+      ]
+    },
+    {
+      fields: [
+        {
+          key: 'discount',
+          label: 'Discount (%)',
+          type: 'number',
+          required: false
+        },
+        {
+          key: 'paid',
+          label: 'Amount Paid',
+          type: 'number',
+          required: false
+        }
+      ]
     }
   ]
 };
+
+const generateInvoiceNumber = () => {
+  const now = new Date();
+  const pad = (n) => n.toString().padStart(2, '0');
+  return (
+    'INV-' +
+    now.getFullYear() +
+    pad(now.getMonth() + 1) +
+    pad(now.getDate()) +
+    '-' +
+    pad(now.getHours()) +
+    pad(now.getMinutes()) +
+    pad(now.getSeconds()) +
+    '-' +
+    Math.floor(Math.random() * 1000)
+  );
+};
+
+const transformFormData = (formData) => {
+  // Calculate total_amount
+  const total_amount = (formData.procedures || []).reduce((sum, proc) => {
+    const qty = Number(proc.quantity) || 0;
+    const price = Number(proc.price) || 0;
+    return sum + qty * price;
+  }, 0);
+  // Calculate discount_amount
+  const discount = Number(formData.discount) || 0;
+  const discount_amount = total_amount * (discount / 100);
+  // Calculate net_amount
+  const net_amount = total_amount - discount_amount;
+
+  return {
+    patient_id: formData.patient_id,
+    doctor_id: formData.doctor_id,
+    invoice_number: formData.invoice_number || generateInvoiceNumber(),
+    invoice_date: formData.date || formData.invoice_date || '',
+    total_amount,
+    discount_amount,
+    net_amount,
+    paid: formData.paid,
+    items: (formData.procedures || []).map(proc => ({
+      item_type: proc.procedure || proc.category || '',
+      item_description: proc.description,
+      quantity: Number(proc.quantity) || 0,
+      unit_price: Number(proc.price) || 0,
+      discount: 0, // You can extend this if you want per-item discount
+      total_price: (Number(proc.quantity) || 0) * (Number(proc.price) || 0)
+    })),
+    notes: formData.notes || null,
+    payment_method: formData.payment_method || null,
+  };
+};
+
+const mapInvoiceItemsToServices = (items) =>
+  (items || []).map((item, idx) => ({
+    index: idx + 1,
+    procedure: item.item_type || '',
+    description: item.item_description || '',
+    quantity: Number(item.quantity) || 0,
+    price: Number(item.unit_price) || 0,
+    subTotal: Number(item.total_price) || 0,
+    unit_price: Number(item.unit_price) || 0,
+    total_price: Number(item.total_price) || 0,
+  }));
 
 export default function InvoicesPage() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -104,26 +224,82 @@ export default function InvoicesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [loading, setLoading] = useState(false);
+  const [patients, setPatients] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [procedures, setProcedures] = useState([]);
   const { token } = useAuth();
 
+  // Fetch patients and doctors for dropdowns
+  useEffect(() => {
+    // Fetch patients
+    config.initAPI(token);
+    config.getData('/patients/list')
+      .then(response => {
+        const patientOptions = response.data.data.map(patient => ({
+          key: patient.id,
+          value: patient.id,
+          label: patient.full_name
+        }));
+        setPatients(patientOptions);
+      })
+      .catch(error => console.error('Error fetching patients:', error));
+
+    // Fetch doctors
+    config.getData(`/users/list?role=doctor`)
+      .then(response => {
+        const doctorOptions = response.data.data.map(doctor => ({
+          key: doctor.id,
+          value: doctor.id,
+          label: doctor.username
+        }));
+        console.log("doctor options",doctorOptions)
+        setDoctors(doctorOptions);
+      })
+      .catch(error => console.error('Error fetching doctors:', error));
+
+    // Fetch categories and procedures
+    config.getData('/procedures/categories')
+      .then(response => {
+        setCategories(response.data.categories);
+      })
+      .catch(error => console.error('Error fetching categories:', error));
+
+    config.getData('/procedures/list')
+      .then(response => {
+        setProcedures(response.data.procedures);
+      })
+      .catch(error => console.error('Error fetching procedures:', error));
+  }, []);
+
+  // Update form options when data is fetched
+  useEffect(() => {
+    if (invoiceForm.sections) {
+      // Update patient options
+      const patientField = invoiceForm.sections[0].fields.find(f => f.key === 'patient_id');
+      if (patientField) {
+        patientField.options = patients;
+      }
+
+      // Update doctor options
+      const doctorField = invoiceForm.sections[0].fields.find(f => f.key === 'doctor_id');
+      if (doctorField) {
+        doctorField.options = doctors;
+      }
+    }
+  }, [patients, doctors]);
+
   const handleViewDetail = (invoice) => {
-    // Map the invoice data to match the expected format
+    // Map the invoice data to match the expected format for the modal
     const mappedInvoice = {
       ...invoice,
-      invoiceNumber: invoice.id,
-      patientName: invoice.patient,
-      services: [
-        {
-          procedure: 'Service-1',
-          description: 'Medical service',
-          quantity: 1,
-          price: invoice.total,
-          subTotal: invoice.total
-        }
-      ],
-      totalAmount: invoice.total,
-      cashPaid: invoice.paid,
-      receivable: invoice.due
+      invoiceNumber: invoice.invoice_number,
+      patientName: invoice.patient?.full_name,
+      services: mapInvoiceItemsToServices(invoice.items),
+      totalAmount: Number(invoice.total_amount) || 0,
+      cashPaid: Number(invoice.paid) || 0,
+      receivable: Number(invoice.due_amount) || 0,
+      date: invoice.invoice_date,
     };
     setSelectedInvoice(mappedInvoice);
     setIsDetailOpen(true);
@@ -145,6 +321,7 @@ export default function InvoicesPage() {
           return item;
         });
         setDataList(_data);
+        console.log("Data List:", _data);
         setCategoriesList(data.data.categories);
         setTotalItems(data.data.meta.total);
         setCurrentPage(data.data.meta.page);
@@ -185,6 +362,55 @@ export default function InvoicesPage() {
         addButtonLabel="Add Invoice"
         // customActions={customActions}
         onRowClick={handleViewDetail}
+        onSave={(data, isEditing) => {
+          const transformedData = transformFormData(data);
+          if (isEditing) {
+            config.postData(`/invoices/edit?id=${data.id}`, transformedData)
+              .then(response => {
+                if (response.data.success) {
+                  setDataList(dataList.map(invoice =>
+                    invoice.id === data.id ? { ...invoice, ...response.data.invoice } : invoice
+                  ));
+                  if (typeof toast !== 'undefined') toast.success(response.data.message || 'Invoice updated successfully!');
+                } else {
+                  if (typeof toast !== 'undefined') toast.error(response.data.message || 'Failed to update invoice');
+                }
+              })
+              .catch(error => {
+                console.error('Error updating invoice:', error);
+                if (typeof toast !== 'undefined') toast.error('Failed to update invoice');
+              });
+          } else {
+            config.postData('/invoices/create', transformedData)
+              .then(response => {
+                if (response.data.success) {
+                  setDataList([...dataList, response.data.invoice]);
+                  if (typeof toast !== 'undefined') toast.success(response.data.message || 'Invoice created successfully!');
+                } else {
+                  if (typeof toast !== 'undefined') toast.error(response.data.message || 'Failed to create invoice');
+                }
+              })
+              .catch(error => {
+                console.error('Error creating invoice:', error);
+                if (typeof toast !== 'undefined') toast.error('Failed to create invoice');
+              });
+          }
+        }}
+        onDelete={(item) => {
+          config.postData('/invoices/delete', { id: item.id })
+            .then(response => {
+              if (response.data.success) {
+                setDataList(dataList.filter(invoice => invoice.id !== item.id));
+                if (typeof toast !== 'undefined') toast.success('Invoice deleted successfully!');
+              } else {
+                if (typeof toast !== 'undefined') toast.error(response.data.message || 'Failed to delete invoice');
+              }
+            })
+            .catch(error => {
+              console.error('Error deleting invoice:', error);
+              if (typeof toast !== 'undefined') toast.error('Failed to delete invoice');
+            });
+        }}
       />
       {selectedInvoice && (
         <EntityDetailDialog
@@ -192,7 +418,9 @@ export default function InvoicesPage() {
           onOpenChange={setIsDetailOpen}
           entity={selectedInvoice}
           title={`Invoice Details - ${selectedInvoice.invoiceNumber}`}
-          onEdit={() => console.log('Edit invoice:', selectedInvoice)}
+          onEdit={() => {
+            setSelectedInvoice({ ...selectedInvoice, date: selectedInvoice.invoice_date });
+          }}
           entityType="invoice"
         />
       )}

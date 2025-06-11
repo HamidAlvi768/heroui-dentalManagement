@@ -3,8 +3,10 @@
 namespace app\controllers\api;
 
 use app\components\Helper;
-use app\models\Prescriptions;
-use app\models\Patients;
+use app\models\GenericEntities;
+use app\models\GenericRecords;
+use app\models\Inventory;
+use app\models\InventoryCategories;
 use Yii;
 use yii\rest\Controller;
 use yii\web\Response;
@@ -12,12 +14,14 @@ use yii\web\UnauthorizedHttpException;
 use app\models\User;
 use yii\filters\Cors;
 
-class PrescriptionController extends Controller
+class GenericrecordsController extends Controller
 {
+
     public function behaviors()
     {
         $behaviors = parent::behaviors();
 
+        // CORS filter must be added *before* contentNegotiator
         $behaviors['corsFilter'] = [
             'class' => Cors::class,
             'cors' => [
@@ -29,11 +33,11 @@ class PrescriptionController extends Controller
             ],
         ];
 
+        // This must be AFTER corsFilter
         $behaviors['contentNegotiator']['formats']['application/json'] = Response::FORMAT_JSON;
 
         return $behaviors;
     }
-
     public function actions()
     {
         return [
@@ -42,6 +46,7 @@ class PrescriptionController extends Controller
             ],
         ];
     }
+
 
     public function actionCreate()
     {
@@ -60,24 +65,25 @@ class PrescriptionController extends Controller
                 ];
             }
 
-            $prescription = new Prescriptions();
-            $prescription->patient_id = $request['patient_id'];
-            $prescription->doctor_id = $user->id;
-            $prescription->prescription_date = $request['prescription_date'] ?? date('Y-m-d');
-            $prescription->diagnosis = $request['diagnosis'] ?? null;
-            $prescription->notes = $request['notes'] ?? null;
+            $gr = new GenericRecords();
+            $gr->entity_type = $request['entity_type'];
+            $gr->label = $request['label'];
+            $gr->description = $request['description'] ?? null; // Handle null value
+            $gr->meta = $request['meta'] ?? null; // Handle null value
+            // $gr->active = intval($request['active']) == 1 ? 1 : 0; // Convert to integer (0 or 1)
 
-            if ($prescription->save()) {
+            if ($gr->save()) {
                 return [
                     'success' => true,
-                    'message' => 'Prescription created successfully',
-                    'prescription' => $prescription,
+                    'message' => 'Generic Recrods added successfully',
+                    'category_id' => $gr->id,
+                    'category' => $gr
                 ];
             }
             return [
                 'success' => false,
                 'message' => 'Something went wrong!',
-                'errors' => $prescription->getErrors(),
+                'errors' => $gr->getErrors()
             ];
         } else {
             return [
@@ -104,28 +110,26 @@ class PrescriptionController extends Controller
                 ];
             }
 
-            $prescription = Prescriptions::findOne($id);
-            if (!$prescription) {
-                return [
-                    'success' => false,
-                    'message' => 'Prescription not found',
-                ];
-            }
-            $prescription->prescription_date = $request['prescription_date'] ?? $prescription->prescription_date;
-            $prescription->diagnosis = $request['diagnosis'] ?? $prescription->diagnosis;
-            $prescription->notes = $request['notes'] ?? $prescription->notes;
+            $gr = GenericRecords::findOne($id);
+            $gr->entity_type = $request['entity_type'];
+            $gr->label = $request['label'];
+            $gr->description = $request['description'];
+            $gr->meta = $request['meta'];
+            // $gr->active = intval($request['active']) == 1 ? 1 : 0; // Convert to integer (0 or 1)
 
-            if ($prescription->save()) {
+            if ($gr->save()) {
+
                 return [
                     'success' => true,
-                    'message' => 'Prescription updated successfully',
-                    'prescription' => $prescription,
+                    'message' => 'Generic records updated successfully',
+                    'category_id' => $gr->id,
+                    'category' => $gr
                 ];
             }
             return [
                 'success' => false,
                 'message' => 'Something went wrong!',
-                'errors' => $prescription->getErrors(),
+                'errors' => $gr->getErrors()
             ];
         } else {
             return [
@@ -152,23 +156,24 @@ class PrescriptionController extends Controller
                 ];
             }
 
-            $prescription = Prescriptions::findOne($request['id']);
-            if (!$prescription) {
+            $itemToDelete = GenericRecords::findOne($request['id']);
+            if ($user == $itemToDelete) {
                 return [
                     'success' => false,
-                    'message' => 'Prescription not found',
+                    'message' => 'You cannot delete yourself!',
                 ];
             }
-            if ($prescription->delete()) {
+
+            if ($itemToDelete->delete()) {
                 return [
                     'success' => true,
-                    'message' => 'Prescription deleted successfully',
+                    'message' => 'Item deleted successfully',
                 ];
             }
             return [
                 'success' => false,
                 'message' => 'Something went wrong!',
-                'errors' => $prescription->getErrors(),
+                'errors' => $itemToDelete->getErrors()
             ];
         } else {
             return [
@@ -178,18 +183,33 @@ class PrescriptionController extends Controller
         }
     }
 
-    public function actionList()
+    public function actionView()
     {
-        if (!Yii::$app->request->isGet) {
-            return [
-                'success' => false,
-                'message' => 'Method is not correct!',
-            ];
-        }
-    
         $token = Yii::$app->request->headers->get('Authorization');
         $token = str_replace('Bearer ', '', $token);
-    
+
+        $user = User::findOne(['access_token' => $token]);
+
+        if (!$user) {
+            return [
+                'success' => false,
+                'message' => 'Invalid token',
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'User profile fetched successfully',
+            'id' => $user->id,
+            'username' => $user->username,
+        ];
+    }
+
+    public function actionList()
+    {
+        $token = Yii::$app->request->headers->get('Authorization');
+        $token = str_replace('Bearer ', '', $token);
+
         $user = User::findOne(['access_token' => $token]);
         if (!$user) {
             return [
@@ -197,31 +217,50 @@ class PrescriptionController extends Controller
                 'message' => 'Invalid token',
             ];
         }
-    
+
+        // Read query parameters from frontend
         $request = Yii::$app->request;
         $page = (int)$request->get('page', 1);
         $perpage = (int)$request->get('perpage', 5);
-        $sort = $request->get('sort', 'created_at');
+        $sort = $request->get('sort', 'created_at'); // e.g. username, email
         $order = strtolower($request->get('order', 'desc')) === 'desc' ? SORT_DESC : SORT_ASC;
-    
-        $query = Prescriptions::find();
-    
+
+        // Build query
+        $query = GenericRecords::find();
+
+        $entity_type = $request->get('entity_type', '');
+        if (!empty($entity_type)) {
+            $query->andFilterWhere(['like', 'entity_type', $entity_type]);
+        }
+
+        $label = $request->get('label', '');
+        if (!empty($label)) {
+            $query->andFilterWhere(['like', 'generic_records.label', $label]);
+        }
+
+
+        // Filter by verified status
+        $active = $request->get('active', '');
+        if ($active !== '') {
+            $query->andFilterWhere(['generic_records.active' => $active]);
+        }
+
         $total = $query->count();
-    
+
         $data = $query
             ->orderBy([$sort => $order])
             ->offset(($page - 1) * $perpage)
             ->limit($perpage)
             ->asArray()
             ->all();
-    
-        $patients = User::find()->where(['role' => 'patient'])->asArray()->all();
-    
+
+        $entities = GenericEntities::find()->asArray()->all();
+
         return [
             'success' => true,
             'message' => 'Data fetched successfully',
             'data' => $data,
-            'patients' => $patients,
+            'entities' => $entities,
             'meta' => [
                 'total' => $total,
                 'page' => $page,
