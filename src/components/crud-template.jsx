@@ -113,6 +113,42 @@ export function CrudTemplate({
     setIsEditing(false);
   };
 
+  // Add a function to process form fields and handle calculated values
+  const processFormFields = React.useCallback((fields) => {
+    if (!fields) return fields;
+    
+    return fields.map(field => {
+      // If the field has a calculate function, ensure it's read-only
+      if (field.calculate) {
+        return {
+          ...field,
+          readOnly: true,
+          readonly: true, // Support both readOnly and readonly for backward compatibility
+        };
+      }
+      return field;
+    });
+  }, []);
+
+  // Process form sections if they exist
+  const processedForm = React.useMemo(() => {
+    if (!form) return form;
+    
+    return {
+      ...form,
+      sections: form.sections?.map(section => ({
+        ...section,
+        fields: processFormFields(section.fields)
+      }))
+    };
+  }, [form, processFormFields]);
+
+  // Process formFields if they exist
+  const processedFormFields = React.useMemo(() => {
+    if (!formFields) return formFields;
+    return processFormFields(formFields);
+  }, [formFields, processFormFields]);
+
   console.log("Items:", items);
 
   return (
@@ -151,8 +187,8 @@ export function CrudTemplate({
             : `Add New ${title.slice(0, -1)}`
         }
         formData={currentItem}
-        form={form || undefined}
-        formFields={!form ? formFields : undefined}
+        form={processedForm || undefined}
+        formFields={!processedForm ? processedFormFields : undefined}
         onSave={handleSave}
         onInputChange={onInputChange}
       />

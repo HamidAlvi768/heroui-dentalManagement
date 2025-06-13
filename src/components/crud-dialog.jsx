@@ -89,23 +89,40 @@ export function CrudDialog({
   };
 
   const renderFormField = (field, isInRow = false) => {
-    const { key, label, type, value, options, required, placeholder, disabled, readonly, className } = field;
+    const { 
+      key, 
+      label, 
+      type, 
+      value, 
+      options, 
+      required, 
+      placeholder, 
+      disabled, 
+      readonly, 
+      className,
+      calculate,
+      readOnly
+    } = field;
 
     // Define commonProps without the key
     const commonProps = {
       label,
       size: "sm",
       labelPlacement: "outside",
-      placeholder: placeholder || `Enter ${label.toLowerCase()}`,
+      placeholder: placeholder || `${label.toLowerCase()}`,
       isRequired: required,
-      isDisabled: disabled,
-      isReadOnly: readonly,
+      isDisabled: disabled || readonly || readOnly,
+      isReadOnly: readonly || readOnly,
       classNames: {
         base: "w-full",
         input: "text-sm",
         label: "text-sm font-medium",
       },
     };
+
+    // Calculate value if calculate function is provided
+    const calculatedValue = calculate ? calculate(formState) : undefined;
+    const displayValue = calculatedValue !== undefined ? calculatedValue : (value || (formState[key] || ''));
 
     // Check if we should use Autocomplete instead of Select
     const shouldUseAutocomplete = type === 'select' && options && options.length > 3;
@@ -115,19 +132,21 @@ export function CrudDialog({
         <div className={`flex-1 min-w-[200px] ${className || ''}`}>
           <Autocomplete
             {...commonProps}
-            value={formState[key] || ''} // Current selected value (string or object)
+            value={displayValue}
             onInputChange={(v) => {
-              console.log("SELECTED...");
-              handleChange(key, v)
-            }
-            }
+              if (!readonly && !readOnly) {
+                console.log("SELECTED...");
+                handleChange(key, v);
+              }
+            }}
             onSelectionChange={(v) => {
-              console.log("SELECTED...");
-              handleChange(key, v)
-            }
-            }
-            options={options} // List of options to filter
-            getOptionLabel={(option) => option.label || option} // Display label for each option
+              if (!readonly && !readOnly) {
+                console.log("SELECTED...");
+                handleChange(key, v);
+              }
+            }}
+            options={options}
+            getOptionLabel={(option) => option.label || option}
             filterOptions={(options, { inputValue }) =>
               options.filter((option) =>
                 (option.label || option)
@@ -171,8 +190,16 @@ export function CrudDialog({
             <Input
               {...commonProps}
               type={type}
-              value={(value || (formState[key] || ''))}
-              onValueChange={(value) => handleChange(key, value)}
+              value={displayValue}
+              onValueChange={(value) => {
+                if (!readonly && !readOnly) {
+                  handleChange(key, value);
+                }
+              }}
+              classNames={{
+                ...commonProps.classNames,
+                input: `${commonProps.classNames.input} ${(readonly || readOnly) ? 'bg-default-100' : ''}`,
+              }}
             />
           </div>
         );
@@ -182,8 +209,16 @@ export function CrudDialog({
           <div className={`flex-1 min-w-[200px] ${className || ''}`}>
             <Select
               {...commonProps}
-              selectedKeys={formState[key] ? [formState[key]] : []}
-              onChange={(e) => handleChange(key, e.target.value)}
+              selectedKeys={displayValue ? [displayValue] : []}
+              onChange={(e) => {
+                if (!readonly && !readOnly) {
+                  handleChange(key, e.target.value);
+                }
+              }}
+              classNames={{
+                ...commonProps.classNames,
+                trigger: `${commonProps.classNames.input} ${(readonly || readOnly) ? 'bg-default-100' : ''}`,
+              }}
             >
               {options?.map((option) => (
                 <SelectItem key={option.value || option} value={option.value || option}>
@@ -198,8 +233,13 @@ export function CrudDialog({
         return (
           <div className={`flex-1 min-w-[200px] ${className || ''}`}>
             <Checkbox
-              isSelected={formState[key] || false}
-              onValueChange={(value) => handleChange(key, value)}
+              isSelected={displayValue || false}
+              onValueChange={(value) => {
+                if (!readonly && !readOnly) {
+                  handleChange(key, value);
+                }
+              }}
+              isDisabled={readonly || readOnly}
             >
               {label}
             </Checkbox>
@@ -211,9 +251,17 @@ export function CrudDialog({
           <div className={`${isInRow ? "flex-1" : "w-full col-span-3"} ${className || ''}`}>
             <Textarea
               {...commonProps}
-              value={formState[key] || ''}
-              onValueChange={(value) => handleChange(key, value)}
+              value={displayValue}
+              onValueChange={(value) => {
+                if (!readonly && !readOnly) {
+                  handleChange(key, value);
+                }
+              }}
               minRows={3}
+              classNames={{
+                ...commonProps.classNames,
+                input: `${commonProps.classNames.input} ${(readonly || readOnly) ? 'bg-default-100' : ''}`,
+              }}
             />
           </div>
         );

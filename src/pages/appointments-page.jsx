@@ -133,90 +133,126 @@ function AppointmentsPage() {
     onOpenChange: onEditOpenChange,
   } = useDisclosure();
   const [patientsList, setPatientsList] = useState([]);
+  const [doctorsList, setDoctorsList] = useState([]);
   // const [categoriesList, setCategoriesList] = useState([]); // For the old inventory-style filters
 
   // Define formFields for Appointments (as provided in the original code)
   // These keys (e.g., patient_id) are expected in your API data items.
-  const formFields = useMemo(() => [
-    {
-      key: "patient_id",
-      label: "Select Patient",
-      type: "select",
-      required: true,
-      options: [
-        { value: "", label: "Select Patient" },
-        ...patientsList.map((patient) => ({
-          value: patient.id,
-          label: `${patient.username || patient.name}`, // Adjust if patient object has different name field
-        })),
-      ],
-    },
-    {
-      key: "appointment_date",
-      label: "Appointment Date",
-      type: "date",
-      required: true,
-    },
-    {
-      key: "status",
-      label: "Status",
-      type: "select",
-      required: true,
-      options: [
-        { value: "Scheduled", label: "Scheduled" },
-        { value: "Completed", label: "Completed" },
-        { value: "Cancelled", label: "Cancelled" },
-      ],
-    },
-    {
-      key: "appointment_reason",
-      label: "Reason for Appointment",
-      type: "textarea",
-      required: false,
-    },
-  ], [patientsList]); // Recompute if patientsList changes for the patient_id options
+  const formFields = useMemo(() => {
+    //console doctor id
+    console.log("Doctors List in formFields:", doctorsList);
+    console.log('Form Fields - Doctor Options:', doctorsList.map(d => ({ id: d.id, username: d.username })));
+    return [
+      {
+        key: "patient_id",
+        label: "Select Patient",
+        type: "select",
+        required: true,
+        options: [
+          { value: "", label: "Select Patient" },
+          ...patientsList.map((patient) => ({
+            value: patient.id,
+            label: `${patient.username || patient.name}`,
+          })),
+        ],
+      },
+      {
+        key: "doctor_id",
+        label: "Select Doctor",
+        type: "select",
+        required: true,
+        options: [
+          { value: "", label: "Select Doctor" },
+          ...doctorsList.map((doctor) => ({
+            value: doctor.id,
+            label: `${doctor.name || doctor.username}`,
+          })),
+        ],
+      },
+      {
+        key: "appointment_date",
+        label: "Appointment Date",
+        type: "date",
+        required: true,
+      },
+      {
+        key: "status",
+        label: "Status",
+        type: "select",
+        required: true,
+        options: [
+          { value: "Scheduled", label: "Scheduled" },
+          { value: "Completed", label: "Completed" },
+          { value: "Cancelled", label: "Cancelled" },
+        ],
+      },
+      {
+        key: "appointment_reason",
+        label: "Reason for Appointment",
+        type: "textarea",
+        required: false,
+      },
+    ];
+  }, [patientsList, doctorsList]);
 
-  const columns = useMemo(() => [
-    {
-      key: 'patient_id',
-      label: 'PATIENT',
-      render: (item) => {
-        const patient = patientsList.find(p => p.id === item.patient_id);
-        return patient ? (patient.username || patient.name) : (item.patient_name || item.patient_id || 'N/A');
-      }
-    },
-    {
-      key: 'appointment_date',
-      label: 'APPOINTMENT DATE',
-      render: (item) => {
-        if (!item.appointment_date) return 'N/A';
-        try {
-          return new Date(item.appointment_date).toLocaleDateString();
-        } catch (e) {
-          return item.appointment_date;
+  const columns = useMemo(() => {
+    console.log('Current dataList:', dataList);
+    console.log('Patients List:', patientsList);
+    console.log('Doctors List:', doctorsList);
+    
+    return [
+      {
+        key: 'patient_id',
+        label: 'PATIENT',
+        render: (item) => {
+          console.log('Rendering patient column for item:', item);
+          const patient = patientsList.find(p => p.id === item.patient_id);
+          return patient ? (patient.username || patient.name) : (item.patient_name || item.patient_id || 'N/A');
         }
-      }
-    },
-    {
-      key: 'appointment_reason',
-      label: 'REASON',
-      render: (item) => {
-        const reason = item.appointment_reason;
-        if (!reason) return 'N/A';
-        const maxLength = 30;
-        return reason.length > maxLength ? `${reason.substring(0, maxLength - 3)}...` : reason;
-      }
-    },
-    {
-      key: 'status',
-      label: 'STATUS',
-      render: (item) => item.status || 'N/A',
-    },
-    { key: 'actions', label: 'ACTIONS' }
-  ], [patientsList]);
+      },
+      {
+        key: 'doctor_id',
+        label: 'DOCTOR',
+        render: (item) => {
+          console.log('Rendering doctor column for item:', item);
+          const doctor = doctorsList.find(d => d.id === item.doctor_id);
+          return doctor ? (doctor.name || doctor.username) : (item.doctor_name || item.doctor_id || 'N/A');
+        }
+      },
+      {
+        key: 'appointment_date',
+        label: 'APPOINTMENT DATE',
+        render: (item) => {
+          if (!item.appointment_date) return 'N/A';
+          try {
+            return new Date(item.appointment_date).toLocaleDateString();
+          } catch (e) {
+            return item.appointment_date;
+          }
+        }
+      },
+      {
+        key: 'appointment_reason',
+        label: 'REASON',
+        render: (item) => {
+          const reason = item.appointment_reason;
+          if (!reason) return 'N/A';
+          const maxLength = 30;
+          return reason.length > maxLength ? `${reason.substring(0, maxLength - 3)}...` : reason;
+        }
+      },
+      {
+        key: 'status',
+        label: 'STATUS',
+        render: (item) => item.status || 'N/A',
+      },
+      { key: 'actions', label: 'ACTIONS' }
+    ];
+  }, [patientsList, doctorsList, dataList]);
 
   const initialAppointmentFormData = {
     patient_id: '',
+    doctor_id: '',
     appointment_date: '',
     appointment_reason: '',
     status: 'Scheduled',
@@ -239,12 +275,24 @@ function AppointmentsPage() {
     {
       key: 'patient_id',
       label: 'PATIENT',
-      type: 'select', // Assuming CrudTemplate supports select filters
+      type: 'select',
       options: [
         { value: "", label: "All Patients" },
         ...patientsList.map((patient) => ({
           value: patient.id,
           label: patient.username || patient.name,
+        })),
+      ]
+    },
+    {
+      key: 'doctor_id',
+      label: 'DOCTOR',
+      type: 'select',
+      options: [
+        { value: "", label: "All Doctors" },
+        ...doctorsList.map((doctor) => ({
+          value: doctor.id,
+          label: doctor.name || doctor.username,
         })),
       ]
     },
@@ -258,7 +306,7 @@ function AppointmentsPage() {
         { value: 'Cancelled', label: 'Cancelled' }
       ]
     },
-  ], [patientsList]);
+  ], [patientsList, doctorsList]);
 
 
   function getData(perPage = itemsPerPage, page = currentPage, filters = {}) {
@@ -266,9 +314,8 @@ function AppointmentsPage() {
     config.initAPI(token);
 
     const queryParams = new URLSearchParams({ perpage: perPage, page });
-    // Add filter parameters to the query, ensuring they match backend expectations
     Object.keys(filters).forEach(key => {
-      if (filters[key]) { // Add filter only if it has a value
+      if (filters[key]) {
         queryParams.append(key, filters[key]);
       }
     });
@@ -280,23 +327,15 @@ function AppointmentsPage() {
         }&active=${filters.active || ""}`
       )
       .then((data) => {
-        console.log("Appointments data:", data.data.patients);
-        const today = new Date();
+        console.log("Raw API Response:", data.data);
         const _data = data.data.data.map((item) => {
-          // item.active = item.active === 1 ? "Yes" : "No";
-          // let expiryDate = new Date(item.expiry_date);
-          // const timeDiff = expiryDate.getTime() - today.getTime();
-          // const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-          // item.is_expired =
-          //   dayDiff < 0
-          //     ? "Expired"
-          //     : dayDiff <= 7
-          //     ? `Expired in ${dayDiff} days`
-          //     : "No";
+          console.log("Processing appointment item:", item);
           return item;
         });
+        console.log("Processed appointments data:", _data);
         setDataList(_data);
-        setPatientsList(data.data.patients);
+        setPatientsList(data.data.patients || []);
+        setDoctorsList(data.data.doctors || []);
         setTotalItems(data.data.meta.total);
         setCurrentPage(data.data.meta.page);
         setItemsPerPage(data.data.meta.perpage);
@@ -304,7 +343,6 @@ function AppointmentsPage() {
       })
       .catch((error) => {
         console.error("Error fetching appointments:", error);
-        // toast.error("Failed to fetch appointments.");
         setLoading(false);
       });
   }
@@ -313,6 +351,16 @@ function AppointmentsPage() {
     getData(5,1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Initial fetch
+
+  useEffect(() => {
+    // Log patientsList to check structure and keys
+    if (patientsList && patientsList.length > 0) {
+      console.log('Sample patient object:', patientsList[0]);
+      console.log('All patient keys:', Object.keys(patientsList[0]));
+    } else {
+      console.log('patientsList is empty or not loaded');
+    }
+  }, [patientsList]);
 
   const handleViewDetail = (item) => {
     const mappedItem = {
@@ -344,20 +392,69 @@ function AppointmentsPage() {
   };
 
   const handleSave = (dataFromForm, isEditing) => {
-    // dataFromForm should have keys matching formFields (e.g., patient_id, appointment_date)
-    console.log("Saving appointment:", dataFromForm, "Is Editing:", isEditing);
+    console.log('Form Data Received:', {
+      raw: dataFromForm,
+      doctor_id: dataFromForm.doctor_id,
+      doctor_id_type: typeof dataFromForm.doctor_id,
+      doctor_id_value: dataFromForm.doctor_id
+    });
+
+    // Validate required fields before proceeding
+    if (!dataFromForm.patient_id || !dataFromForm.doctor_id) {
+      console.error('Required fields missing:', {
+        patient_id: dataFromForm.patient_id,
+        doctor_id: dataFromForm.doctor_id,
+        formData: dataFromForm
+      });
+      return;
+    }
+
+    // Create payload with proper type conversion
+    const payload = {
+      ...dataFromForm,
+      patient_id: parseInt(dataFromForm.patient_id, 10),
+      doctor_id: parseInt(dataFromForm.doctor_id, 10),
+      // Ensure other fields are properly formatted
+      appointment_date: dataFromForm.appointment_date,
+      appointment_reason: dataFromForm.appointment_reason || '',
+      status: dataFromForm.status || 'Scheduled',
+      notes: dataFromForm.notes || ''
+    };
+
+    console.log('Processed Payload:', {
+      raw: payload,
+      doctor_id: payload.doctor_id,
+      doctor_id_type: typeof payload.doctor_id
+    });
+
+    // Remove any undefined or null values
+    Object.keys(payload).forEach(key => {
+      if (payload[key] === undefined || payload[key] === null) {
+        console.log(`Removing ${key} from payload because it's ${payload[key]}`);
+        delete payload[key];
+      }
+    });
 
     const endpoint = isEditing ? `/appointments/edit?id=${dataFromForm.id}` : "/appointments/create";
+    console.log('Final Payload:', payload);
 
-    config.postData(endpoint, dataFromForm)
+    config.postData(endpoint, payload)
       .then(response => {
-        // toast.success(`Appointment ${isEditing ? 'updated' : 'created'} successfully!`);
-        onEditOpenChange(false);
-        getData(itemsPerPage, isEditing ? currentPage : 1); // Refresh list
+        console.log('API Response:', response);
+        if (response.success) {
+          onEditOpenChange(false);
+          getData(itemsPerPage, isEditing ? currentPage : 1);
+        } else {
+          console.error('API Error:', response.message);
+        }
       })
       .catch(error => {
         console.error(`Error ${isEditing ? 'updating' : 'creating'} appointment:`, error);
-        // toast.error(`Failed to ${isEditing ? 'update' : 'create'} appointment: ${error.message}`);
+        console.error('Error Details:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message
+        });
       });
   };
 

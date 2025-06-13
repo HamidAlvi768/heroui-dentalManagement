@@ -19,9 +19,9 @@ const columns = [
   { key: 'invoice_date', label: 'DATE' },
   { key: 'total_amount', label: 'TOTAL' },
   { key: 'discount_amount', label: 'DISCOUNT' },
-  { key: 'after_discount', label: 'AFTER DISCOUNT' },
+  { key: 'net_amount', label: 'AFTER DISCOUNT' },
   { key: 'paid', label: 'PAID' },
-  { key: 'due_amount', label: 'DUE' },
+  // { key: 'balance', label: 'BALANCE' },
   { key: 'actions', label: 'ACTIONS' },
 ];
 
@@ -108,14 +108,14 @@ const invoiceForm = {
       fields: [
         {
           key: 'patient_id',
-          label: 'Select Patient',
+          label: 'Choose Patient',
           type: 'select',
           required: true,
           options: [] // Will be populated from API
         },
         {
           key: 'doctor_id',
-          label: 'Select Doctor',
+          label: 'Choose Doctor',
           type: 'select',
           required: true,
           options: [] // Will be populated from API
@@ -134,7 +134,21 @@ const invoiceForm = {
       ]
     },
     {
+      title: 'Payment Details',
       fields: [
+        {
+          key: 'total_amount',
+          label: 'Total Amount',
+          type: 'number',
+          readOnly: true,
+          calculate: (formData) => {
+            return (formData.procedures || []).reduce((sum, proc) => {
+              const qty = Number(proc.quantity) || 0;
+              const price = Number(proc.price) || 0;
+              return sum + (qty * price);
+            }, 0);
+          }
+        },
         {
           key: 'discount',
           label: 'Discount (%)',
@@ -142,10 +156,42 @@ const invoiceForm = {
           required: false
         },
         {
+          key: 'after_discount',
+          label: 'Amount After Discount',
+          type: 'number',
+          readOnly: true,
+          calculate: (formData) => {
+            const total = (formData.procedures || []).reduce((sum, proc) => {
+              const qty = Number(proc.quantity) || 0;
+              const price = Number(proc.price) || 0;
+              return sum + (qty * price);
+            }, 0);
+            const discount = Number(formData.discount) || 0;
+            return total - (total * (discount / 100));
+          }
+        },
+        {
           key: 'paid',
           label: 'Amount Paid',
           type: 'number',
           required: false
+        },
+        {
+          key: 'balance',
+          label: 'Balance',
+          type: 'number',
+          readOnly: true,
+          calculate: (formData) => {
+            const total = (formData.procedures || []).reduce((sum, proc) => {
+              const qty = Number(proc.quantity) || 0;
+              const price = Number(proc.price) || 0;
+              return sum + (qty * price);
+            }, 0);
+            const discount = Number(formData.discount) || 0;
+            const afterDiscount = total - (total * (discount / 100));
+            const paid = Number(formData.paid) || 0;
+            return afterDiscount - paid;
+          }
         }
       ]
     }
@@ -176,11 +222,17 @@ const transformFormData = (formData) => {
     const price = Number(proc.price) || 0;
     return sum + qty * price;
   }, 0);
+
   // Calculate discount_amount
   const discount = Number(formData.discount) || 0;
   const discount_amount = total_amount * (discount / 100);
-  // Calculate net_amount
+
+  // Calculate net_amount (after discount)
   const net_amount = total_amount - discount_amount;
+
+  // Calculate balance
+  const paid = Number(formData.paid) || 0;
+  const balance = net_amount - paid;
 
   return {
     patient_id: formData.patient_id,
@@ -190,13 +242,14 @@ const transformFormData = (formData) => {
     total_amount,
     discount_amount,
     net_amount,
-    paid: formData.paid,
+    paid,
+    balance,
     items: (formData.procedures || []).map(proc => ({
       item_type: proc.procedure || proc.category || '',
       item_description: proc.description,
       quantity: Number(proc.quantity) || 0,
       unit_price: Number(proc.price) || 0,
-      discount: 0, // You can extend this if you want per-item discount
+      discount: 0,
       total_price: (Number(proc.quantity) || 0) * (Number(proc.price) || 0)
     })),
     notes: formData.notes || null,
@@ -298,7 +351,7 @@ export default function InvoicesPage() {
       services: mapInvoiceItemsToServices(invoice.items),
       totalAmount: Number(invoice.total_amount) || 0,
       cashPaid: Number(invoice.paid) || 0,
-      receivable: Number(invoice.due_amount) || 0,
+      receivable: Number(invoice.balance) || 0,
       date: invoice.invoice_date,
     };
     setSelectedInvoice(mappedInvoice);

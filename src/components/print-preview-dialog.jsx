@@ -182,15 +182,15 @@ export default function PrintPreviewDialog({ isOpen, onClose, entity, type }) {
         }
       `}</style>
       <Modal isOpen={isOpen} onOpenChange={onClose} size="4xl" scrollBehavior="inside" hideCloseButton>
-        <ModalContent>
+        <ModalContent className="shadow-none border-none">
           {() => (
             <>
-              <ModalHeader className="flex flex-col gap-1 py-2">
+              {/* <ModalHeader className="flex flex-col gap-1 py-2">
                 <div className="flex items-center gap-2">
                   <Icon icon="lucide:printer" className="text-primary" width={24} height={24} />
                   <span className="text-xl font-semibold">Print Preview</span>
                 </div>
-              </ModalHeader>
+              </ModalHeader> */}
               <ModalBody>
                 {type === 'invoice' && <InvoicePrintView entity={entity} />}
                 {type === 'prescription' && <PrescriptionPrintView entity={entity} />}
@@ -205,4 +205,4 @@ export default function PrintPreviewDialog({ isOpen, onClose, entity, type }) {
       </Modal>
     </>
   );
-} 
+}

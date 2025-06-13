@@ -15,7 +15,7 @@ export function Sidebar({ onNavigate, activePage = 'dashboard' }) {
   return (
     <div className={`${isCollapsed ? 'w-20' : 'w-64'} border-r border-divider bg-content1 flex flex-col h-full transition-all duration-300`}>
       <div className="p-4 flex items-center justify-between">
-        {!isCollapsed && <span className="font-medium">Al Shifa</span>}
+        {!isCollapsed && <span className="font-medium">J Dent Lite</span>}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="p-2 rounded-lg hover:bg-default-100"

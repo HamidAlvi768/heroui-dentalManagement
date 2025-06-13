@@ -33,6 +33,14 @@ const formFields = [
   { key: 'active', label: 'Active', type: 'select', options: [{ value: '1', label: 'Yes' }, { value: '0', label: 'No' }], required: true },
 ];
 
+const entityForm = {
+  sections: [
+    {
+      fields: formFields
+    }
+  ]
+};
+
 // Filter columns
 const filterColumns = [
   { key: 'entity_name', label: 'Entity Name', type: 'text', required: true },
@@ -90,7 +98,7 @@ function EntitiesPage() {
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
       initialFormData={formData}
-      formFields={formFields}
+      form={entityForm}
       filterColumns={filterColumns}
       onInputChange={(inputFormData) => {
         const entity_name = inputFormData.entity_name.toLowerCase().replace(/ /g, '_');

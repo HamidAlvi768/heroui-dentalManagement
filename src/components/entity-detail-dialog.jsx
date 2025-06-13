@@ -24,9 +24,9 @@ import { Icon } from '@iconify/react';
 import PrintPreviewDialog from './print-preview-dialog';
 
 const clinicInfo = {
-  name: "AL-SHIFA DENTAL SPECIALISTS",
+  name: "J Dent Lite",
   address: "Office#1, City Plaza, F-10 Markaz, Islamabad",
-  email: "info@alshifadentalspecialists.com",
+  email: "info@jdentlite.com",
   phone: "0516131786",
   logo: "https://img.heroui.chat/image/logo?w=64&h=64&u=1"
 };
