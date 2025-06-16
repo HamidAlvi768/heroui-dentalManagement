@@ -27,11 +27,9 @@ export function Dashboard() {
     patients_count: 0,
     inventory_count: 0,
     invoices_count: 0,
-    expenses_count: 0,
     doctors_count: 0,
     appointments_count: 0,
     prescriptions_count: 0,
-    reports_count: 0,
     today_appointments_count: 0
   });
 
@@ -50,11 +48,9 @@ export function Dashboard() {
           patients_count: _stats.patients_count || 0,
           inventory_count: _stats.inventory_count || 0,
           invoices_count: _stats.invoices_count || 0,
-          expenses_count: _stats.expenses_count || 0,
           doctors_count: _stats.doctors_count || 0,
           appointments_count: _stats.appointments_count || 0,
           prescriptions_count: _stats.prescriptions_count || 0,
-          reports_count: _stats.reports_count || 0,
           today_appointments_count: _stats.today_appointments_count || 0
         });
       })
@@ -109,7 +105,7 @@ export function Dashboard() {
           <p className="text-default-500">Welcome to {config.appName}</p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
           <StatsCard
             value={stats.users_count}
             label="Users"
@@ -153,22 +149,10 @@ export function Dashboard() {
             onViewAll={() => navigate('/inventory')}
           />
           <StatsCard
-            value={stats.reports_count}
-            label="Reports"
-            icon="lucide:file-text"
-            onViewAll={() => navigate('/reports')}
-          />
-          <StatsCard
             value={stats.invoices_count}
             label="Invoices"
             icon="lucide:receipt"
             onViewAll={() => navigate('/invoices')}
-          />
-          <StatsCard
-            value={stats.expenses_count}
-            label="Expenses"
-            icon="lucide:credit-card"
-            onViewAll={() => navigate('/expenses')}
           />
         </div>
 
@@ -184,13 +168,13 @@ export function Dashboard() {
                       <span className="text-default-500">Overview</span>
                     </h3>
                   </div>
-                  <div className="flex items-center gap-2">
+                  {/* <div className="flex items-center gap-2">
                     <Icon
                       icon="lucide:more-horizontal"
                       className="text-default-400"
                     />
                     <Icon icon="lucide:x" className="text-default-400" />
-                  </div>
+                  </div> */}
                 </div>
 
                 <Tabs

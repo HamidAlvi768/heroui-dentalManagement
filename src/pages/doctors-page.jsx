@@ -9,7 +9,7 @@ import { form } from '@heroui/theme';
 const columns = [
   { key: 'username', label: 'USER NAME' },
   { key: 'email', label: 'EMAIL' },
-  { key: 'role', label: 'ROLE' },
+  // { key: 'role', label: 'ROLE' },
   { key: 'verified', label: 'VERIFIED' },
   { key: 'actions', label: 'ACTIONS' }
 ];
@@ -38,8 +38,7 @@ const formFields = [
   {
     key: 'gender', label: 'Gender', type: 'select', options: [
       { value: 'Male', label: 'Male' },
-      { value: 'Female', label: 'Female' },
-      { value: 'Unknown', label: 'Unknown' }
+      { value: 'Female', label: 'Female' }
     ]
   },
   { key: 'date_of_birth', label: 'Date of Birth', type: 'date' },
@@ -92,7 +91,7 @@ const filterColumns = [
 const doctorForm = {
   sections: [
     {
-      title: 'Doctor Info',
+      // title: 'Doctor Info',
       fields: formFields
     }
   ]

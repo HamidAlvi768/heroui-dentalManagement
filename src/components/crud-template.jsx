@@ -55,6 +55,9 @@ export function CrudTemplate({
   };
 
   const handleEdit = (item) => {
+    console.log("🔍 EDIT CLICKED - Raw item data:", item);
+    console.log("🔍 Item keys:", Object.keys(item));
+    console.log("🔍 Item values:", Object.values(item));
     setCurrentItem(item);
     setIsEditing(true);
     onOpen();
@@ -116,8 +119,8 @@ export function CrudTemplate({
   // Add a function to process form fields and handle calculated values
   const processFormFields = React.useCallback((fields) => {
     if (!fields) return fields;
-    
-    return fields.map(field => {
+
+    return fields.map((field) => {
       // If the field has a calculate function, ensure it's read-only
       if (field.calculate) {
         return {
@@ -133,13 +136,13 @@ export function CrudTemplate({
   // Process form sections if they exist
   const processedForm = React.useMemo(() => {
     if (!form) return form;
-    
+
     return {
       ...form,
-      sections: form.sections?.map(section => ({
+      sections: form.sections?.map((section) => ({
         ...section,
-        fields: processFormFields(section.fields)
-      }))
+        fields: processFormFields(section.fields),
+      })),
     };
   }, [form, processFormFields]);
 
