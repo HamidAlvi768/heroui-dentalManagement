@@ -20,6 +20,9 @@ const initialFormData = {
   email: '',
   contact_number: '',
   gender: '',
+  date_of_birth: '',
+  address: '',
+  notes: '',
 };
 
 const formFields = [
@@ -29,9 +32,8 @@ const formFields = [
   { key: 'contact_number', label: 'Contact Number', type: 'text', required: true },
   { key: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female', 'Unknown'], required: true },
   { key: 'date_of_birth', label: 'Date of Birth', type: 'date', required: true },
-  { key: 'address', label: 'Addres', type: 'textarea', required: true },
-  { key: 'allergies', label: 'Allergies', type: 'textarea', required: true },
-  { key: 'medical_history', label: 'Medical History', type: 'textarea', required: true },
+  { key: 'address', label: 'Address', type: 'textarea', required: true },
+  { key: 'notes', label: 'Notes', type: 'textarea', required: false },
 ];
 
 // Filter columns

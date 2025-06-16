@@ -9,7 +9,7 @@ import { form } from '@heroui/theme';
 const columns = [
   { key: 'username', label: 'USER NAME' },
   { key: 'email', label: 'EMAIL' },
-  { key: 'role', label: 'ROLE' },
+  // { key: 'role', label: 'ROLE' },
   { key: 'verified', label: 'VERIFIED' },
   { key: 'actions', label: 'ACTIONS' }
 ];
@@ -21,7 +21,7 @@ const initialFormData = {
   password: '',
   gender: '',
   date_of_birth: '',
-  blood_group: '',
+  status: 'Active',
   phone: '',
   address: '',
   specialization: '',
@@ -38,12 +38,10 @@ const formFields = [
   {
     key: 'gender', label: 'Gender', type: 'select', options: [
       { value: 'Male', label: 'Male' },
-      { value: 'Female', label: 'Female' },
-      { value: 'Unknown', label: 'Unknown' }
+      { value: 'Female', label: 'Female' }
     ]
   },
   { key: 'date_of_birth', label: 'Date of Birth', type: 'date' },
-  { key: 'blood_group', label: 'Blood Group', type: 'select', options: [{ value: 'A+', label: 'A+' }, { value: 'A-', label: 'A-' }, { value: 'B+', label: 'B+' }, { value: 'B-', label: 'B-' }, { value: 'AB+', label: 'AB+' }, { value: 'AB-', label: 'AB-' }, { value: 'O+', label: 'O+' }, { value: 'O-', label: 'O-' }] },
   { key: 'phone', label: 'Phone', type: 'text' },
   { key: 'address', label: 'Address', type: 'text' },
   { key: 'specialization', label: 'Specialization', type: 'text' },
@@ -64,12 +62,24 @@ const formFields = [
       { value: '100', label: '100%' }
     ]
   },
+  {
+    key: 'status', label: 'Status', type: 'select', options: [
+      { value: 'Active', label: 'Active' },
+      { value: 'InActive', label: 'InActive' }
+    ]
+  },
 ];
 
 // Filter columns
 const filterColumns = [
   { key: 'username', label: 'USER NAME' },
   { key: 'email', label: 'EMAIL' },
+  {
+    key: 'status', label: 'STATUS', type: 'select', options: [
+      { value: 'Active', label: 'Active' },
+      { value: 'InActive', label: 'InActive' }
+    ]
+  },
   {
     key: 'verified', label: 'VERIFIED', type: 'select', options: [
       { value: true, label: 'Yes' },
@@ -81,7 +91,7 @@ const filterColumns = [
 const doctorForm = {
   sections: [
     {
-      title: 'Doctor Info',
+      // title: 'Doctor Info',
       fields: formFields
     }
   ]
