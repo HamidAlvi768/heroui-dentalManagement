@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { Card, CardBody, Button, Input, Avatar } from '@heroui/react';
 import { useAuth } from '@/auth/AuthContext';
@@ -6,7 +6,11 @@ import { Header } from '@/components/header';
 
 export default function ApplicationSettings() {
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => {
+   const saved = localStorage.getItem('formData');
+  return saved
+    ? JSON.parse(saved)
+    : {
     websiteName: 'Dental Doc',
     registrationNumber: 'REG123456789',
     contactEmail: 'contact@dentaldoc.com',
@@ -19,7 +23,8 @@ export default function ApplicationSettings() {
     country: 'United States',
     logo: 'https://img.heroui.chat/image/avatar?w=200&h=200&u=1',
     favicon: 'https://img.heroui.chat/image/avatar?w=32&h=32&u=1'
-  });
+  };
+});
 
   const handleChange = (key, value) => {
     setFormData(prev => ({
@@ -27,6 +32,9 @@ export default function ApplicationSettings() {
       [key]: value
     }));
   };
+  useEffect(() => {
+  localStorage.setItem('formData', JSON.stringify(formData));
+}, [formData]);
 
   const handleSave = () => {
     // Here you would typically save to backend

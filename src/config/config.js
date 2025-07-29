@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const config = {
-  appName: 'Al Shifa',
+  appName: 'JDent Lite',
   // baseURL: 'http://192.168.18.112/alshifadentalbackend/dentaldoc/api',
   baseURL: 'https://leightonbuzzardairportcabs.co.uk/dental/api',
 

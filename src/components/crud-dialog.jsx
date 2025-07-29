@@ -84,9 +84,11 @@ export function CrudDialog({
     }
   };
 
-  const handleSubmit = () => {
-    onSave(formState);
-  };
+const handleSubmit = () => {
+  const mode = formState.id ? 'update' : 'create';
+  onSave(formState, mode);
+};
+
 
   const renderFormField = (field, isInRow = false) => {
     const { 
@@ -756,7 +758,7 @@ export function CrudDialog({
                 Cancel
               </Button>
               <Button color="primary" onPress={handleSubmit}>
-                Save
+                {formState.id ? 'Update' : 'Save'}
               </Button>
             </ModalFooter>
           </>

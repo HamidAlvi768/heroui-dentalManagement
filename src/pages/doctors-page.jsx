@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { form } from '@heroui/theme';
 
 const columns = [
-  { key: 'username', label: 'USER NAME' },
+  { key: 'username', label: 'Name' },
   { key: 'email', label: 'EMAIL' },
   // { key: 'role', label: 'ROLE' },
   { key: 'verified', label: 'VERIFIED' },
@@ -32,7 +32,7 @@ const initialFormData = {
 
 const formFields = [
   { key: 'role', label: 'Role', type: 'hidden', required: true },
-  { key: 'username', label: 'Username', type: 'text', required: true },
+  { key: 'username', label: 'Name', type: 'text', required: true },
   { key: 'email', label: 'Email', type: 'email', required: true },
   { key: 'password', label: 'Password', type: 'text', required: true },
   {
@@ -174,7 +174,8 @@ function DoctorsPage() {
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}
       form={doctorForm}
-      filterColumns={filterColumns} customRowActions={customActions}
+      filterColumns={filterColumns} 
+      customRowActions={customActions}
       onRowClick={handleViewDetail}
       onFilterChange={(filters) => {
         console.log('Filters:', filters);

@@ -7,8 +7,10 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/auth/AuthContext';
 import config from '../config/config';
 import { showToast } from '../utils/toast';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isSending, setIsSending] = useState(false);
@@ -58,8 +60,6 @@ export default function LoginPage() {
       });
   };
 
-  const [showPassword, setShowPassword] = useState(false);
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md p-8">
@@ -96,6 +96,12 @@ export default function LoginPage() {
                 placeholder="Enter your password"
                 required
               />
+                 <span
+                    className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer text-gray-500"
+                    onClick={() => setShowPassword(prev => !prev)}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </span>
             </div>
           </div>
 
@@ -129,16 +135,6 @@ export default function LoginPage() {
             {isSending ? 'Signing in...' : 'Sign in'}
           </Button>
 
-          <p className="text-center text-sm text-gray-600">
-            Don't have an account?{' '}
-            <button
-              type="button"
-              onClick={() => navigate('/signup')}
-              className="font-medium text-primary hover:text-primary/80"
-            >
-              Sign up
-            </button>
-          </p>
         </form>
       </Card>
     </div>

@@ -30,7 +30,7 @@ const formFields = [
   { key: 'father_name', label: 'Father Name', type: 'text', required: true },
   { key: 'email', label: 'Email', type: 'email', required: true },
   { key: 'contact_number', label: 'Contact Number', type: 'text', required: true },
-  { key: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female', 'Unknown'], required: true },
+  { key: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female',], required: true },
   { key: 'date_of_birth', label: 'Date of Birth', type: 'date', required: true },
   { key: 'address', label: 'Address', type: 'textarea', required: true },
   { key: 'notes', label: 'Notes', type: 'textarea', required: false },
@@ -41,12 +41,11 @@ const filterColumns = [
   { key: 'full_name', label: 'FULL NAME' },
   { key: 'father_name', label: 'FATHER NAME' },
   { key: 'email', label: 'EMAIL' },
-  { key: 'contact_number', label: 'Contact Number' },
+  { key: 'contact_number', label: 'CONTACT NUMBER' },
   {
     key: 'gender', label: 'GENDER', type: 'select', options: [
       { value: 'male', label: 'Male' },
       { value: 'female', label: 'Female' },
-      { value: 'unknown', label: 'Unknown' },
     ]
   },
 ];
@@ -54,7 +53,7 @@ const filterColumns = [
 const patientForm = {
   sections: [
     {
-      title: 'Patient Info',
+    
       fields: formFields
     }
   ]

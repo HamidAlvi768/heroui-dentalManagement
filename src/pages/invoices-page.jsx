@@ -16,6 +16,7 @@ const columns = [
     label: 'DOCTOR',
     render: (item) => item.doctor?.username || ''
   },
+  { key: 'invoice_number', label: 'INVOICE' },
   { key: 'invoice_date', label: 'DATE' },
   { key: 'total_amount', label: 'TOTAL' },
   { key: 'discount_amount', label: 'DISCOUNT' },

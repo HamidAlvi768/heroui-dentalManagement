@@ -8,7 +8,7 @@ import { CrudDialog } from '../components/crud-dialog';
 import { useDisclosure } from '@heroui/react';
 
 const columns = [
-  { key: 'category_name', label: 'Category' },
+  { key: 'category_name', label: 'CATEGORY' },
   { key: 'code', label: 'CODE' },
   { key: 'name', label: 'NAME' },
   { key: 'description', label: 'DESCRIPTION' },
@@ -95,7 +95,7 @@ function InventoryPage() {
 
   const formFields = [
     { key: 'category_id', label: 'Category', type: 'select', options: [{ value: '', label: 'Select Category' }, ...categoriesList.map(category => ({ value: category.id, label: category.name }))], required: true },
-    { key: 'name', label: 'name', type: 'text', required: true },
+    { key: 'name', label: 'Name', type: 'text', required: true },
     { key: 'code', label: 'Code', type: 'text', required: true },
     { key: 'cost_price', label: 'Cost Price', type: 'number', required: true },
     { key: 'selling_price', label: 'Selling Price', type: 'number', required: true },
@@ -117,7 +117,7 @@ function InventoryPage() {
   const inventoryForm = {
     sections: [
       {
-        title: 'Inventory Item',
+      
         fields: formFields
       }
     ]
@@ -125,7 +125,7 @@ function InventoryPage() {
 
   // Filter columns
   const filterColumns = [
-    { key: 'category_id', label: 'Category', type: 'select', options: [{ value: '', label: 'Select Category' }, ...categoriesList.map(category => ({ value: category.id, label: category.name }))], required: true },
+    { key: 'category_id', label: 'CATEGORY', type: 'select', options: [{ value: '', label: 'Select Category' }, ...categoriesList.map(category => ({ value: category.id, label: category.name }))], required: true },
     { key: 'name', label: 'NAME' },
     { key: 'code', label: 'CODE' },
     { key: 'quantity', label: 'QUANTITY' },
