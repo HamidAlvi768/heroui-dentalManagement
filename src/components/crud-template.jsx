@@ -31,6 +31,7 @@ export function CrudTemplate({
   onFilterChange,
   onInputChange,
   form,
+  backButton, // ✅ Accept backButton prop
 }) {
   const [items, setItems] = React.useState(data);
   const [currentItem, setCurrentItem] = React.useState(null);
@@ -99,14 +100,14 @@ export function CrudTemplate({
       updatedItems = items.map((item) =>
         item.id === formData.id ? { ...item, ...formData } : item
       );
-      showToast.success(`${title.slice(0, -1)} updated successfully`);
+      showToast.success(`${title.slice(0)} updated successfully`);
     } else {
       const newItem = {
         ...formData,
         id: Date.now().toString(),
       };
       updatedItems = [...items, newItem];
-      showToast.success(`${title.slice(0, -1)} created successfully`);
+      showToast.success(`${title.slice(0)} created successfully`);
     }
 
     setItems(updatedItems);
@@ -160,6 +161,7 @@ export function CrudTemplate({
       icon={icon}
       onAddNew={handleAddNew}
       addButtonLabel={addButtonLabel}
+      backButton={backButton}
     >
       <DataTable
         loading={loading}
@@ -187,7 +189,7 @@ export function CrudTemplate({
         title={
           isEditing
             ? `Edit ${title.slice(0, -1)}`
-            : `Add New ${title.slice(0, -1)}`
+            : `Add New ${title.slice(0)}`
         }
         formData={currentItem}
         form={processedForm || undefined}

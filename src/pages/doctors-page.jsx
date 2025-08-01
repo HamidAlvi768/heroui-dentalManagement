@@ -10,7 +10,8 @@ const columns = [
   { key: 'username', label: 'Name' },
   { key: 'email', label: 'EMAIL' },
   // { key: 'role', label: 'ROLE' },
-  { key: 'verified', label: 'VERIFIED' },
+  // { key: 'verified', label: 'VERIFIED' },
+  { key: 'status', label: 'STATUS' }, 
   { key: 'actions', label: 'ACTIONS' }
 ];
 
@@ -65,7 +66,7 @@ const formFields = [
   {
     key: 'status', label: 'Status', type: 'select', options: [
       { value: 'Active', label: 'Active' },
-      { value: 'InActive', label: 'InActive' }
+      { value: 'In Active', label: 'In Active' }
     ]
   },
 ];
@@ -77,7 +78,7 @@ const filterColumns = [
   {
     key: 'status', label: 'STATUS', type: 'select', options: [
       { value: 'Active', label: 'Active' },
-      { value: 'InActive', label: 'InActive' }
+      { value: 'In Active', label: 'In Active' }
     ]
   },
   {

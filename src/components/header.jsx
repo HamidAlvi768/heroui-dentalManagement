@@ -11,8 +11,10 @@ import { useAuth } from "@/auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 import config from "../config/config";
 import { useLocation } from "react-router-dom";
+import useFormData from "../hooks/useFormData";
 
 export function Header() {
+  const dynamicFormData = useFormData();
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -106,9 +108,14 @@ export function Header() {
           className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
           onClick={() => navigate("/dashboard")}
         >
-          <Icon icon="lucide:activity" className="text-white mr-2" width={20} />
+          {/* <Icon icon="lucide:activity" className="text-white mr-2" width={20} /> */}
+          <img 
+          src={dynamicFormData.logo}
+          alt="Logo"
+          className="text-white mr-2" width={20}
+          />
           <span className="text-white text-xl font-semibold">
-            {config.appName}
+          {dynamicFormData.websiteName}
           </span>
         </div>
 
@@ -220,7 +227,8 @@ export function Header() {
                   </div>
                 </div>
                 <Avatar
-                  src="https://img.heroui.chat/image/avatar?w=200&h=200&u=1"
+                  src={dynamicFormData.logo}
+                  alt="Image"
                   className="w-10 h-10"
                 />
               </div>

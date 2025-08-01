@@ -2,16 +2,21 @@ import React from 'react';
 import { Modal, ModalContent, ModalHeader, ModalBody, Button } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import config from '../config/config';
+import useFormData from '../hooks/useFormData';
 
 // Print-optimized Invoice Layout
 function InvoicePrintView({ entity }) {
+  const dynamicFormData = useFormData();
   if (!entity) return null;
   return (
     <div className="print-invoice p-8 bg-white text-black min-w-[700px] max-w-[900px] mx-auto h-auto">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-2">
-          <Icon icon="lucide:activity" className="text-primary mr-2" width={24} />
-          <span className="text-2xl font-bold">{config.appName}</span>
+        <img 
+          src = {dynamicFormData.logo}
+          alt = "Logo"
+          className="text-primary mr-2" width={24} />          
+          <span className="text-2xl font-bold">{dynamicFormData.websiteName}</span>
         </div>
         <div />
       </div>
@@ -67,8 +72,14 @@ function PrescriptionPrintView({ entity }) {
     <div className="print-invoice p-8 bg-white text-black min-w-[700px] max-w-[900px] mx-auto h-auto">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-2">
-          <Icon icon="lucide:activity" className="text-primary mr-2" width={24} />
-          <span className="text-2xl font-bold">{config.appName}</span>
+         <img 
+          src={dynamicFormData.logo}
+          alt="Logo"
+          className="text-white mr-2" width={20}
+          />
+          <span className="text-white text-xl font-semibold">
+          {dynamicFormData.websiteName}
+          </span>
         </div>
         <div />
       </div>

@@ -19,8 +19,10 @@ import { Header } from "./header";
 import { useAuth } from "../auth/AuthContext";
 import config from "../config/config";
 import { useNavigate } from 'react-router-dom';
+import useFormData from "../hooks/useFormData";
 
 export function Dashboard() {
+  const dynamicFormData = useFormData();
   const [selected, setSelected] = React.useState("chart");
   const [stats, setStats] = React.useState({
     users_count: 0,
@@ -102,7 +104,7 @@ export function Dashboard() {
       <div className="p-6">
         <div>
           <h1 className="text-2xl font-semibold">Dashboard</h1>
-          <p className="text-default-500">Welcome to {config.appName}</p>
+          <p className="text-default-500">Welcome to {dynamicFormData.websiteName}</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">

@@ -2,9 +2,31 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg" /> -->
+    <!-- <link rel="icon" type="image/svg+xml" href="https://api.iconify.design/lucide:activity.svg" /> -->
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dental Doctors</title>
+    <!-- <title>Dental Doctors</title> -->
+    <script>
+        const saved = localStorage.getItem('formData');
+        const data = saved ? JSON.parse(saved) : {};
+        if (data.favicon) {
+          const link = document.createElement('link');
+          link.rel = 'icon';
+          link.type = 'image/png';
+          link.href = data.favicon;
+
+          // Remove existing favicons
+          const existingFavicons = document.querySelectorAll('link[rel="icon"]');
+          existingFavicons.forEach(f => f.remove());
+
+          document.head.appendChild(link);
+        }
+        if(data.websiteName){
+          document.title= data.websiteName;
+        }
+    </script>
+
   </head>
   <body class="h-full min-h-screen">
     <div id="root"></div>

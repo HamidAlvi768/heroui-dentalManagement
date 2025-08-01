@@ -8,8 +8,10 @@ import { useAuth } from '@/auth/AuthContext';
 import config from '../config/config';
 import { showToast } from '../utils/toast';
 import { Eye, EyeOff } from 'lucide-react';
+import useFormData from '../hooks/useFormData';
 
 export default function LoginPage() {
+  const dynamicFormData = useFormData();
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -64,7 +66,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold">{config.appName}</h2>
+          <h2 className="text-3xl font-bold">{dynamicFormData.websiteName}</h2>
           <p className="text-gray-600 mt-2">Please sign in to your account</p>
         </div>
 
@@ -100,7 +102,7 @@ export default function LoginPage() {
                     className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer text-gray-500"
                     onClick={() => setShowPassword(prev => !prev)}
                   >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                   </span>
             </div>
           </div>

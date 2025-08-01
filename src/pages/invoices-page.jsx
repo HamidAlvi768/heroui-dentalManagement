@@ -6,6 +6,7 @@ import { useAuth } from '../auth/AuthContext';
 
 // Table columns
 const columns = [
+  { key: 'invoice_number', label: 'INVOICE NUMBER' },
   {
     key: 'patient',
     label: 'PATIENT',
@@ -16,7 +17,6 @@ const columns = [
     label: 'DOCTOR',
     render: (item) => item.doctor?.username || ''
   },
-  { key: 'invoice_number', label: 'INVOICE' },
   { key: 'invoice_date', label: 'DATE' },
   { key: 'total_amount', label: 'TOTAL' },
   { key: 'discount_amount', label: 'DISCOUNT' },
@@ -236,9 +236,9 @@ const transformFormData = (formData) => {
   const balance = net_amount - paid;
 
   return {
+    invoice_number: formData.invoice_number || generateInvoiceNumber(),
     patient_id: formData.patient_id,
     doctor_id: formData.doctor_id,
-    invoice_number: formData.invoice_number || generateInvoiceNumber(),
     invoice_date: formData.date || formData.invoice_date || '',
     total_amount,
     discount_amount,

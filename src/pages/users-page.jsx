@@ -94,7 +94,7 @@ function UsersPage() {
     <CrudTemplate
       title="Users"
       description="Manage users records"
-      icon="lucide:users"
+      backButton
       loading={loading}
       columns={columns}
       data={users}

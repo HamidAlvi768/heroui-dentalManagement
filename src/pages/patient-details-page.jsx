@@ -159,15 +159,11 @@ export default function PatientDetailsPage() {
           variant="underlined"
           className="w-full"
         >
-          <Tab key="medical" title="Medical History">
-            {renderMedicalHistory()}
-          </Tab>
           <Tab key="appointments" title="Appointments">
             {renderAppointments()}
           </Tab>
           <Tab key="prescriptions" title="Prescriptions" />
           <Tab key="invoices" title="Invoices" />
-          <Tab key="documents" title="Documents" />
         </Tabs>
       </div>
     </PageTemplate>

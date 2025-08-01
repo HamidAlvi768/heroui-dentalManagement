@@ -11,7 +11,7 @@ export default function ApplicationSettings() {
   return saved
     ? JSON.parse(saved)
     : {
-    websiteName: 'Dental Doc',
+    websiteName: 'JDent Lite',
     registrationNumber: 'REG123456789',
     contactEmail: 'contact@dentaldoc.com',
     contactPhone: '+1 (555) 123-4567',
@@ -21,8 +21,8 @@ export default function ApplicationSettings() {
     state: 'NY',
     postalCode: '10001',
     country: 'United States',
-    logo: 'https://img.heroui.chat/image/avatar?w=200&h=200&u=1',
-    favicon: 'https://img.heroui.chat/image/avatar?w=32&h=32&u=1'
+    logo: 'https://api.iconify.design/lucide:activity.svg?width=32&height=32',
+    favicon: 'https://api.iconify.design/lucide:activity.svg?width=32&height=32'
   };
 });
 

@@ -4,6 +4,7 @@ import { Avatar } from '@heroui/react';
 import config from '../config/config';
 import { useAuth } from '../auth/AuthContext';
 import { showToast } from '../utils/toast';
+import BackButton from '../components/ui/backButton';
 
 const columns = [
   { key: 'name', label: 'NAME' },
@@ -87,7 +88,7 @@ function CategoriesPage() {
     <CrudTemplate
       title="Categories"
       description="Manage inventory categories"
-      icon="lucide:boxes"
+      backButton={true}
       loading={loading}
       columns={columns}
       data={dataList}
@@ -145,6 +146,9 @@ function CategoriesPage() {
             console.error('Error deleting Category:', error);
           });
         console.log('Delete patient:', item);
+      }}
+      onClick={()=>{
+        
       }}
     />
   );

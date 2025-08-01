@@ -15,6 +15,8 @@ import {
   AutocompleteItem
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import { ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // Add custom styles to fix autocomplete hover issues
 import './CrudDialogStyles.css';
