@@ -6,9 +6,7 @@ import { Header } from '../components/header';
 import { get } from 'react-hook-form';
 import config from '../config/config';
 import { useAuth } from '../auth/AuthContext';
-import {
-  Button,
-} from '@heroui/react';
+import {Button} from '@heroui/react';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -56,13 +54,13 @@ export default function SettingsPage() {
       title: 'Categories',
       description: 'Create new inventory categories.',
       icon: 'lucide:boxes',
-      path: '/categories'
+      path: '/settings/categories'
     },
     {
       title: 'Users',
       description: 'Create new users.',
       icon: 'lucide:users',
-      path: '/users'
+      path: '/settings/users'
     },
     {
       title: 'Application Settings',

@@ -3,8 +3,8 @@ import { PageTemplate } from "./page-template";
 import { DataTable } from "./data-table";
 import { CrudDialog } from "./crud-dialog";
 import { DeleteDialog } from "./delete-dialog";
-import { useDisclosure } from "@heroui/react";
 import { showToast } from "../utils/toast";
+import { useDisclosure } from "@heroui/react";
 
 export function CrudTemplate({
   title,
@@ -31,6 +31,7 @@ export function CrudTemplate({
   onFilterChange,
   onInputChange,
   form,
+  breadcrumbs,
   backButton, // ✅ Accept backButton prop
 }) {
   const [items, setItems] = React.useState(data);
@@ -162,6 +163,7 @@ export function CrudTemplate({
       onAddNew={handleAddNew}
       addButtonLabel={addButtonLabel}
       backButton={backButton}
+      breadcrumbs={breadcrumbs}
     >
       <DataTable
         loading={loading}

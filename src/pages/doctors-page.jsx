@@ -208,7 +208,7 @@ function DoctorsPage() {
             .then(response => {
               console.log('User created:', response.data.success);
               if (response.data.success == true) {
-                setUsers([...users, response.data.user]);
+                setUsers([ response.data.user , ...users]);
                 toast.success(response.data.message);
               } else {
                 toast.error(response.data.message);

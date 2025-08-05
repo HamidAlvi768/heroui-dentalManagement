@@ -1,9 +1,9 @@
 import React, { use, useEffect, useState } from 'react';
-import { CrudTemplate } from '../components/crud-template';
+import { CrudTemplate } from '../../components/crud-template';
 import { Avatar } from '@heroui/react';
-import config from '../config/config';
-import { useAuth } from '../auth/AuthContext';
-import { showToast } from '../utils/toast';
+import config from '../../config/config';
+import { useAuth } from '../../auth/AuthContext';
+import { showToast } from '../../utils/toast';
 
 const columns = [
   { key: 'username', label: 'USER NAME' },

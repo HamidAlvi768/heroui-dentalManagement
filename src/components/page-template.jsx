@@ -2,8 +2,9 @@ import React from 'react';
 import { Icon } from '@iconify/react';
 import { Button } from '@heroui/react';
 import { Header } from './header';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Component } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Breadcrumbs } from './ui/breadcrumbs';
 export function PageTemplate({
   title,
   icon,
@@ -16,8 +17,8 @@ export function PageTemplate({
   return (
     <div className="min-h-screen bg-content2">
       <Header />
-
-      <div className="p-6">
+      <Breadcrumbs />
+     <div className="bg-white shadow-md rounded-2xl mx-6 p-4">
         <div className="flex justify-between items-center mb-3">
           <div>
             <div className="flex items-center">

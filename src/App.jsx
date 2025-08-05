@@ -18,10 +18,10 @@ import ProfilePage from "./pages/profile-page";
 import SettingsPage from "./pages/settings-page";
 import LoginPage from "./pages/login";
 import SignupPage from "./pages/signup";
-import UsersPage from "./pages/users-page";
+import UsersPage from "./pages/settings/users-page";
 import InvoicesPage from "./pages/invoices-page";
 import ExpensePage from "./pages/expense-page";
-import CategoriesPage from "./pages/categories-page";
+import CategoriesPage from "./pages/settings/categories-page";
 import ForgotPasswordPage from "./pages/forgot-password";
 import ApplicationSettings from "./pages/settings/application-settings";
 import ConfigurationSettings from "./pages/settings/generic-records";
@@ -153,7 +153,7 @@ export default function App() {
           }
         />
         <Route
-          path="/categories"
+          path="/settings/categories"
           element={
             <PrivateRoute>
               <AppLayout>
@@ -183,7 +183,7 @@ export default function App() {
           }
         />
         <Route
-          path="/users"
+          path="/settings/users"
           element={
             <PrivateRoute>
               <AppLayout>

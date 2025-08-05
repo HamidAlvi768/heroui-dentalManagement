@@ -61,13 +61,13 @@ const patientForm = {
 
 function PatientsPage() {
 
-  const navigate = useNavigate();
   const { token } = useAuth();
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const navigate = useNavigate();
 
   function getPatients(perpage = 5, page = 1, filters = {}) {
     setLoading(true);
@@ -157,7 +157,7 @@ function PatientsPage() {
           config.postData('/patients/create', data)
             .then(response => {
               if (response.data.success == true) {
-                setUsers([...users, response.data.user]);
+                setUsers([ response.data.user , ...patients]);
                 toast.success(response.data.message);
               } else {
                 toast.error(response.data.message);

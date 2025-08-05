@@ -1,10 +1,9 @@
 import React, { use, useEffect, useState } from 'react';
-import { CrudTemplate } from '../components/crud-template';
+import { CrudTemplate } from '../../components/crud-template';
 import { Avatar } from '@heroui/react';
-import config from '../config/config';
-import { useAuth } from '../auth/AuthContext';
-import { showToast } from '../utils/toast';
-import BackButton from '../components/ui/backButton';
+import config from '../../config/config';
+import { useAuth } from '../../auth/AuthContext';
+import { showToast } from '../../utils/toast';
 
 const columns = [
   { key: 'name', label: 'NAME' },
@@ -127,7 +126,7 @@ function CategoriesPage() {
           config.postData('/categories/create', data)
             .then(response => {
               console.log('Category created:', response.data.category);
-              setDataList([...dataList, response.data.category]);
+              setDataList([ response.data.category, ...dataList]);
               toast.success('Category created successfully!');
             })
             .catch(error => {

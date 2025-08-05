@@ -3,6 +3,8 @@ import { Icon } from '@iconify/react';
 import { Card, CardBody, Button, Input, Avatar } from '@heroui/react';
 import { useAuth } from '@/auth/AuthContext';
 import { Header } from '@/components/header';
+import { Breadcrumbs } from '../../components/ui/breadcrumbs';
+
 
 export default function ApplicationSettings() {
   const [isEditing, setIsEditing] = useState(false);
@@ -55,7 +57,9 @@ export default function ApplicationSettings() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="p-6">
+      <Breadcrumbs />
+      {/* <div className="px-6"> */}
+      <div className="bg-white rounded-2xl mx-8">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-semibold">Application Settings</h1>
@@ -77,19 +81,14 @@ export default function ApplicationSettings() {
               <h3 className="text-lg font-semibold">Website Configuration</h3>
               <Button
                 variant={isEditing ? "default" : "outline"}
-                onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+                // onClick={() => isEditing ? handleSave() : setIsEditing(true)}
               >
-                {isEditing ? (
+        
                   <>
                     <Icon icon="lucide:check" width={16} className="mr-2" />
                     Save Changes
                   </>
-                ) : (
-                  <>
-                    <Icon icon="lucide:edit" width={16} className="mr-2" />
-                    Edit Settings
-                  </>
-                )}
+      
               </Button>
             </div>
 
@@ -99,13 +98,11 @@ export default function ApplicationSettings() {
                 label="Website Name"
                 value={formData.websiteName}
                 onChange={(e) => handleChange('websiteName', e.target.value)}
-                disabled={!isEditing}
               />
               <Input
                 label="Registration Number"
                 value={formData.registrationNumber}
                 onChange={(e) => handleChange('registrationNumber', e.target.value)}
-                disabled={!isEditing}
               />
 
               {/* Contact Information */}
@@ -114,19 +111,16 @@ export default function ApplicationSettings() {
                 type="email"
                 value={formData.contactEmail}
                 onChange={(e) => handleChange('contactEmail', e.target.value)}
-                disabled={!isEditing}
               />
               <Input
                 label="Contact Phone"
                 value={formData.contactPhone}
                 onChange={(e) => handleChange('contactPhone', e.target.value)}
-                disabled={!isEditing}
               />
               <Input
                 label="WhatsApp Number"
                 value={formData.whatsappNumber}
                 onChange={(e) => handleChange('whatsappNumber', e.target.value)}
-                disabled={!isEditing}
               />
 
               {/* Address Information */}
@@ -134,31 +128,26 @@ export default function ApplicationSettings() {
                 label="Address"
                 value={formData.address}
                 onChange={(e) => handleChange('address', e.target.value)}
-                disabled={!isEditing}
               />
               <Input
                 label="City"
                 value={formData.city}
                 onChange={(e) => handleChange('city', e.target.value)}
-                disabled={!isEditing}
               />
               <Input
                 label="State"
                 value={formData.state}
                 onChange={(e) => handleChange('state', e.target.value)}
-                disabled={!isEditing}
               />
               <Input
                 label="Postal Code"
                 value={formData.postalCode}
                 onChange={(e) => handleChange('postalCode', e.target.value)}
-                disabled={!isEditing}
               />
               <Input
                 label="Country"
                 value={formData.country}
                 onChange={(e) => handleChange('country', e.target.value)}
-                disabled={!isEditing}
               />
 
               {/* Logo & Favicon */}
@@ -171,7 +160,7 @@ export default function ApplicationSettings() {
                         src={formData.logo}
                         className="w-20 h-20"
                       />
-                      {isEditing && (
+                      
                         <div>
                           <input
                             type="file"
@@ -189,7 +178,6 @@ export default function ApplicationSettings() {
                             Upload Logo
                           </Button>
                         </div>
-                      )}
                     </div>
                   </div>
                   <div>
@@ -199,7 +187,6 @@ export default function ApplicationSettings() {
                         src={formData.favicon}
                         className="w-8 h-8"
                       />
-                      {isEditing && (
                         <div>
                           <input
                             type="file"
@@ -217,7 +204,6 @@ export default function ApplicationSettings() {
                             Upload Favicon
                           </Button>
                         </div>
-                      )}
                     </div>
                   </div>
                 </div>
