@@ -23,8 +23,8 @@ export default function ApplicationSettings() {
     state: 'NY',
     postalCode: '10001',
     country: 'United States',
-    logo: 'https://api.iconify.design/lucide:activity.svg?width=32&height=32',
-    favicon: 'https://api.iconify.design/lucide:activity.svg?width=32&height=32'
+    logo: 'https://api.iconify.design/lucide:activity.svg?width=32&height=32&color=white',
+    favicon: 'https://api.iconify.design/lucide:activity.svg?width=32&height=32&color=black'
   };
 });
 

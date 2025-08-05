@@ -13,7 +13,7 @@ function InvoicePrintView({ entity }) {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-2">
         <img 
-          src = {dynamicFormData.logo}
+          src = {dynamicFormData.favicon}
           alt = "Logo"
           className="text-primary mr-2" width={24} />          
           <span className="text-2xl font-bold">{dynamicFormData.websiteName}</span>

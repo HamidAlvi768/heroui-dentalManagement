@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PageTemplate } from '../components/page-template';
-import { Card, CardBody, Table, TableHeader, TableBody, TableColumn, TableRow, TableCell, Badge, Tabs, Tab } from '@heroui/react';
+import { Card, CardBody, Table, TableHeader, TableBody, TableColumn, TableRow, TableCell, Badge, Tabs, Tab, Button} from '@heroui/react';
 import { Icon } from '@iconify/react';
 
 export default function PatientDetailsPage() {
@@ -148,6 +148,16 @@ export default function PatientDetailsPage() {
       title={`Patient Details - ${patient.name}`}
       icon="lucide:user"
     >
+      <div className='flex justify-end'>
+         <Button
+            variant="outline"
+            className="ml-auto -mt-12"
+            onClick={() => window.history.back()}
+          >
+            <Icon icon="lucide:arrow-left" className="mr-2" width={16} />
+            Back to Patients
+          </Button>
+      </div>
       {/* Patient Info Card */}
       {renderPatientInfo()}
 

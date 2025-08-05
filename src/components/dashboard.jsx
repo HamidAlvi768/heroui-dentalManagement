@@ -112,7 +112,7 @@ export function Dashboard() {
             value={stats.users_count}
             label="Users"
             icon="lucide:users"
-            onViewAll={() => navigate('/users')}
+            onViewAll={() => navigate('/settings/users')}
           />
           <StatsCard
             value={stats.doctors_count}
