@@ -90,7 +90,7 @@ function EntitiesPage() {
     <CrudTemplate
       title="Entities Types"
       description="Manage entities records"
-      backButton
+      icon="lucide:blocks"
       loading={loading}
       columns={columns}
       data={dataList}

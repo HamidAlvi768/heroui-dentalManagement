@@ -79,6 +79,12 @@ function PrescriptionPage() {
       {
         fields: [
           {
+            key: 'doctor',
+            label: 'Select Doctor',
+            type: 'select',
+            required: true,
+          },
+          {
             key: 'patient_id',
             label: 'Select Patient',
             type: 'select',
@@ -91,6 +97,7 @@ function PrescriptionPage() {
               }))
             ]
           },
+
           {
             key: 'diagnosis',
             label: 'Select Diagnosis',

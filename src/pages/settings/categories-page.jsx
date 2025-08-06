@@ -4,11 +4,12 @@ import { Avatar } from '@heroui/react';
 import config from '../../config/config';
 import { useAuth } from '../../auth/AuthContext';
 import { showToast } from '../../utils/toast';
+import { LucideActivity } from 'lucide-react';
 
 const columns = [
   { key: 'name', label: 'NAME' },
   { key: 'description', label: 'DESCRIPTION' },
-  { key: 'inventory_count', label: 'Inventory Items' },
+  { key: 'inventory_count', label: 'INVENTORY ITEMS' },
   { key: 'active', label: 'ACTIVE' },
   { key: 'actions', label: 'ACTIONS' }
 ];
@@ -87,7 +88,7 @@ function CategoriesPage() {
     <CrudTemplate
       title="Categories"
       description="Manage inventory categories"
-      backButton={true}
+      icon="lucide:boxes"
       loading={loading}
       columns={columns}
       data={dataList}

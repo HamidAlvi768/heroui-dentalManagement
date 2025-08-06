@@ -5,7 +5,6 @@ import { useAuth } from '@/auth/AuthContext';
 import { Header } from '@/components/header';
 import { Breadcrumbs } from '../../components/ui/breadcrumbs';
 
-
 export default function ApplicationSettings() {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(() => {
@@ -24,7 +23,7 @@ export default function ApplicationSettings() {
     postalCode: '10001',
     country: 'United States',
     logo: 'https://api.iconify.design/lucide:activity.svg?width=32&height=32&color=white',
-    favicon: 'https://api.iconify.design/lucide:activity.svg?width=32&height=32&color=black'
+    favicon: 'https://api.iconify.design/lucide:activity.svg?width=32&height=32&color=white'
   };
 });
 
@@ -34,14 +33,14 @@ export default function ApplicationSettings() {
       [key]: value
     }));
   };
-  useEffect(() => {
-  localStorage.setItem('formData', JSON.stringify(formData));
-}, [formData]);
+//   useEffect(() => {
+//   localStorage.setItem('formData', JSON.stringify(formData));
+// }, [formData]);
 
-  const handleSave = () => {
-    // Here you would typically save to backend
-    setIsEditing(false);
-  };
+const handleSave = () => {
+  localStorage.setItem('formData', JSON.stringify(formData));
+};
+
 
   const handleFileChange = (key) => (e) => {
     const file = e.target.files[0];
@@ -63,25 +62,26 @@ export default function ApplicationSettings() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-semibold">Application Settings</h1>
-            <p className="text-muted-foreground">Manage your website configuration</p>
+            <p className="text-muted-foreground">Manage your Software configuration</p>
           </div>
-          <Button
+          {/* <Button
             variant="outline"
             className="ml-auto"
             onClick={() => window.history.back()}
           >
             <Icon icon="lucide:arrow-left" className="mr-2" width={16} />
             Back to Settings
-          </Button>
+          </Button> */}
         </div>
 
         <Card className="mb-6">
           <CardBody className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold">Website Configuration</h3>
-              <Button
+              <h3 className="text-lg font-semibold">Software Configuration</h3>
+              {/* <Button
                 variant={isEditing ? "default" : "outline"}
-                // onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+                 className="hover:bg-primary hover:text-white transition-colors"
+                onClick={() => isEditing ? handleSave() : setIsEditing(true)}
               >
         
                   <>
@@ -89,13 +89,22 @@ export default function ApplicationSettings() {
                     Save Changes
                   </>
       
+              </Button> */}
+              <Button
+                variant="default"
+                onClick={handleSave}
+                className="hover:bg-primary hover:text-white transition-colors"
+
+              >
+                <Icon icon="lucide:check" width={16} className="mr-2" />
+                Save Changes
               </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Basic Information */}
               <Input
-                label="Website Name"
+                label="Software Name"
                 value={formData.websiteName}
                 onChange={(e) => handleChange('websiteName', e.target.value)}
               />

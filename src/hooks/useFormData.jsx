@@ -8,7 +8,8 @@ export default function useFormData() {
       ? JSON.parse(saved)
       : {
           websiteName: "JDent Lite",
-          logo: "https://api.iconify.design/lucide:activity.svg?width=32&height=32",
+          logo: 'https://api.iconify.design/lucide:activity.svg?width=32&height=32&color=white',
+
         };
   }, []);
 }

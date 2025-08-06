@@ -145,7 +145,7 @@ export default function PatientDetailsPage() {
 
   return (
     <PageTemplate
-      title={`Patient Details - ${patient.name}`}
+      title={`${patient.name}`}
       icon="lucide:user"
     >
       <div className='flex justify-end'>

@@ -21,7 +21,7 @@ const initialFormData = {
 };
 
 const formFields = [
-  { key: 'username', label: 'username', type: 'text', required: true },
+  { key: 'username', label: 'User Name', type: 'text', required: true },
   { key: 'email', label: 'Email', type: 'email', required: true },
   { key: 'password', label: 'Password', type: 'text', required: true },
   { key: 'role', label: 'Role', type: 'select', options: ['Admin', 'Moderator', 'Doctor', 'User'], required: true },
@@ -94,7 +94,7 @@ function UsersPage() {
     <CrudTemplate
       title="Users"
       description="Manage users records"
-      backButton
+      icon="lucide:users"
       loading={loading}
       columns={columns}
       data={users}

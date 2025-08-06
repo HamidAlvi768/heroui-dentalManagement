@@ -49,7 +49,9 @@ const formFields = [
   { key: 'qualification', label: 'Qualification', type: 'text' },
   { key: 'experience', label: 'Experience', type: 'number' },
   {
-    key: 'commission_percentage', label: 'Commission Percentage', type: 'select', options: [
+    key: 'commission_percentage', label: 'Commission Percentage', type: 'select',
+    className: 'text-bold',
+    options: [
       { value: '0', label: '0%' },
       { value: '10', label: '10%' },
       { value: '20', label: '20%' },
