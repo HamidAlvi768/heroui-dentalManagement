@@ -17,11 +17,10 @@ import {
 import { Icon } from '@iconify/react';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import CustomSelect from './ui/customSelect';
-
 
 // Add custom styles to fix autocomplete hover issues
 import './CrudDialogStyles.css';
+import { toast } from 'react-toastify';
 
 // Define medicine types with descriptions
 const medicineTypes = [
@@ -64,6 +63,7 @@ export function CrudDialog({
   title,
   formData,
   form,
+  formFields,
   onSave,
   onInputChange,
 }) {
@@ -89,10 +89,20 @@ export function CrudDialog({
   };
 
 const handleSubmit = () => {
+  // Check for empty required fields
+  const emptyFields = (formFields || [])
+    .filter(field => field.required)
+    .filter(field => !formState[field.key]?.toString().trim());
+
+  if (emptyFields.length > 0) {
+    toast(`Please fill in: ${emptyFields.map(f => f.label).join(', ')}`);
+    return; // Stop submission
+  }
+
+  // Determine mode and save
   const mode = formState.id ? 'update' : 'create';
   onSave(formState, mode);
 };
-
 
   const renderFormField = (field, isInRow = false) => {
     const { 
@@ -214,6 +224,7 @@ const handleSubmit = () => {
         return (
           <div className={`flex-1 min-w-[200px] ${className || ''}`}>
             <Select
+            className="form-select w-full"
               {...commonProps}
               selectedKeys={displayValue ? [displayValue] : []}
               onChange={(e) => {

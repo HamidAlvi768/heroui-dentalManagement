@@ -21,7 +21,7 @@ const initialFormData = {
 };
 
 const formFields = [
-  { key: 'name', label: 'name', type: 'text', required: true },
+  { key: 'name', label: 'Name', type: 'text', required: true },
   { 
     key: 'active', 
     label: 'Active', 

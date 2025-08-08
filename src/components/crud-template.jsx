@@ -176,6 +176,7 @@ export function CrudTemplate({
         onEdit={handleEdit}
         onDelete={handleDelete}
         onView={handleView}
+        // onView={customRowActions?.() && customRowActions().length > 0 ? handleView : undefined}
         onPerPageChange={handlePerPageChange}
         onPaginate={handlePaginate}
         onExport={onExport}
@@ -195,7 +196,7 @@ export function CrudTemplate({
         }
         formData={currentItem}
         form={processedForm || undefined}
-        formFields={!processedForm ? processedFormFields : undefined}
+        formFields={processedFormFields}
         onSave={handleSave}
         onInputChange={onInputChange}
       />

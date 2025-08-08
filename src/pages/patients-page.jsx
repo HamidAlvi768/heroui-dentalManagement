@@ -10,7 +10,9 @@ const columns = [
   { key: 'father_name', label: 'FATHER NAME' },
   { key: 'email', label: 'EMAIL' },
   { key: 'contact_number', label: 'CONTACT NUMBER' },
+  { key: 'status', label: 'STATUS' }, 
   { key: 'gender', label: 'GENDER' },
+  { key: 'age', label: 'AGE' },
   { key: 'actions', label: 'ACTIONS' }
 ];
 
@@ -23,6 +25,7 @@ const initialFormData = {
   date_of_birth: '',
   address: '',
   notes: '',
+  status:'active',
 };
 
 const formFields = [
@@ -31,9 +34,13 @@ const formFields = [
   { key: 'email', label: 'Email', type: 'email', required: true },
   { key: 'contact_number', label: 'Contact Number', type: 'text', required: true },
   { key: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female',], required: true },
-  { key: 'date_of_birth', label: 'Date of Birth', type: 'date', required: true },
+  { key: 'date_of_birth', label: 'Date of Birth', type: 'date', required: true, max: new Date().toISOString().split("T")[0]},
   { key: 'address', label: 'Address', type: 'textarea', required: true },
-  { key: 'notes', label: 'Notes', type: 'textarea', required: false },
+  { key: 'notes', label: 'Notes', type: 'textarea', },
+  { key: 'status', label: 'Status', type: 'select',    options: [
+                                                                                  { value: 'active', label: 'Active' },
+                                                                                  { value: 'inActive', label: 'In Active' }
+                                                                                ]},
 ];
 
 // Filter columns
@@ -41,6 +48,7 @@ const filterColumns = [
   { key: 'full_name', label: 'FULL NAME' },
   { key: 'father_name', label: 'FATHER NAME' },
   { key: 'email', label: 'EMAIL' },
+  { key: 'status', label: 'STATUS' },
   { key: 'contact_number', label: 'CONTACT NUMBER' },
   {
     key: 'gender', label: 'GENDER', type: 'select', options: [
@@ -120,6 +128,7 @@ function PatientsPage() {
       data={patients}
       customActions={customActions}
       totalItems={totalItems}
+      formFields={formFields}
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}

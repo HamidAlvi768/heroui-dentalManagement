@@ -22,24 +22,20 @@ export default function PatientDetailsPage() {
     { label: 'Gender', key: 'gender' },
     { label: 'CNIC', key: 'cnic' },
     { label: 'Blood Group', key: 'bloodGroup' },
-    { label: 'Date of Birth', key: 'dob' },
+    // { label: 'Date of Birth', key: 'dob' },
     { label: 'Age', key: 'age' },
-    { label: 'Height', key: 'height' },
-    { label: 'Weight', key: 'weight' },
     { label: 'BMI', key: 'bmi' },
     { label: 'Marital Status', key: 'maritalStatus' },
-    { label: 'Credit Balance', key: 'creditBalance' },
     { label: 'Insurance Company', key: 'insurance' },
     { label: 'Status', key: 'status' },
-    { label: 'Area', key: 'area' },
-    { label: 'City', key: 'city' },
     { label: 'Address', key: 'address' }
   ];
 
   const renderPatientInfo = () => (
-    <Card className="mb-6">
+    <div className="flex justify-center">
+    <Card className="mb-6 w-3/4">
       <CardBody className="p-6">
-        <div className="flex items-start gap-6">
+        <div className="flex items-start gap-6 ">
           <div className="shrink-0">
             <img 
               src={patient.avatar || "https://img.heroui.chat/image/avatar?w=128&h=128&u=1"} 
@@ -47,7 +43,7 @@ export default function PatientDetailsPage() {
               className="w-24 h-24 rounded-lg object-cover"
             />
           </div>
-          <div className="grow">
+          <div className="grow ">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {patientFields.map((field) => (
                 <div key={field.key}>
@@ -68,6 +64,7 @@ export default function PatientDetailsPage() {
         </div>
       </CardBody>
     </Card>
+    </div>
   );
 
   const renderAppointments = () => (
@@ -148,26 +145,18 @@ export default function PatientDetailsPage() {
       title={`${patient.name}`}
       icon="lucide:user"
     >
-      <div className='flex justify-end'>
-         <Button
-            variant="outline"
-            className="ml-auto -mt-12"
-            onClick={() => window.history.back()}
-          >
-            <Icon icon="lucide:arrow-left" className="mr-2" width={16} />
-            Back to Patients
-          </Button>
-      </div>
+          <div className='mx-10'>
+
       {/* Patient Info Card */}
       {renderPatientInfo()}
 
       {/* Tabs Section */}
-      <div className="mb-6">
+      <div className="mb-6 mx-40">
         <Tabs 
           selectedKey={selectedTab} 
           onSelectionChange={setSelectedTab}
           variant="underlined"
-          className="w-full"
+          className="w-full max-w-xl"
         >
           <Tab key="appointments" title="Appointments">
             {renderAppointments()}
@@ -175,7 +164,8 @@ export default function PatientDetailsPage() {
           <Tab key="prescriptions" title="Prescriptions" />
           <Tab key="invoices" title="Invoices" />
         </Tabs>
-      </div>
+      </div>    </div>
+
     </PageTemplate>
   );
 }

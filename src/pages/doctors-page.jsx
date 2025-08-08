@@ -7,11 +7,13 @@ import { useNavigate } from 'react-router-dom';
 import { form } from '@heroui/theme';
 
 const columns = [
-  { key: 'username', label: 'Name' },
+  { key: 'username', label: 'NAME' },
   { key: 'email', label: 'EMAIL' },
   // { key: 'role', label: 'ROLE' },
   // { key: 'verified', label: 'VERIFIED' },
   { key: 'status', label: 'STATUS' }, 
+  { key: 'qualification', label: 'QUALIFICATION' }, 
+  { key: 'gender', label: 'GENDER' }, 
   { key: 'actions', label: 'ACTIONS' }
 ];
 
@@ -50,7 +52,6 @@ const formFields = [
   { key: 'experience', label: 'Experience', type: 'number' },
   {
     key: 'commission_percentage', label: 'Commission Percentage', type: 'select',
-    className: 'text-bold',
     options: [
       { value: '0', label: '0%' },
       { value: '10', label: '10%' },
@@ -75,7 +76,7 @@ const formFields = [
 
 // Filter columns
 const filterColumns = [
-  { key: 'username', label: 'USER NAME' },
+  { key: 'username', label: 'NAME' },
   { key: 'email', label: 'EMAIL' },
   {
     key: 'status', label: 'STATUS', type: 'select', options: [
@@ -173,11 +174,14 @@ function DoctorsPage() {
       columns={columns}
       data={users}
       totalItems={totalItems}
+      formFields={formFields}
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}
       form={doctorForm}
       filterColumns={filterColumns} 
+        // customRowActions={() => []} // ✅ This disables all default row actions
+        // onRowClick={() => {}} 
       customRowActions={customActions}
       onRowClick={handleViewDetail}
       onFilterChange={(filters) => {

@@ -158,116 +158,57 @@ const renderSection = (section, entity, prescriptionItems) => {
   }
 };
 
+
+
+//      start rendering here
+
 const renderAppointmentDetails = (entity, onStatusChange) => (
   <div className="space-y-6">
-    <div className="grid grid-cols-2 gap-6">
-      {/* Clinic Information */}
-      <div className="border rounded-lg p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <img src={clinicInfo.logo} alt="Clinic Logo" className="w-12 h-12" />
-          <h3 className="font-semibold text-lg">{clinicInfo.name}</h3>
-        </div>
-        <div className="space-y-2 text-sm">
-          <p className="flex items-center gap-2">
-            <Icon icon="lucide:map-pin" width={16} className="text-default-400" />
-            {clinicInfo.address}
+    <div className="flex gap-10 border rounded-lg p-6">
+      {/* Patient Quick Info */}          
+        <div className="grid grid-cols-2 gap-y-2 gap-x-40 items-center overflow-x-hidden">
+          <p className="flex flex-col  ">
+            <span className="text-default-500">Patient</span>
+            <span className='font-medium'>{entity.patientName || entity.name || '-'}</span>
           </p>
-          <p className="flex items-center gap-2">
-            <Icon icon="lucide:mail" width={16} className="text-default-400" />
-            {clinicInfo.email}
+             <p className="flex flex-col  ">
+            <span className="text-default-500">Doctor</span>
+            <span className='font-medium'>{entity.doctorName || entity.name || '-'}</span>
           </p>
-          <p className="flex items-center gap-2">
-            <Icon icon="lucide:phone" width={16} className="text-default-400" />
-            {clinicInfo.phone}
+          <p className="flex flex-col ">
+            <span className="text-default-500">Gender</span>
+            <span className='font-medium'>{entity.gender || '-'}</span>
           </p>
-        </div>
-      </div>
-
-      {/* Patient Quick Info */}
-      <div className="border rounded-lg p-4">
-        <h3 className="font-semibold mb-3">Patient Information</h3>
-        <div className="space-y-2 text-sm">
-          <p className="flex items-center justify-between">
-            <span className="text-default-500">Patient:</span>
-            <span>{entity.patientName || entity.name}</span>
+          <p className="flex flex-col ">
+            <span className="text-default-500">Phone</span>
+            <span className='font-medium'>{entity.phone || '-'}</span>
           </p>
-          <p className="flex items-center justify-between">
-            <span className="text-default-500">Gender:</span>
-            <span>{entity.gender}</span>
-          </p>
-          <p className="flex items-center justify-between">
-            <span className="text-default-500">Phone:</span>
-            <span>{entity.phone}</span>
-          </p>
-        </div>
-      </div>
-    </div>
+       
 
     {/* Appointment Details */}
-    <div className="border rounded-lg p-6">
-      <div className="grid grid-cols-2 gap-6">
-        <div className="space-y-4">
-          {/* Patient Details */}
-          <div className="flex items-center gap-3">
-            <Avatar 
-              src={entity.patientAvatar || "https://img.heroui.chat/image/avatar?w=128&h=128&u=1"}
-              size="lg"
-            />
-            <div>
-              <h4 className="font-semibold">{entity.patientName || entity.name}</h4>
-              <p className="text-sm text-default-500">MRN: {entity.mrnNumber || entity.mrn}</p>
-              <p className="text-sm text-default-500">{entity.phone}</p>
-            </div>
-          </div>
-
-          {/* Doctor Details */}
-          <div className="flex items-center gap-3">
-            <Avatar 
-              src={entity.doctorAvatar || "https://img.heroui.chat/image/avatar?w=128&h=128&u=2"}
-              size="lg"
-            />
-            <div>
-              <h4 className="font-semibold">{entity.doctorName}</h4>
-              <p className="text-sm text-default-500">Dental Specialist</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <p className="flex justify-between">
-            <span className="text-default-500">Appointment Number:</span>
-            <span className="font-medium">{entity.aptNo}</span>
+          <p className="flex flex-col">
+            <span className="text-default-500">Appointment Number</span>
+            <span className="font-medium">{entity.aptNo || '-'}</span>
           </p>
-          <p className="flex justify-between">
-            <span className="text-default-500">Date:</span>
+          <p className="flex flex-col">
+            <span className="text-default-500">Date</span>
             <span className="font-medium">
               {formatValue(entity.aptDate, 'date')}
             </span>
           </p>
-          <p className="flex justify-between">
-            <span className="text-default-500">Time:</span>
+          <p className="flex flex-col ">
+            <span className="text-default-500">Time</span>
             <span className="font-medium">
               {entity.startTime} - {entity.endTime}
             </span>
           </p>
-          <p className="flex justify-between items-center">
-            <span className="text-default-500">Status:</span>
+          <p className="flex flex-col">
+            <span className="text-default-500">Status</span>
             <Badge color={getStatusColor(entity.status)}>
-              {entity.status}
+              {entity.status || '-'}
             </Badge>
           </p>
-        </div>
-      </div>
-
-      {/* Problem/Description */}
-      <div className="mt-6">
-        <h4 className="font-medium mb-2">Problem/Description</h4>
-        <p className="text-default-500 text-sm">
-          {entity.problem || 'No description provided'}
-        </p>
-      </div>
-
-      {/* Status Update */}
+                {/* Status Update */}
       {onStatusChange && (
         <div className="mt-6">
           <h4 className="font-medium mb-2">Update Status</h4>
@@ -285,23 +226,28 @@ const renderAppointmentDetails = (entity, onStatusChange) => (
           </Select>
         </div>
       )}
+ </div>
+
     </div>
+          {/* Problem/Description */}
+      <div className="mx-6 my-2">
+        <h4 className="font-medium mb-2">Reason</h4>
+        <p className="text-default-500 text-sm">
+          {entity.problem || 'No reason provided'}
+        </p>
+      </div>
   </div>
 );
+
+//            end  rendering 
+
 
 const entityConfigs = {
   appointment: {
     title: 'Appointment Details',
     renderBody: (entity, onStatusChange) => renderAppointmentDetails(entity, onStatusChange),
-    footerActions: (onClose, handlePrint, onEdit, entity) => [
+    footerActions: (onClose,) => [
       { label: 'Close', color: 'default', variant: 'light', onPress: onClose },
-      { label: 'Print', color: 'primary', onPress: handlePrint, icon: 'lucide:printer' },
-      ...(onEdit ? [{
-        label: 'Edit',
-        color: 'primary',
-        onPress: () => { onEdit(entity); onClose(); },
-        icon: 'lucide:edit',
-      }] : []),
     ],
   },
   prescription: {
@@ -602,7 +548,7 @@ export function EntityDetailDialog({
                 }
               </ModalBody>
               <ModalFooter>
-                {config.footerActions(onClose, handlePrint, onEdit, entity).map((action, index) => (
+                {config.footerActions(onClose, handlePrint, entity).map((action, index) => (
                   <Button
                     key={index}
                     color={action.color}

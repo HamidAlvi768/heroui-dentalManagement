@@ -171,13 +171,19 @@ function AppointmentsPage() {
       },
       {
         key: "appointment_date",
-        label: "Appointment Date",
+        label: "Select Date",
         type: "date",
         required: true,
       },
+            {
+        key: "appointment_time",
+        label: "Select Time",
+        type: "time",
+        required: true,
+      },
       {
-        key: "status",
-        label: "Status",
+        key: "view-appointment",
+        label: "View Appointment",
         type: "select",
         required: true,
         options: [
@@ -188,7 +194,7 @@ function AppointmentsPage() {
       },
       {
         key: "appointment_reason",
-        label: "Reason for Appointment",
+        label: "Reason",
         type: "textarea",
         required: false,
       },
@@ -221,13 +227,25 @@ function AppointmentsPage() {
       },
       {
         key: 'appointment_date',
-        label: 'APPOINTMENT DATE',
+        label: 'DATE',
         render: (item) => {
           if (!item.appointment_date) return 'N/A';
           try {
             return new Date(item.appointment_date).toLocaleDateString();
           } catch (e) {
             return item.appointment_date;
+          }
+        }
+      },
+          {
+        key: 'appointment_time',
+        label: 'TIME',
+        render: (item) => {
+          if (!item.appointment_time) return 'N/A';
+          try {
+            return new Time(item.appointment_time).toLocaleTimeString();
+          } catch (e) {
+            return item.appointment_time;
           }
         }
       },
@@ -246,7 +264,10 @@ function AppointmentsPage() {
         label: 'STATUS',
         render: (item) => item.status || 'N/A',
       },
-      { key: 'actions', label: 'ACTIONS' }
+      {
+        key: 'actions',
+        label: "ACTIONS",
+      }
     ];
   }, [patientsList, doctorsList, dataList]);
 
@@ -509,7 +530,7 @@ function AppointmentsPage() {
         form={appointmentFormConfig}
         filterColumns={appointmentFilterColumns} // Use appointment-specific filters
         customRowActions={customActions} // Use if CrudTemplate default actions are not sufficient
-        // onRowClick={handleViewDetail} // Can be enabled if desired
+        onRowClick={handleViewDetail} // Can be enabled if desired
         onFilterChange={(filters) => {
           getData(itemsPerPage, 1, filters);
         }}
