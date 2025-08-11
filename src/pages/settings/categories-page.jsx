@@ -17,6 +17,7 @@ const columns = [
 const initialFormData = {
   name: '',
   description: '',
+  inventory_count:'',
   active: '',
 };
 
@@ -28,8 +29,8 @@ const formFields = [
     type: 'select', 
     required: true,
     options: [
-      { value: '1', label: 'Yes' },
-      { value: '0', label: 'No' }
+      { value: 'Yes', label: 'Yes' },
+      { value: 'No', label: 'No' }
     ]
   },
   { key: 'description', label: 'Description', type: 'textarea', required: true },
@@ -61,7 +62,7 @@ function CategoriesPage() {
   function getData(perpage = 5, page = 1, filters = {}) {
     setLoading(true);
     config.initAPI(token);
-    config.getData(`/categories/list?perpage=${perpage}&page=${page}&name=${filters.name || ''}&active=${filters.active || ''}`)
+    config.getData(`/categories/list?perpage=${perpage}&page=${page}&name=${filters.name || ''}&description=${filters.description || ''}&active=${filters.active || ''}`)
       .then(data => {
         const _data = data.data.data.map(item => {
           item.active = item.active === 1 ? 'Yes' : 'No';
@@ -78,7 +79,6 @@ function CategoriesPage() {
         console.log(error);
       });
   }
-
 
   useEffect(() => {
     getData(5, 1);

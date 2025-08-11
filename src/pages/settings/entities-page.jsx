@@ -16,7 +16,7 @@ const columns = [
     )
   },
   { key: 'entity_type', label: 'TYPE' },
-  { key: 'items', label: 'ITEMS' },
+  // { key: 'items', label: 'ITEMS' },
   { key: 'active', label: 'ACTIVE' },
   { key: 'actions', label: 'ACTIONS' }
 ];

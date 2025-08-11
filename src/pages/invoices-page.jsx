@@ -412,6 +412,7 @@ export default function InvoicesPage() {
         data={dataList}
         initialFormData={initialFormData}
         form={invoiceForm}
+        formFields={formFields}
         filterColumns={filterColumns}
         addButtonLabel="Add Invoice"
         // customActions={customActions}

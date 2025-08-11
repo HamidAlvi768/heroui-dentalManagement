@@ -113,7 +113,8 @@ function PrescriptionPage() {
             key: 'prescription_date',
             label: 'Prescription Date',
             type: 'date',
-            required: true
+            required: true,
+            max: new Date().toISOString().split("T")[0]
           },
           {
             key: 'notes',
@@ -171,7 +172,7 @@ function PrescriptionPage() {
           diagnosis: prescription.diagnosis || '',
           doctorName: prescription.doctor.username || '',
           patientName: prescription.patient.full_name || '',
-          date: prescription.date || prescription.prescription_date || '',
+          date: prescription_date || prescription.prescription_date || '',
           description: prescription.description || ''
         }));
 

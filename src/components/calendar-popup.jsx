@@ -41,7 +41,6 @@ export function CalendarPopup({ isOpen, onOpenChange, onSelect }) {
                   showOutsideDays={false}
                   fixedWeeks
                   initialFocus
-                  max={new Date()}
                 />
               </div>
             </ModalBody>

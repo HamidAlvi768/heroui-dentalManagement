@@ -90,13 +90,11 @@ export function CrudDialog({
 
 const handleSubmit = () => {
   // Check for empty required fields
-  const emptyFields = (formFields || [])
-    .filter(field => field.required)
-    .filter(field => !formState[field.key]?.toString().trim());
+  const errors = (formFields || []).filter(field => field.required).filter(field => !formState[field.key]?.toString().trim());
 
-  if (emptyFields.length > 0) {
-    toast(`Please fill in: ${emptyFields.map(f => f.label).join(', ')}`);
-    return; // Stop submission
+  if (errors.length > 0) {
+    toast(`Please fill in: ${errors.map(f => f.label).join(' / ')}`);
+    return; 
   }
 
   // Determine mode and save
@@ -117,7 +115,8 @@ const handleSubmit = () => {
       readonly, 
       className,
       calculate,
-      readOnly
+      readOnly,
+      pattern,
     } = field;
 
     // Define commonProps without the key
@@ -212,6 +211,8 @@ const handleSubmit = () => {
                   handleChange(key, value);
                 }
               }}
+              max={type === "date" ? field.max : undefined} // Apply only for date inputs
+              // required={formFields.required === false}
               classNames={{
                 ...commonProps.classNames,
                 input: `${commonProps.classNames.input} ${(readonly || readOnly) ? 'bg-default-100' : ''}`,

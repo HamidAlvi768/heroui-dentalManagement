@@ -12,7 +12,7 @@ const columns = [
   { key: 'contact_number', label: 'CONTACT NUMBER' },
   { key: 'status', label: 'STATUS' }, 
   { key: 'gender', label: 'GENDER' },
-  { key: 'age', label: 'AGE' },
+  { key: 'date_of_birth', label: 'DATE OF BIRTH' },
   { key: 'actions', label: 'ACTIONS' }
 ];
 

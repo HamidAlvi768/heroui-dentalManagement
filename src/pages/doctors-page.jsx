@@ -44,7 +44,7 @@ const formFields = [
       { value: 'Female', label: 'Female' }
     ]
   },
-  { key: 'date_of_birth', label: 'Date of Birth', type: 'date' },
+  { key: 'date_of_birth', label: 'Date of Birth', type: 'date', max: new Date().toISOString().split("T")[0]},
   { key: 'phone', label: 'Phone', type: 'text' },
   { key: 'address', label: 'Address', type: 'text' },
   { key: 'specialization', label: 'Specialization', type: 'text' },
