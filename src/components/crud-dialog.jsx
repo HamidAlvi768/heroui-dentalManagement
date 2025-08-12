@@ -67,7 +67,11 @@ export function CrudDialog({
   onSave,
   onInputChange,
 }) {
-  const [formState, setFormState] = React.useState(formData || {});
+  const defaultFormState = (formFields || []).reduce((acc, field) => {
+      acc[field.key] = ''; // or field.defaultValue if you have one
+      return acc;
+    }, {});
+  const [formState, setFormState] = React.useState(formData || defaultFormState);
 
   React.useEffect(() => {
     if (formData) {
@@ -88,15 +92,21 @@ export function CrudDialog({
     }
   };
 
+const [errors, setErrors] = React.useState({});
 const handleSubmit = () => {
-  // Check for empty required fields
-  const errors = (formFields || []).filter(field => field.required).filter(field => !formState[field.key]?.toString().trim());
+  const newErrors = {};
+  (formFields || []).forEach(field => {
+    if (field.required && !formState[field.key]?.toString().trim()) {
+      newErrors[field.key] = `${field.label} is required`;
+    }
+  });
 
-  if (errors.length > 0) {
-    toast(`Please fill in: ${errors.map(f => f.label).join(' / ')}`);
-    return; 
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    return;
   }
 
+  setErrors({});
   // Determine mode and save
   const mode = formState.id ? 'update' : 'create';
   onSave(formState, mode);
@@ -217,7 +227,13 @@ const handleSubmit = () => {
                 ...commonProps.classNames,
                 input: `${commonProps.classNames.input} ${(readonly || readOnly) ? 'bg-default-100' : ''}`,
               }}
+              className={`trigger: ${errors[field.key] ? 'border-red-500' : ''}`}
             />
+              {errors?.[field.key] && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors[field.key]}
+                </p>
+              )}
           </div>
         );
 
@@ -244,6 +260,9 @@ const handleSubmit = () => {
                 </SelectItem>
               ))}
             </Select>
+             {errors?.[field.key] && (
+                <p className="text-red-500 text-xs mt-1">{errors[field.key]}</p>
+              )}
           </div>
         );
 
@@ -261,6 +280,9 @@ const handleSubmit = () => {
             >
               {label}
             </Checkbox>
+             {errors?.[field.key] && (
+                <p className="text-red-500 text-xs mt-1">{errors[field.key]}</p>
+              )}
           </div>
         );
 
@@ -281,6 +303,9 @@ const handleSubmit = () => {
                 input: `${commonProps.classNames.input} ${(readonly || readOnly) ? 'bg-default-100' : ''}`,
               }}
             />
+             {errors?.[field.key] && (
+                <p className="text-red-500 text-xs mt-1">{errors[field.key]}</p>
+              )}
           </div>
         );
 
@@ -751,35 +776,46 @@ const handleSubmit = () => {
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
-      size={Array.isArray(formState.medicines) ? "5xl" : "3xl"}
-      scrollBehavior="inside"
-      classNames={{
-        base: "max-h-[90vh] min-w-[900px]"
-      }}
-    >
-      <ModalContent>
-        {(onClose) => (
-          <>
-            <ModalHeader className="flex flex-col gap-1">{title}</ModalHeader>
-            <ModalBody>
-              <div className="space-y-6">
-                {renderSections()}
-              </div>
-            </ModalBody>
-            <ModalFooter>
-              <Button color="danger" variant="light" onPress={onClose}>
-                Cancel
-              </Button>
-              <Button color="primary" onPress={handleSubmit}>
-                {formState.id ? 'Update' : 'Save'}
-              </Button>
-            </ModalFooter>
-          </>
-        )}
+            <Modal
+              isOpen={isOpen}
+              onOpenChange={(open)=>{
+                if(!open) setFormState(defaultFormState);
+                onOpenChange(open);}
+              }
+              size={Array.isArray(formState.medicines) ? "5xl" : "3xl"}
+              scrollBehavior="inside"
+              classNames={{
+                base: "max-h-[90vh] min-w-[900px]"
+              }}
+            >
+
+
+    <ModalContent>
+              {(onClose) => { const handleClose = () => {
+                  setFormState(defaultFormState);
+                  onClose();
+                };
+                return (
+                  <>
+                    <ModalHeader className="flex flex-col gap-1">{title}</ModalHeader>
+                    <ModalBody>
+                      <div className="space-y-6">
+                        {renderSections()}
+                      </div>
+                    </ModalBody>
+                    <ModalFooter>
+                      <Button color="danger" variant="light" onPress={handleClose}>
+                        Cancel
+                      </Button>
+                      <Button color="primary" onPress={handleSubmit}>
+                        {formState.id ? 'Update' : 'Save'}
+                      </Button>
+                    </ModalFooter>
+                  </>
+                );
+              }}
       </ModalContent>
+
     </Modal>
   );
 }

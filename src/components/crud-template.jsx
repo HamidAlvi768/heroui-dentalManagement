@@ -191,9 +191,9 @@ export function CrudTemplate({
         onOpenChange={onOpenChange}
         title={
           isEditing
-            ? `Edit ${title.slice(0, -1)}`
-            : `Add New ${title.slice(0)}`
-        }
+            ? `Edit ${title.endsWith('s') ? title.slice(0, -1) : title}`
+            : `Add New ${title.endsWith('s') ? title.slice(0, -1) : title}`
+         }
         formData={currentItem}
         form={processedForm || undefined}
         formFields={processedFormFields}

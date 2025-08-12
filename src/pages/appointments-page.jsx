@@ -174,7 +174,6 @@ function AppointmentsPage() {
         label: "Select Date",
         type: "date",
         required: true,
-        max: new Date().toISOString().split("T")[0]
       },
             {
         key: "appointment_time",

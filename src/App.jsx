@@ -27,7 +27,7 @@ import ApplicationSettings from "./pages/settings/application-settings";
 import ConfigurationSettings from "./pages/settings/generic-records";
 import EntitiesPage from "./pages/settings/entities-page";
 import GenericRecordsPage from "./pages/settings/generic-records";
-import Test from "./pages/test";
+// import Test from "./pages/test";
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -243,7 +243,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
-                <Route
+        {/* <Route
           path="/test"
           element={
             <PrivateRoute>
@@ -252,7 +252,7 @@ export default function App() {
               </AppLayout>
             </PrivateRoute>
           }
-        />
+        /> */}
         <Route
           path="/invoices/"
           element={

@@ -114,7 +114,6 @@ function PrescriptionPage() {
             label: 'Prescription Date',
             type: 'date',
             required: true,
-            max: new Date().toISOString().split("T")[0]
           },
           {
             key: 'notes',

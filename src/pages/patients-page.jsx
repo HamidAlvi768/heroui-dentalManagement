@@ -12,7 +12,7 @@ const columns = [
   { key: 'contact_number', label: 'CONTACT NUMBER' },
   { key: 'status', label: 'STATUS' }, 
   { key: 'gender', label: 'GENDER' },
-  { key: 'date_of_birth', label: 'DATE OF BIRTH' },
+  { key: 'age', label: 'DATE OF BIRTH' },
   { key: 'actions', label: 'ACTIONS' }
 ];
 
@@ -22,7 +22,7 @@ const initialFormData = {
   email: '',
   contact_number: '',
   gender: '',
-  date_of_birth: '',
+  age: '',
   address: '',
   notes: '',
   status:'active',
@@ -33,8 +33,8 @@ const formFields = [
   { key: 'father_name', label: 'Father Name', type: 'text', required: true },
   { key: 'email', label: 'Email', type: 'email', required: true },
   { key: 'contact_number', label: 'Contact Number', type: 'text', required: true },
-  { key: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female',], required: true },
-  { key: 'date_of_birth', label: 'Date of Birth', type: 'date', required: true, max: new Date().toISOString().split("T")[0]},
+  { key: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female',], required: true},
+  { key: 'age', label: 'Date of Birth', type: 'date', required: true, max: new Date().toISOString().split("T")[0]},
   { key: 'address', label: 'Address', type: 'textarea', required: true },
   { key: 'notes', label: 'Notes', type: 'textarea', },
   { key: 'status', label: 'Status', type: 'select',    options: [

@@ -89,15 +89,6 @@ export default function SettingsPage() {
             >
               Entities List
             </Button>
-               <Button
-              size="sm"
-              color="primary"
-              variant="flat"
-              startContent={<Icon icon="lucide:list" width={16} />}
-              onPress={() => navigate('/test')}
-            >
-              TESTING
-            </Button>
           </div>
         </div>
 

@@ -9,7 +9,7 @@ import { LucideActivity } from 'lucide-react';
 const columns = [
   { key: 'name', label: 'NAME' },
   { key: 'description', label: 'DESCRIPTION' },
-  { key: 'inventory_count', label: 'INVENTORY ITEMS' },
+  // { key: 'inventory_count', label: 'INVENTORY ITEMS' },
   { key: 'active', label: 'ACTIVE' },
   { key: 'actions', label: 'ACTIONS' }
 ];
@@ -29,8 +29,8 @@ const formFields = [
     type: 'select', 
     required: true,
     options: [
-      { value: 'Yes', label: 'Yes' },
-      { value: 'No', label: 'No' }
+      { value: 'Active', label: 'Active' },
+      { value: 'In Active', label: 'In Active' }
     ]
   },
   { key: 'description', label: 'Description', type: 'textarea', required: true },
@@ -93,6 +93,7 @@ function CategoriesPage() {
       columns={columns}
       data={dataList}
       totalItems={totalItems}
+      formFields={formFields}
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}

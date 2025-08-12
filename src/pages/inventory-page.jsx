@@ -183,6 +183,7 @@ function InventoryPage() {
       columns={columns}
       data={dataList}
       totalItems={totalItems}
+      formFields={formFields}
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}

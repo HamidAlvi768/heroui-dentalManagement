@@ -99,6 +99,7 @@ function UsersPage() {
       columns={columns}
       data={users}
       totalItems={totalItems}
+      formFields={formFields}
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
       initialFormData={initialFormData}
