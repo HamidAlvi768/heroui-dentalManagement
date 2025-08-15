@@ -22,6 +22,8 @@ import {
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import PrintPreviewDialog from './print-preview-dialog';
+import { toast } from 'react-toastify';
+import { showToast } from '../utils/toast';
 
 const clinicInfo = {
   name: "J Dent Lite",
@@ -451,9 +453,9 @@ const entityConfigs = {
     footerActions: (onClose, handlePrint, onEdit, entity) => [
       { label: 'Close', color: 'default', variant: 'light', onPress: onClose },
       ...(onEdit ? [{
-        label: 'Edit',
+        label: 'Edits',
         color: 'primary',
-        onPress: () => { onEdit(entity); onClose(); },
+        onPress: () => { onEdit(entity); onClose(); alert('done') },
         icon: 'lucide:edit-2',
       }] : []),
     ],
@@ -548,7 +550,7 @@ export function EntityDetailDialog({
                 }
               </ModalBody>
               <ModalFooter>
-                {config.footerActions(onClose, handlePrint, entity).map((action, index) => (
+                {config.footerActions(onClose, handlePrint,onEdit, entity).map((action, index) => (
                   <Button
                     key={index}
                     color={action.color}

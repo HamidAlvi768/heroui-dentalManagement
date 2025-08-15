@@ -5,6 +5,7 @@ import { useAuth } from '../auth/AuthContext';
 import { EntityDetailDialog } from '../components/entity-detail-dialog';
 import { useNavigate } from 'react-router-dom';
 import { form } from '@heroui/theme';
+import { useDisclosure } from "@heroui/react";
 
 const columns = [
   { key: 'username', label: 'NAME' },
@@ -112,6 +113,7 @@ function DoctorsPage() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const navigate = useNavigate();
+  const { onOpen: onEditOpen, } = useDisclosure();
 
   const handleViewDetail = (doctor) => {
     setSelectedDoctor({
@@ -130,7 +132,14 @@ function DoctorsPage() {
     });
     setIsDetailOpen(true);
   };
-
+  const handleEdit = () => {
+    // Convert the item data to match the form fields format
+    setSelectedDoctor(prevDoctor => ({
+      ...prevDoctor,
+    }));
+    setIsDetailOpen(false);
+    onEditOpen();
+  };
   const customActions = (item) => [
     {
       label: "View Details",
@@ -244,7 +253,8 @@ function DoctorsPage() {
         onOpenChange={setIsDetailOpen}
         entity={selectedDoctor}
         entityType="doctor"
-        onEdit={() => console.log('Edit doctor:', selectedDoctor)}
+        // onEdit={() => console.log('Edit doctor:', selectedDoctor)}
+       onEdit={handleEdit}
       />
     )}
   </>)
