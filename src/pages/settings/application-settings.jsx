@@ -4,6 +4,7 @@ import { Card, CardBody, Button, Input, Avatar } from '@heroui/react';
 import { useAuth } from '@/auth/AuthContext';
 import { Header } from '@/components/header';
 import { Breadcrumbs } from '../../components/ui/breadcrumbs';
+import { toast } from 'react-toastify';
 
 export default function ApplicationSettings() {
   const [isEditing, setIsEditing] = useState(false);
@@ -39,6 +40,7 @@ export default function ApplicationSettings() {
 
 const handleSave = () => {
   localStorage.setItem('formData', JSON.stringify(formData));
+  toast.success('Saved Changes')
 };
 
 
@@ -94,7 +96,6 @@ const handleSave = () => {
                 variant="default"
                 onClick={handleSave}
                 className="hover:bg-primary hover:text-white transition-colors"
-
               >
                 <Icon icon="lucide:check" width={16} className="mr-2" />
                 Save Changes

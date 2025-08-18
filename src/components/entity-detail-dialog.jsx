@@ -455,7 +455,7 @@ const entityConfigs = {
       ...(onEdit ? [{
         label: 'Edits',
         color: 'primary',
-        onPress: () => { onEdit(entity); onClose(); alert('done') },
+        onPress: () => { onEdit(entity); onClose()},
         icon: 'lucide:edit-2',
       }] : []),
     ],

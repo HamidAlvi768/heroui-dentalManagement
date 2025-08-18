@@ -95,12 +95,12 @@ function InventoryPage() {
 
   const formFields = [
     { key: 'category_id', label: 'Category', type: 'select', options: [{ value: '', label: 'Select Category' }, ...categoriesList.map(category => ({ value: category.id, label: category.name }))], required: true },
-    { key: 'name', label: 'Name', type: 'text', required: true,  pattern: '^[A-Za-z ]+$'},
+    { key: 'name', label: 'Name', type: 'text', required: true },
     { key: 'code', label: 'Code', type: 'text', required: true },
     { key: 'cost_price', label: 'Cost Price', type: 'number', required: true },
     { key: 'selling_price', label: 'Selling Price', type: 'number', required: true },
     { key: 'quantity', label: 'Quantity', type: 'number', required: true },
-    { key: 'expiry_date', label: 'Expiry Date', type: 'date', required: true },
+    { key: 'expiry_date', label: 'Expiry Date', type: 'date', required: true,  min: new Date().toISOString().split("T")[0]},
     { key: 'description', label: 'Description', type: 'textarea', required: true },
     {
       key: 'active',

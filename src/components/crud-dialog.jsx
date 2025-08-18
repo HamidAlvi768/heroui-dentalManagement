@@ -105,8 +105,8 @@ const handleSubmit = () => {
     setErrors(newErrors);
     return;
   }
-
   setErrors({});
+
   // Determine mode and save
   const mode = formState.id ? 'update' : 'create';
   onSave(formState, mode);
@@ -192,6 +192,23 @@ const handleSubmit = () => {
         </div>
       );
     }
+        // Common validators by type
+        const typeValidators = {
+          text: (value) => value.trim(),
+          email: (value) => value.trim(), // browser already validate karega
+          number: (value) => value.replace(/[^0-9]/g, ""),
+          textarea: (value) => value.trim(),
+        };
+
+        // Special overrides by key
+        const keyValidators = {
+          full_name: (value) => value.replace(/[^A-Za-z ]/g, ""),
+          father_name: (value) => value.replace(/[^A-Za-z ]/g, ""),
+          username: (value) => value.replace(/[^A-Za-z ]/g, ""),
+          phone: (value) => value.replace(/[^0-9]/g, ""),
+          contact_number: (value) => value.replace(/[^0-9]/g, ""),
+        };
+
 
     switch (type) {
       case 'hidden':
@@ -218,10 +235,14 @@ const handleSubmit = () => {
               value={displayValue}
               onValueChange={(value) => {
                 if (!readonly && !readOnly) {
-                  handleChange(key, value);
+                  const keyValidator = keyValidators[key]; // current field ke liye validator dhundo
+                  const typeValidator = typeValidators[type];
+                  const newValue = keyValidator ? keyValidator(value) : typeValidator(value); // agar validator mila to apply karo warna original value
+                  handleChange(key, newValue);
                 }
               }}
-              max={type === "date" ? field.max : undefined} // Apply only for date inputs
+              max={type === "date" ? field.max : undefined} // Apply only for past date inputs
+              min={type === "date" ? field.min : undefined} // Apply only for future date inputs
               // required={formFields.required === false}
               classNames={{
                 ...commonProps.classNames,

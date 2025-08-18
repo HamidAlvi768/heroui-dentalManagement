@@ -6,6 +6,7 @@ import { EntityDetailDialog } from '../components/entity-detail-dialog';
 import { useNavigate } from 'react-router-dom';
 import { form } from '@heroui/theme';
 import { useDisclosure } from "@heroui/react";
+import { CrudDialog } from '../components/crud-dialog';
 
 const columns = [
   { key: 'username', label: 'NAME' },
@@ -25,13 +26,13 @@ const initialFormData = {
   password: '',
   gender: '',
   date_of_birth: '',
-  status: 'Active',
   phone: '',
   address: '',
   specialization: '',
   qualification: '',
   experience: '',
   commission_percentage: '',
+  status: 'Active',
 };
 
 const formFields = [
@@ -113,7 +114,7 @@ function DoctorsPage() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const navigate = useNavigate();
-  const { onOpen: onEditOpen, } = useDisclosure();
+  const { isOpen: isEditOpen, onOpen: onEditOpen, onOpenChange: onEditOpenChange } = useDisclosure();
 
   const handleViewDetail = (doctor) => {
     setSelectedDoctor({
@@ -132,13 +133,15 @@ function DoctorsPage() {
     });
     setIsDetailOpen(true);
   };
-  const handleEdit = () => {
-    // Convert the item data to match the form fields format
-    setSelectedDoctor(prevDoctor => ({
-      ...prevDoctor,
-    }));
-    setIsDetailOpen(false);
-    onEditOpen();
+const handleEdit = (doctor) => {
+  setSelectedDoctor(doctor); // pass doctor to edit form
+  setIsDetailOpen(false);    // close detail dialog if it was open
+  onEditOpen();              // open edit form modal
+};
+  const handleSave = (updatedData) => {
+    // Here you would typically save to backend
+    console.log('Saving item:', updatedData);
+    onEditOpenChange(false);
   };
   const customActions = (item) => [
     {
@@ -248,6 +251,7 @@ function DoctorsPage() {
         console.log('Delete patient:', item);
       }} />
     {selectedDoctor && (
+    <>
       <EntityDetailDialog
         isOpen={isDetailOpen}
         onOpenChange={setIsDetailOpen}
@@ -256,6 +260,15 @@ function DoctorsPage() {
         // onEdit={() => console.log('Edit doctor:', selectedDoctor)}
        onEdit={handleEdit}
       />
+      <CrudDialog
+          isOpen={isEditOpen}
+          onOpenChange={onEditOpenChange}
+          title="Edit Item"
+          formData={selectedDoctor}
+          form={doctorForm}
+          onSave={handleSave}
+        />
+      </>
     )}
   </>)
 }

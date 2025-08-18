@@ -56,7 +56,7 @@ export default function App() {
 
   return (
     // <Router basename='/jantrah/react/dental/'>
-    <Router basename={isLocalhost?"/":"/dental/"}>
+    <Router basename={isLocalhost?"/":"/"}>
       <Routes>
         {/* Public Routes */}
         <Route
