@@ -192,23 +192,15 @@ const handleSubmit = () => {
         </div>
       );
     }
-        // Common validators by type
-        const typeValidators = {
-          text: (value) => value.trim(),
-          email: (value) => value.trim(), // browser already validate karega
-          number: (value) => value.replace(/[^0-9]/g, ""),
-          textarea: (value) => value.trim(),
-        };
-
-        // Special overrides by key
-        const keyValidators = {
-          full_name: (value) => value.replace(/[^A-Za-z ]/g, ""),
-          father_name: (value) => value.replace(/[^A-Za-z ]/g, ""),
-          username: (value) => value.replace(/[^A-Za-z ]/g, ""),
-          phone: (value) => value.replace(/[^0-9]/g, ""),
-          contact_number: (value) => value.replace(/[^0-9]/g, ""),
-        };
-
+      const validators = {
+        username: (value) => value.replace(/[^A-Za-z ]/g, ""), // sirf letters + space
+        full_name: (value) => value.replace(/[^A-Za-z ]/g, ""), // sirf letters + space
+        father_name: (value) => value.replace(/[^A-Za-z ]/g, ""), // sirf letters + space
+        contact_number: (value) => value.replace(/[^0-9]/g, ""),        // sirf numbers
+        phone: (value) => value.replace(/[^0-9]/g, ""),        // sirf numbers
+        email: (value) => value.trim(),                        // simple clean
+        // aur bhi fields add kar sakte ho
+      };
 
     switch (type) {
       case 'hidden':
@@ -235,9 +227,8 @@ const handleSubmit = () => {
               value={displayValue}
               onValueChange={(value) => {
                 if (!readonly && !readOnly) {
-                  const keyValidator = keyValidators[key]; // current field ke liye validator dhundo
-                  const typeValidator = typeValidators[type];
-                  const newValue = keyValidator ? keyValidator(value) : typeValidator(value); // agar validator mila to apply karo warna original value
+                  const validator = validators[key]; // current field ke liye validator dhundo
+                  const newValue = validator ? validator(value) : value; // agar validator mila to apply karo warna original value
                   handleChange(key, newValue);
                 }
               }}
