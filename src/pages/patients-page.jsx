@@ -26,6 +26,8 @@ const initialFormData = {
   address: '',
   notes: '',
   status:'active',
+  medical_history: '',
+  allergies: '',
 };
 
 const formFields = [
