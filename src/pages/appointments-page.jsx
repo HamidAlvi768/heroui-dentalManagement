@@ -328,7 +328,7 @@ function AppointmentsPage() {
       )
       .then((data) => {
         console.log("Raw API Response:", data.data);
-        const _data = data.data.data.map((item) => {
+        const _data = data.data.patients.map((item) => {
           console.log("Processing appointment item:", item);
           return item;
         });

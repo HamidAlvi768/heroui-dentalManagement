@@ -2,8 +2,9 @@ import axios from 'axios';
 
 const config = {
   appName: 'J Dent Lite',
-  baseURL: 'http://192.168.18.112/alshifadentalbackend/dentaldoc/api',
+  // baseURL: 'http://192.168.18.112/alshifadentalbackend/dentaldoc/api',
   // baseURL: 'https://leightonbuzzardairportcabs.co.uk/dental/api',
+  baseURL: 'https://dentallite.jantrah.com/backend/api',
 
   initAPI(token = null) {
     this.api = axios.create({
