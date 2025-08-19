@@ -30,7 +30,7 @@ const initialFormData = {
 const formFields = [
   { key: 'entity_name', label: 'Entity Name', type: 'text', required: true },
   { key: 'entity_type', label: 'Entity Type', type: 'text', required: true, readonly: true },
-  { key: 'active', label: 'Active', type: 'select', options: [{ value: '1', label: 'Yes' }, { value: '0', label: 'No' }], required: true },
+  { key: 'active', label: 'Active', type: 'select', options: [{ value: '1', label: 'Active' }, { value: '0', label: 'Inactive' }], required: true },
 ];
 
 const entityForm = {
@@ -94,6 +94,7 @@ function EntitiesPage() {
       loading={loading}
       columns={columns}
       data={dataList}
+      formFields={formFields}
       totalItems={totalItems}
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}

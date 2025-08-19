@@ -105,8 +105,6 @@ const handleSubmit = () => {
     setErrors(newErrors);
     return;
   }
-  setErrors({});
-
   // Determine mode and save
   const mode = formState.id ? 'update' : 'create';
   onSave(formState, mode);
@@ -193,15 +191,29 @@ const handleSubmit = () => {
       );
     }
       const validators = {
-        username: (value) => value.replace(/[^A-Za-z ]/g, ""), // sirf letters + space
-        full_name: (value) => value.replace(/[^A-Za-z ]/g, ""), // sirf letters + space
-        father_name: (value) => value.replace(/[^A-Za-z ]/g, ""), // sirf letters + space
-        contact_number: (value) => value.replace(/[^0-9]/g, ""),        // sirf numbers
-        phone: (value) => value.replace(/[^0-9]/g, ""),        // sirf numbers
-        email: (value) => value.trim(),                        // simple clean
+        username: (value) => value.replace(/[^A-Za-z ]/g, ""), 
+        name: (value) => value.replace(/[^A-Za-z ]/g, ""),
+        description : (value) => value.replace(/[^A-Za-z ]/g, ""),
+        full_name: (value) => value.replace(/[^A-Za-z ]/g, ""),
+        father_name: (value) => value.replace(/[^A-Za-z ]/g, ""), 
+        contact_number: (value) => value.replace(/[^0-9]/g, ""),       
+        phone: (value) => value.replace(/[^0-9]/g, ""),        
+        email: (value) => value.trim(),                        
         // aur bhi fields add kar sakte ho
       };
+      const clearFieldError = (key, value) => {
+        setErrors((prev) => {
+          if (!prev[key]) return prev; // nothing to clear
 
+          const strValue = (value ?? "").toString().trim();
+          if (strValue === "") return prev; // still empty → keep error
+
+          // remove error
+          const updated = { ...prev };
+          delete updated[key];
+          return updated;
+        });
+      };
     switch (type) {
       case 'hidden':
       case 'text':
@@ -230,8 +242,9 @@ const handleSubmit = () => {
                   const validator = validators[key]; // current field ke liye validator dhundo
                   const newValue = validator ? validator(value) : value; // agar validator mila to apply karo warna original value
                   handleChange(key, newValue);
-                }
-              }}
+                  clearFieldError(key, value);
+                                           }
+                                         }}
               max={type === "date" ? field.max : undefined} // Apply only for past date inputs
               min={type === "date" ? field.min : undefined} // Apply only for future date inputs
               // required={formFields.required === false}
@@ -259,6 +272,7 @@ const handleSubmit = () => {
               onChange={(e) => {
                 if (!readonly && !readOnly) {
                   handleChange(key, e.target.value);
+                  clearFieldError(key, e.target.value);
                 }
               }}
               classNames={{
@@ -286,6 +300,7 @@ const handleSubmit = () => {
               onValueChange={(value) => {
                 if (!readonly && !readOnly) {
                   handleChange(key, value);
+                  clearFieldError(key, value);
                 }
               }}
               isDisabled={readonly || readOnly}
@@ -307,6 +322,7 @@ const handleSubmit = () => {
               onValueChange={(value) => {
                 if (!readonly && !readOnly) {
                   handleChange(key, value);
+                  clearFieldError(key, value);
                 }
               }}
               minRows={3}
@@ -805,6 +821,7 @@ const handleSubmit = () => {
     <ModalContent>
               {(onClose) => { const handleClose = () => {
                   setFormState(defaultFormState);
+                  // setErrors({});
                   onClose();
                 };
                 return (

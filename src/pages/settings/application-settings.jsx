@@ -66,14 +66,6 @@ const handleSave = () => {
             <h1 className="text-2xl font-semibold">Application Settings</h1>
             <p className="text-muted-foreground">Manage your Software configuration</p>
           </div>
-          {/* <Button
-            variant="outline"
-            className="ml-auto"
-            onClick={() => window.history.back()}
-          >
-            <Icon icon="lucide:arrow-left" className="mr-2" width={16} />
-            Back to Settings
-          </Button> */}
         </div>
 
         <Card className="mb-6">

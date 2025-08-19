@@ -29,8 +29,8 @@ const formFields = [
     type: 'select', 
     required: true,
     options: [
-      { value: 'Active', label: 'Active' },
-      { value: 'In Active', label: 'In Active' }
+      { value: '1', label: 'Yes' },
+      { value: '0', label: 'No' }
     ]
   },
   { key: 'description', label: 'Description', type: 'textarea', required: true },
@@ -47,7 +47,15 @@ const categoryForm = {
 // Filter columns
 const filterColumns = [
   { key: 'name', label: 'NAME' },
-  { key: 'active', label: 'ACTIVE' },
+    {
+    key: 'active',
+    label: 'ACTIVE',
+    type: 'select',
+    options: [
+      { value: 'true', label: 'Yes' },
+      { value: 'false', label: 'No' }
+    ]
+  },
 ];
 
 function CategoriesPage() {
