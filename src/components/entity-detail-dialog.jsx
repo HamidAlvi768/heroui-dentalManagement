@@ -24,6 +24,7 @@ import { Icon } from '@iconify/react';
 import PrintPreviewDialog from './print-preview-dialog';
 import { toast } from 'react-toastify';
 import { showToast } from '../utils/toast';
+import CategoriesPage from '../pages/settings/categories-page';
 
 const clinicInfo = {
   name: "J Dent Lite",
@@ -404,6 +405,30 @@ const entityConfigs = {
       }] : []),
     ],
   },
+
+  category: {
+    title: 'Category Info',
+    sections: [
+      {
+        type: 'list',
+        fields: [
+          { label: 'NAME', key: 'name', fallback: 'Test User' },
+          { label: 'DESCRIPTION', key: 'description', fallback: 'description' },
+          { label: 'ACTIVE', key: 'active' },
+        ],
+      },
+    ],
+    footerActions: (onClose, handlePrint, onEdit, entity) => [
+      { label: 'Close', color: 'default', variant: 'light', onPress: onClose },
+      ...(onEdit ? [{
+        label: 'Edit',
+        color: 'primary',
+        onPress: () => { onEdit(entity); onClose()},
+        icon: 'lucide:edit-2',
+      }] : []),
+    ],
+  },
+
   doctor: {
     title: 'Doctor Info',
     sections: [

@@ -5,12 +5,15 @@ import config from '../../config/config';
 import { useAuth } from '../../auth/AuthContext';
 import { showToast } from '../../utils/toast';
 import { LucideActivity } from 'lucide-react';
+import { useDisclosure } from "@heroui/react";
+import { EntityDetailDialog } from '../../components/entity-detail-dialog';
+import { CrudDialog } from '../../components/crud-dialog';
 
 const columns = [
   { key: 'name', label: 'NAME' },
   { key: 'description', label: 'DESCRIPTION' },
   // { key: 'inventory_count', label: 'INVENTORY ITEMS' },
-  { key: 'active', label: 'ACTIVE' },
+  { key: 'active', label: 'STATUS' },
   { key: 'actions', label: 'ACTIONS' }
 ];
 
@@ -25,12 +28,12 @@ const formFields = [
   { key: 'name', label: 'Name', type: 'text', required: true },
   { 
     key: 'active', 
-    label: 'Active', 
+    label: 'Status', 
     type: 'select', 
     required: true,
     options: [
-      { value: '1', label: 'Yes' },
-      { value: '0', label: 'No' }
+      { value: '1', label: 'Active' },
+      { value: '0', label: 'In Active' }
     ]
   },
   { key: 'description', label: 'Description', type: 'textarea', required: true },
@@ -49,11 +52,11 @@ const filterColumns = [
   { key: 'name', label: 'NAME' },
     {
     key: 'active',
-    label: 'ACTIVE',
+    label: 'STATUS',
     type: 'select',
     options: [
-      { value: 'true', label: 'Yes' },
-      { value: 'false', label: 'No' }
+      { value: 'true', label: 'Active' },
+      { value: 'false', label: 'In Active' }
     ]
   },
 ];
@@ -66,6 +69,33 @@ function CategoriesPage() {
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const { isOpen: isEditOpen, onOpen: onEditOpen, onOpenChange: onEditOpenChange } = useDisclosure();
+
+  const handleViewDetail = (category) => {
+  setSelectedCategory({
+    ...category,
+  });
+  setIsDetailOpen(true);
+  };
+  const handleEdit = (category) => {
+  setSelectedCategory(category); // pass doctor to edit form
+  setIsDetailOpen(false);    // close detail dialog if it was open
+  onEditOpen();              // open edit form modal
+};
+  const handleSave = (updatedData) => {
+    // Here you would typically save to backend
+    console.log('Saving item:', updatedData);
+    onEditOpenChange(false);
+  };
+  const customActions = (item) => [
+    {
+      label: "View Details",
+      icon: "lucide:eye",
+      handler: () => handleViewDetail(item)
+    }
+  ];
 
   function getData(perpage = 5, page = 1, filters = {}) {
     setLoading(true);
@@ -73,7 +103,7 @@ function CategoriesPage() {
     config.getData(`/categories/list?perpage=${perpage}&page=${page}&name=${filters.name || ''}&description=${filters.description || ''}&active=${filters.active || ''}`)
       .then(data => {
         const _data = data.data.data.map(item => {
-          item.active = item.active === 1 ? 'Yes' : 'No';
+          item.active = item.active === 1 ? 'Active' : 'In Active';
           return item;
         });
         setDataList(_data);
@@ -92,7 +122,7 @@ function CategoriesPage() {
     getData(5, 1);
   }, []);
 
-  return (
+  return (<>
     <CrudTemplate
       title="Categories"
       description="Manage inventory categories"
@@ -107,6 +137,8 @@ function CategoriesPage() {
       initialFormData={initialFormData}
       form={categoryForm}
       filterColumns={filterColumns}
+      customRowActions={customActions}
+      onRowClick={handleViewDetail}
       onFilterChange={(filters) => {
         console.log('Filters:', filters);
         getData(itemsPerPage, 1, filters);
@@ -160,7 +192,26 @@ function CategoriesPage() {
         
       }}
     />
-  );
+      {selectedCategory && (
+        <>
+          <EntityDetailDialog
+            isOpen={isDetailOpen}
+            onOpenChange={setIsDetailOpen}
+            entity={selectedCategory}
+            entityType="category"
+            onEdit={handleEdit}
+          />
+          <CrudDialog
+              isOpen={isEditOpen}
+              onOpenChange={onEditOpenChange}
+              title="Edit Item"
+              formData={selectedCategory}
+              form={categoryForm}
+              onSave={handleSave}
+            />
+          </>
+        )}
+  </>);
 }
 
 export default CategoriesPage;

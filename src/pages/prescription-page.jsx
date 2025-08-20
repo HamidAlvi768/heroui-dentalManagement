@@ -172,7 +172,7 @@ function PrescriptionPage() {
           doctorName: prescription.doctor.username || '',
           patientName: prescription.patient.full_name || '',
           date: prescription_date || prescription.prescription_date || '',
-          description: prescription.description || ''
+          description: prescription.description || '',
         }));
 
         setPrescriptions(formattedData);

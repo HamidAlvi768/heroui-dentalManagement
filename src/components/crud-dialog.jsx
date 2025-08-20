@@ -587,6 +587,13 @@ const handleSubmit = () => {
                                     onChange={(e) => handleTimePeriodChange(idx, 'days', e.target.value)}
                                     className="w-20"
                                     aria-label={`Days for medicine ${idx + 1}`}
+                                    renderValue={(items) => {
+                                    return items.map((item) => (
+                                      <span key={item.key} className="text-center">
+                                        {item.key}
+                                      </span>
+                                    ));
+                                    }}
                                   >
                                     {[...Array(15).keys()].map(i =>
                                       <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
@@ -600,6 +607,13 @@ const handleSubmit = () => {
                                     onChange={(e) => handleTimePeriodChange(idx, 'weeks', e.target.value)}
                                     className="w-20"
                                     aria-label={`Weeks for medicine ${idx + 1}`}
+                                        renderValue={(items) => {
+                                      return items.map((item) => (
+                                        <span key={item.key} className="text-center">
+                                          {item.key}
+                                        </span>
+                                      ));
+                                    }}
                                   >
                                     {[...Array(5).keys()].map(i =>
                                       <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
@@ -613,6 +627,13 @@ const handleSubmit = () => {
                                     onChange={(e) => handleTimePeriodChange(idx, 'months', e.target.value)}
                                     className="w-20"
                                     aria-label={`Months for medicine ${idx + 1}`}
+                                        renderValue={(items) => {
+                                      return items.map((item) => (
+                                        <span key={item.key} className="text-center">
+                                          {item.key}
+                                        </span>
+                                      ));
+                                    }}
                                   >
                                     {[...Array(3).keys()].map(i =>
                                       <SelectItem key={i} value={i.toString()}>{i}</SelectItem>
