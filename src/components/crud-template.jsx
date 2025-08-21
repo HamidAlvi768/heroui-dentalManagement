@@ -33,6 +33,8 @@ export function CrudTemplate({
   form,
   breadcrumbs,
   backButton, // ✅ Accept backButton prop
+  disableAutoStateUpdate = false, // New prop to disable automatic state updates
+  disableAutoDeleteUpdate = false, // New prop to disable automatic delete state updates
 }) {
   const [items, setItems] = React.useState(data);
   const [currentItem, setCurrentItem] = React.useState(null);
@@ -71,11 +73,19 @@ export function CrudTemplate({
   };
 
   const confirmDelete = () => {
-    const updatedItems = items.filter((i) => i.id !== itemToDelete.id);
-    setItems(updatedItems);
+    // Only update local state if auto delete update is not disabled
+    if (!disableAutoDeleteUpdate) {
+      const updatedItems = items.filter((i) => i.id !== itemToDelete.id);
+      setItems(updatedItems);
+    }
+    
     if (onDelete) onDelete(itemToDelete);
     setItemToDelete(null);
-    showToast.success(`${title.slice(0, -1)} deleted successfully`);
+    
+    // Only show toast if auto delete update is not disabled
+    if (!disableAutoDeleteUpdate) {
+      showToast.success(`${title.slice(0, -1)} deleted successfully`);
+    }
   };
 
   const handleView = (item) => {
@@ -101,17 +111,25 @@ export function CrudTemplate({
       updatedItems = items.map((item) =>
         item.id === formData.id ? { ...item, ...formData } : item
       );
-      showToast.success(`${title.slice(0)} updated successfully`);
+      if (!disableAutoStateUpdate) {
+        showToast.success(`${title.slice(0)} updated successfully`);
+      }
     } else {
       const newItem = {
         ...formData,
         id: Date.now().toString(),
       };
       updatedItems = [...items, newItem];
-      showToast.success(`${title.slice(0)} created successfully`);
+      if (!disableAutoStateUpdate) {
+        showToast.success(`${title.slice(0)} created successfully`);
+      }
     }
 
-    setItems(updatedItems);
+    // Only update local state if auto state update is not disabled
+    if (!disableAutoStateUpdate) {
+      setItems(updatedItems);
+    }
+    
     onClose();
     if (onSave) onSave(formData, isEditing);
     setCurrentItem(null);

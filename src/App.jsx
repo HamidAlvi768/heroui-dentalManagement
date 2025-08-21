@@ -50,13 +50,13 @@ function AppLayout({ children }) {
 
 
 export default function App() {
-  const isLocalhost = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1' || 
-                    window.location.hostname === '';
+  const isLocalhost = window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === '';
 
   return (
     // <Router basename='/jantrah/react/dental/'>
-    <Router basename={isLocalhost?"/":"/"}>
+    <Router basename={isLocalhost ? "/" : "/dental-lite/"}>
       <Routes>
         {/* Public Routes */}
         <Route

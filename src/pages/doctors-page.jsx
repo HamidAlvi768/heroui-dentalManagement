@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CrudTemplate } from '../components/crud-template';
 import config from '../config/config';
 import { useAuth } from '../auth/AuthContext';
@@ -7,12 +7,11 @@ import { useNavigate } from 'react-router-dom';
 import { form } from '@heroui/theme';
 import { useDisclosure } from "@heroui/react";
 import { CrudDialog } from '../components/crud-dialog';
+import { toast } from 'react-toastify';
 
 const columns = [
   { key: 'username', label: 'NAME' },
   { key: 'email', label: 'EMAIL' },
-  // { key: 'role', label: 'ROLE' },
-  // { key: 'verified', label: 'VERIFIED' },
   { key: 'status', label: 'STATUS' }, 
   { key: 'qualification', label: 'QUALIFICATION' }, 
   { key: 'gender', label: 'GENDER' }, 
@@ -76,6 +75,13 @@ const formFields = [
   },
 ];
 
+// Edit form fields (without password requirement)
+const editFormFields = formFields.map(field => 
+  field.key === 'password' 
+    ? { ...field, required: false, label: 'Password (leave blank to keep current)', type: 'password' }
+    : field
+);
+
 // Filter columns
 const filterColumns = [
   { key: 'username', label: 'NAME' },
@@ -97,17 +103,76 @@ const filterColumns = [
 const doctorForm = {
   sections: [
     {
-      // title: 'Doctor Info',
       fields: formFields
     }
   ]
 };
 
-function DoctorsPage() {
+const editDoctorForm = {
+  sections: [
+    {
+      fields: editFormFields
+    }
+  ]
+};
 
+// API Service for doctors
+const doctorApiService = {
+  // Get doctors list
+  getDoctors: async (token, params = {}) => {
+    const { perpage = 5, page = 1, filters = {} } = params;
+    const queryParams = new URLSearchParams({
+      role: 'doctor',
+      perpage: perpage.toString(),
+      page: page.toString(),
+      ...(filters.username && { username: filters.username }),
+      ...(filters.email && { email: filters.email }),
+      ...(filters.status && { status: filters.status }),
+      ...(filters.verified !== undefined && { verified: filters.verified.toString() })
+    });
+    
+    return config.getData(`/users/list?${queryParams.toString()}`);
+  },
+
+  // Create new doctor
+  createDoctor: async (token, data) => {
+    return config.postData('/users/create', data);
+  },
+
+  // Update existing doctor
+  updateDoctor: async (token, id, data) => {
+    return config.postData(`/users/edit?id=${id}`, data);
+  },
+
+  // Delete doctor
+  deleteDoctor: async (token, id) => {
+    return config.postData(`/users/delete?id=${id}`, { id: id });
+  },
+
+  // Get single doctor details
+  getDoctorById: async (token, id) => {
+    return config.getData(`/users/view?id=${id}`);
+  }
+};
+
+// Helper function to validate API response
+const validateApiResponse = (response, operation) => {
+  if (!response || !response.data) {
+    throw new Error(`Invalid response from ${operation}`);
+  }
+  
+  if (response.data.success === false) {
+    throw new Error(response.data.message || `Operation failed: ${operation}`);
+  }
+  
+  return response;
+};
+
+function DoctorsPage() {
   const { token } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [operationLoading, setOperationLoading] = useState(false);
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -116,33 +181,119 @@ function DoctorsPage() {
   const navigate = useNavigate();
   const { isOpen: isEditOpen, onOpen: onEditOpen, onOpenChange: onEditOpenChange } = useDisclosure();
 
-  const handleViewDetail = (doctor) => {
-    setSelectedDoctor({
-      ...doctor,
-      appointments: [
-        {
-          id: 'APT250465',
-          patient: 'test Patient',
-          status: 'Checked In',
-          problem: '',
-          startTime: '10:00:00',
-          endTime: '11:15:00',
-          date: '26-Apr-2025',
-        },
-      ]
-    });
-    setIsDetailOpen(true);
+  // Centralized function to fetch doctors
+  const fetchDoctors = async (perpage = itemsPerPage, page = 1, filters = {}) => {
+    try {
+      setLoading(true);
+      const response = await doctorApiService.getDoctors(token, { perpage, page, filters });
+      
+      // Validate response
+      const validatedResponse = validateApiResponse(response, 'fetch doctors');
+      
+      const doctors = validatedResponse.data.data.map(user => ({
+        ...user,
+        verified: user.verified === 1 ? 'Yes' : 'No'
+      }));
+      
+      setUsers(doctors);
+      setTotalItems(validatedResponse.data.meta.total);
+      setCurrentPage(validatedResponse.data.meta.page);
+      setItemsPerPage(validatedResponse.data.meta.perpage);
+    } catch (error) {
+      console.error('Error fetching doctors:', error);
+      toast.error(error.message || 'Error fetching doctors');
+    } finally {
+      setLoading(false);
+    }
   };
-const handleEdit = (doctor) => {
-  setSelectedDoctor(doctor); // pass doctor to edit form
-  setIsDetailOpen(false);    // close detail dialog if it was open
-  onEditOpen();              // open edit form modal
-};
-  const handleSave = (updatedData) => {
-    // Here you would typically save to backend
-    console.log('Saving item:', updatedData);
-    onEditOpenChange(false);
+
+  const handleViewDetail = async (doctor) => {
+    try {
+      // Fetch detailed doctor information
+      const response = await doctorApiService.getDoctorById(token, doctor.id);
+      if (response.data && response.data.success) {
+        const detailedDoctor = {
+          ...response.data.user,
+          appointments: [
+            {
+              id: 'APT250465',
+              patient: 'test Patient',
+              status: 'Checked In',
+              problem: '',
+              startTime: '10:00:00',
+              endTime: '11:15:00',
+              date: '26-Apr-2025',
+            },
+          ]
+        };
+        setSelectedDoctor(detailedDoctor);
+        setIsDetailOpen(true);
+      }
+    } catch (error) {
+      console.error('Error fetching doctor details:', error);
+      toast.error('Error fetching doctor details');
+    }
   };
+
+  const handleEdit = (doctor) => {
+    setSelectedDoctor(doctor);
+    setIsDetailOpen(false);
+    onEditOpen();
+  };
+
+  // Custom save handler that prevents immediate state update in CrudTemplate
+  const handleSaveWrapper = async (formData, isEditing) => {
+    try {
+      setOperationLoading(true);
+      if (isEditing) {
+        // Update existing doctor - remove empty password field
+        const dataToUpdate = { ...formData };
+        if (!dataToUpdate.password || dataToUpdate.password.trim() === '') {
+          delete dataToUpdate.password;
+        }
+        
+        const response = await doctorApiService.updateDoctor(token, formData.id, dataToUpdate);
+        validateApiResponse(response, 'update doctor');
+        toast.success('Doctor updated successfully!');
+        // Refresh the list to show updated data
+        await fetchDoctors(itemsPerPage, currentPage);
+        // Close the edit dialog
+        onEditOpenChange(false);
+      } else {
+        // Create new doctor
+        const response = await doctorApiService.createDoctor(token, formData);
+        validateApiResponse(response, 'create doctor');
+        toast.success(response.data.message || 'Doctor created successfully!');
+        // Refresh the list to show new data - don't manually update state
+        await fetchDoctors(itemsPerPage, 1); // Reset to first page for new items
+      }
+    } catch (error) {
+      console.error('Error saving doctor:', error);
+      toast.error(error.message || 'Error saving doctor');
+      // Re-throw error to prevent CrudTemplate from closing the dialog
+      throw error;
+    } finally {
+      setOperationLoading(false);
+    }
+  };
+
+  const handleDelete = async (doctor) => {
+    try {
+      setOperationLoading(true);
+      // Send only the ID in the payload for delete operation
+      const response = await doctorApiService.deleteDoctor(token, doctor.id);
+      validateApiResponse(response, 'delete doctor');
+      toast.success('Doctor deleted successfully!');
+      // Refresh the list to show updated data - don't manually remove from UI
+      await fetchDoctors(itemsPerPage, currentPage);
+    } catch (error) {
+      console.error('Error deleting doctor:', error);
+      toast.error(error.message || 'Error deleting doctor');
+    } finally {
+      setOperationLoading(false);
+    }
+  };
+
   const customActions = (item) => [
     {
       label: "View Details",
@@ -151,38 +302,25 @@ const handleEdit = (doctor) => {
     }
   ];
 
-
-  function getUsers(perpage = 5, page = 1, filters = {}) {
-    setLoading(true);
-    config.initAPI(token);
-    config.getData(`/users/list?perpage=${perpage}&page=${page}&username=${filters.username || ''}&email=${filters.email || ''}&role=${filters.role || 'doctor'}&verified=${filters.verified || ''}`)
-      .then(data => {
-        const _users = data.data.data.map(user => {
-          user.verified = user.verified === 1 ? 'Yes' : 'No';
-          return user;
-        });
-        setUsers(_users);
-        setTotalItems(data.data.meta.total);
-        setCurrentPage(data.data.meta.page);
-        setItemsPerPage(data.data.meta.perpage);
-        setLoading(false);
-
-      })
-      .catch(error => {
-        console.log(error);
-      });
-  }
-
+  // Initialize API configuration and fetch doctors on component mount
   useEffect(() => {
-    getUsers(5, 1);
-  }, []);
+    if (token) {
+      config.initAPI(token);
+      fetchDoctors();
+    }
+  }, [token]);
+
+  // Function to clear all filters and refresh data
+  const clearFilters = () => {
+    fetchDoctors(itemsPerPage, 1, {});
+  };
 
   return (<>
     <CrudTemplate
       title="Doctors"
       description="Manage doctors records"
       icon="lucide:users"
-      loading={loading}
+      loading={loading || operationLoading}
       columns={columns}
       data={users}
       totalItems={totalItems}
@@ -192,81 +330,40 @@ const handleEdit = (doctor) => {
       initialFormData={initialFormData}
       form={doctorForm}
       filterColumns={filterColumns} 
-        // customRowActions={() => []} // ✅ This disables all default row actions
-        // onRowClick={() => {}} 
       customRowActions={customActions}
       onRowClick={handleViewDetail}
+      disableAutoStateUpdate={true}
+      disableAutoDeleteUpdate={true}
       onFilterChange={(filters) => {
         console.log('Filters:', filters);
-        getUsers(itemsPerPage, 1, filters);
+        fetchDoctors(itemsPerPage, 1, filters);
       }}
       onPerPageChange={(perPage) => {
-        getUsers(perPage, 1);
+        fetchDoctors(perPage, 1);
       }}
       onPaginate={(page, perpage) => {
         console.log('Page:', page, 'Perpage:', perpage);
-        getUsers(perpage, page);
+        fetchDoctors(perpage, page);
       }}
-      onSave={(data, isEditing) => {
-        console.log("FORM DATA", data)
-        if (isEditing) {
-          // Update existing user
-          config.postData(`/users/edit?id=${data.id}`, data)
-            .then(response => {
-              console.log('User updated:', response.data);
-              setUsers(users.map(user => user.id === data.id ? data : user));
-              toast.success('Doctor updated successfully!');
-            })
-            .catch(error => {
-              console.error('Error updating user:', error);
-            });
-        } else {
-          // Create new user
-          config.postData('/users/create', data)
-            .then(response => {
-              console.log('User created:', response.data.success);
-              if (response.data.success == true) {
-                setUsers([ response.data.user , ...users]);
-                toast.success(response.data.message);
-              } else {
-                toast.error(response.data.message);
-              }
-            })
-            .catch(error => {
-              console.error('Error creating user:', error);
-              toast.error('Error creating doctor.');
-            });
-        }
-      }}
-      onDelete={(item) => {
-        config.postData(`/users/delete?id=${item.id}`, item)
-          .then(response => {
-            console.log('User deleted:', response.data);
-            setUsers(users.filter(user => user.id !== item.id));
-            toast.success('Doctor deleted successfully!');
-          })
-          .catch(error => {
-            console.error('Error deleting user:', error);
-          });
-        console.log('Delete patient:', item);
-      }} />
+      onSave={handleSaveWrapper}
+      onDelete={handleDelete} />
+    
     {selectedDoctor && (
-    <>
-      <EntityDetailDialog
-        isOpen={isDetailOpen}
-        onOpenChange={setIsDetailOpen}
-        entity={selectedDoctor}
-        entityType="doctor"
-        // onEdit={() => console.log('Edit doctor:', selectedDoctor)}
-       onEdit={handleEdit}
-      />
-      <CrudDialog
+      <>
+        <EntityDetailDialog
+          isOpen={isDetailOpen}
+          onOpenChange={setIsDetailOpen}
+          entity={selectedDoctor}
+          entityType="doctor"
+          onEdit={handleEdit}
+        />
+        <CrudDialog
           isOpen={isEditOpen}
           onOpenChange={onEditOpenChange}
-          title="Edit Item"
+          title="Edit Doctor"
           formData={selectedDoctor}
-          form={doctorForm}
-          onSave={handleSave}
+          form={editDoctorForm}
+          onSave={handleSaveWrapper}
         />
       </>
     )}
