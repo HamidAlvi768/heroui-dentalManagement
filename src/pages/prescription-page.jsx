@@ -164,6 +164,7 @@ function PrescriptionPage() {
         }
 
         // Ensure data is properly structured for the table
+        console.log("response", response);
         const formattedData = data.map(prescription => ({
           ...prescription,
           id: prescription.id || prescription._id, // Ensure id exists

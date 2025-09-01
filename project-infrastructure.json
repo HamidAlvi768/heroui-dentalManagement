@@ -1,0 +1,348 @@
+{
+  "project": {
+    "name": "JDent Lite",
+    "type": "Dental Management System",
+    "version": "0.0.0",
+    "description": "A comprehensive dental practice management system built with React and HeroUI"
+  },
+  "projectStructure": {
+    "src": {
+      "auth": {
+        "description": "Authentication context and logic",
+        "files": ["AuthContext.jsx"],
+        "purpose": "Manages user authentication state and token management"
+      },
+      "components": {
+        "description": "Reusable UI components and templates",
+        "templates": {
+          "description": "Page and CRUD operation templates",
+          "files": [
+            "page-template.jsx",
+            "crud-template.jsx",
+            "crud-dialog.jsx",
+            "data-table.jsx",
+            "entity-detail-dialog.jsx"
+          ]
+        },
+        "specialized": {
+          "description": "Domain-specific components",
+          "files": [
+            "dashboard.jsx",
+            "header.jsx",
+            "calendar-popup.jsx",
+            "stats-card.jsx",
+            "hospital-survey-chart.jsx",
+            "patient-map.jsx",
+            "print-preview-dialog.jsx"
+          ]
+        }
+      },
+      "config": {
+        "description": "Application configuration and API setup",
+        "files": ["config.js"],
+        "purpose": "Centralized API configuration with base URL and authentication"
+      },
+      "hooks": {
+        "description": "Custom React hooks",
+        "files": ["useFormData.jsx"],
+        "purpose": "Reusable logic for form data management"
+      },
+      "pages": {
+        "description": "Route components and page implementations",
+        "main": [
+          "dashboard.jsx",
+          "doctors-page.jsx",
+          "patients-page.jsx",
+          "appointments-page.jsx",
+          "prescription-page.jsx",
+          "inventory-page.jsx",
+          "invoices-page.jsx",
+          "expense-page.jsx",
+          "reports-page.jsx",
+          "profile-page.jsx"
+        ],
+        "settings": [
+          "settings-page.jsx",
+          "users-page.jsx",
+          "categories-page.jsx",
+          "entities-page.jsx",
+          "generic-records.jsx",
+          "application-settings.jsx"
+        ],
+        "auth": [
+          "login.jsx",
+          "signup.jsx",
+          "forgot-password.jsx"
+        ]
+      },
+      "utils": {
+        "description": "Utility functions and helpers",
+        "files": ["toast.js"]
+      },
+      "lib": {
+        "description": "Third-party utilities",
+        "files": ["utils.ts"]
+      }
+    }
+  },
+  "designSystem": {
+    "colors": {
+      "primary": {
+        "50": "#e6f7f6",
+        "100": "#b3e8e5",
+        "200": "#80d9d4",
+        "300": "#4dcac3",
+        "400": "#1abbb2",
+        "500": "#00a59e",
+        "600": "#00837d",
+        "700": "#00615c",
+        "800": "#003f3c",
+        "900": "#001615",
+        "DEFAULT": "#00a59e",
+        "foreground": "#ffffff"
+      },
+      "semantic": {
+        "border": "hsl(var(--border))",
+        "input": "hsl(var(--input))",
+        "ring": "hsl(var(--ring))",
+        "background": "hsl(var(--background))",
+        "foreground": "hsl(var(--foreground))",
+        "secondary": "hsl(var(--secondary))",
+        "destructive": "hsl(var(--destructive))",
+        "muted": "hsl(var(--muted))",
+        "accent": "hsl(var(--accent))",
+        "popover": "hsl(var(--popover))",
+        "card": "hsl(var(--card))"
+      }
+    },
+    "spacing": "Tailwind CSS spacing system",
+    "borderRadius": {
+      "lg": "var(--radius)",
+      "md": "calc(var(--radius) - 2px)",
+      "sm": "calc(var(--radius) - 4px)"
+    },
+    "typography": "Tailwind CSS typography classes",
+    "shadows": "Card-based layouts with rounded corners and shadows"
+  },
+  "componentPatterns": {
+    "pageTemplate": {
+      "description": "Consistent page layout wrapper",
+      "features": [
+        "Header component integration",
+        "Breadcrumb navigation",
+        "Page title with icon",
+        "Action buttons (Add New, etc.)",
+        "Back button support",
+        "Consistent spacing and styling"
+      ],
+      "usage": "Wraps all page content for consistent layout"
+    },
+    "crudTemplate": {
+      "description": "Reusable CRUD operations wrapper",
+      "features": [
+        "Data table integration",
+        "Add/Edit/Delete dialogs",
+        "Filtering and pagination",
+        "Custom actions support",
+        "Export functionality",
+        "Detail view dialogs"
+      ],
+      "usage": "Standard CRUD pages (doctors, patients, etc.)"
+    },
+    "dataTable": {
+      "description": "Advanced data table component",
+      "features": [
+        "Sortable columns",
+        "Filtering system",
+        "Pagination",
+        "Rows per page selection",
+        "Custom row actions",
+        "Export functionality",
+        "Loading states"
+      ],
+      "configurable": true
+    },
+    "crudDialog": {
+      "description": "Dynamic form generation system",
+      "fieldTypes": [
+        "text",
+        "email",
+        "select",
+        "date",
+        "textarea",
+        "checkbox",
+        "autocomplete"
+      ],
+      "features": [
+        "Dynamic field rendering",
+        "Validation support",
+        "Conditional fields",
+        "Custom field options",
+        "Form state management"
+      ]
+    }
+  },
+  "authentication": {
+    "system": "Token-based authentication",
+    "storage": "localStorage for token persistence",
+    "context": "AuthContext provides auth state",
+    "routes": {
+      "public": ["/login", "/signup", "/forgot-password"],
+      "private": "All other routes require authentication"
+    },
+    "guards": {
+      "PrivateRoute": "Redirects to login if not authenticated",
+      "PublicRoute": "Redirects to dashboard if already authenticated"
+    }
+  },
+  "apiArchitecture": {
+    "baseURL": "https://cafpavia.com/dental-lite/backend/api",
+    "localURL": "http://localhost/jantrah/dentaldoc/api",
+    "configuration": {
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer {token}"
+      },
+      "methods": {
+        "getData": "GET requests",
+        "postData": "POST requests"
+      }
+    },
+    "endpoints": {
+      "dashboard": "/dashboard",
+      "users": "/users",
+      "patients": "/patients",
+      "doctors": "/doctors",
+      "appointments": "/appointments",
+      "prescriptions": "/prescriptions",
+      "inventory": "/inventory",
+      "invoices": "/invoices",
+      "expenses": "/expenses"
+    }
+  },
+  "formSystem": {
+    "framework": "React Hook Form",
+    "validation": "Zod schema validation",
+    "fieldDefinitions": {
+      "structure": "Array of field objects with key, label, type, required, options",
+      "fieldTypes": {
+        "text": "Basic text input",
+        "email": "Email input with validation",
+        "select": "Dropdown with options array",
+        "date": "Date picker with max/min constraints",
+        "textarea": "Multi-line text input",
+        "checkbox": "Boolean input",
+        "autocomplete": "Searchable dropdown with suggestions"
+      }
+    },
+    "features": [
+      "Dynamic form generation",
+      "Conditional field rendering",
+      "Built-in validation",
+      "Form state management",
+      "Error handling and display"
+    ]
+  },
+  "routing": {
+    "framework": "React Router DOM v7",
+    "basename": "Dynamic based on environment",
+    "structure": {
+      "public": "Authentication pages",
+      "private": "Main application pages",
+      "nested": "Settings pages with sub-routes"
+    },
+    "navigation": {
+      "programmatic": "useNavigate hook",
+      "declarative": "Link components",
+      "breadcrumbs": "Automatic breadcrumb generation"
+    }
+  },
+  "stateManagement": {
+    "global": {
+      "auth": "AuthContext for user authentication",
+      "formData": "useFormData hook for dynamic form configuration"
+    },
+    "local": {
+      "component": "useState for component-specific state",
+      "forms": "React Hook Form for form state",
+      "api": "Local state for API response data"
+    },
+    "patterns": {
+      "lifting": "State lifted to common parent when needed",
+      "context": "Global state shared across components",
+      "local": "Component-specific state management"
+    }
+  },
+  "errorHandling": {
+    "userFeedback": {
+      "toast": "Toast notifications for success/error messages",
+      "loading": "Loading states during API calls",
+      "validation": "Form validation error display"
+    },
+    "apiErrors": {
+      "tryCatch": "Wrapped around all API calls",
+      "fallbacks": "Graceful handling of missing data",
+      "retry": "Automatic retry mechanisms where appropriate"
+    }
+  },
+  "developmentPatterns": {
+    "codeOrganization": {
+      "composition": "Component composition over inheritance",
+      "separation": "Clear separation of concerns",
+      "reusability": "Highly reusable component templates"
+    },
+    "naming": {
+      "conventions": "Consistent naming patterns",
+      "files": "kebab-case for files, PascalCase for components",
+      "variables": "camelCase for variables and functions"
+    },
+    "imports": {
+      "organization": "Logical grouping of imports",
+      "aliases": "Path aliases for clean imports",
+      "bundling": "Tree-shaking friendly imports"
+    }
+  },
+  "uiComponents": {
+    "heroUI": {
+      "version": "2.7.6",
+      "components": [
+        "Button",
+        "Card",
+        "Modal",
+        "Table",
+        "Input",
+        "Select",
+        "Dropdown",
+        "Tabs",
+        "Pagination",
+        "Avatar",
+        "Autocomplete"
+      ],
+      "theming": "Custom color scheme integration"
+    },
+    "custom": {
+      "description": "Project-specific UI components",
+      "components": [
+        "StatsCard",
+        "HospitalSurveyChart",
+        "PatientMap",
+        "PrintPreviewDialog"
+      ]
+    }
+  },
+  "dataFlow": {
+    "api": "Axios → Component State → UI Rendering",
+    "forms": "User Input → Form State → Validation → API",
+    "navigation": "Route Change → Component Mount → Data Fetch → Render",
+    "state": "Context → Components → Local State → UI Updates"
+  },
+  "performance": {
+    "optimizations": [
+      "React.memo for expensive components",
+      "useMemo for computed values",
+      "useCallback for stable references",
+      "Lazy loading of routes",
+      "Efficient re-rendering patterns"
+    ]
+  }
+}

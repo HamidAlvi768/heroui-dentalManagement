@@ -1,0 +1,48 @@
+Description
+Example
+Define node
+compute[icon: aws-ec2]
+ 
+compute
+Define group
+app
+[icon: aws-ec2]
+{
+ ⁄⁄ add nodes and groups
+}
+Multi-property
+compute[icon: aws-ec2, color: blue]{ }
+Node label
+compute1[icon: aws-ec2, label: "compute"]
+compute2[icon: aws-ec2, label: "compute"]
+⁄⁄ allows for unique node names and duplicate labels
+storage>compute
+storage<compute
+storage>worker1, worker2
+Connection label
+storage>compute: message
+Connection properties
+storage>compute: message: [color: green]
+ 
+storage>compute: [color: green]
+Comment
+// Add a comment
+Diagram properties
+colorMode
+pastel
+pastel | bold | outline
+ 
+styleMode
+shadow
+shadow | plain | watercolor
+ 
+typeface
+rough
+rough | clean | mono
+ 
+title
+My Eraser Diagram
+ 
+direction
+right
+right | down | left | up

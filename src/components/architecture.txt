@@ -1,0 +1,69 @@
+// JDent Lite - Core Template Architecture
+title: Core Template Infrastructure & Component Roles
+
+// User Interface Layer
+User [icon: user, color: blue]
+
+// Core Template Components
+Core Templates [icon: layers, color: "#00a59e"] {
+  // Page Layout Wrapper
+  Page Template [icon: monitor, color: "#00a59e"] {
+    Header [icon: header, label: "Navigation & User Info"]
+    Breadcrumbs [icon: navigation, label: "Page Navigation"]
+    Page Title [icon: type, label: "Icon + Title Display"]
+    Action Buttons [icon: plus, label: "Add New, etc."]
+    Back Button [icon: arrow-left, label: "Optional Back Navigation"]
+  }
+  
+  // CRUD Operations Orchestrator
+  CRUD Template [icon: database, color: "#00a59e"] {
+    Data Management [icon: hard-drive, label: "State & Data Handling"]
+    Action Handlers [icon: zap, label: "Add/Edit/Delete/View Logic"]
+    Filter & Pagination [icon: filter, label: "Data Filtering Controls"]
+    Export Functions [icon: download, label: "Data Export"]
+  }
+  
+  // Data Display & Interaction
+  Data Table [icon: table, color: "#00a59e"] {
+    Column Management [icon: columns, label: "Sortable Columns"]
+    Row Actions [icon: more-horizontal, label: "Edit/Delete/View Buttons"]
+    Filtering [icon: search, label: "Search & Filter Inputs"]
+    Pagination [icon: chevrons-right, label: "Page Navigation"]
+    Loading States [icon: loader, label: "Loading Indicators"]
+  }
+  
+  // Form Creation & Editing
+  CRUD Dialog [icon: edit, color: "#00a59e"] {
+    Dynamic Forms [icon: file-text, label: "Field Generation"]
+    Validation [icon: check-circle, label: "Form Validation"]
+    Field Types [icon: list, label: "Text/Select/Date/etc."]
+    Form State [icon: activity, label: "Input Management"]
+  }
+  
+  // Detailed Record View
+  Entity Detail Dialog [icon: info, color: "#00a59e"] {
+    Record Display [icon: eye, label: "Full Record View"]
+    Read-Only Mode [icon: lock, label: "Display Only"]
+    Optional Actions [icon: settings, label: "Edit/Delete Options"]
+  }
+}
+
+// Component Relationships & Data Flow
+Page Template > CRUD Template: Wraps & Provides Layout
+CRUD Template > Data Table: Renders Data & Captures Actions
+CRUD Template > CRUD Dialog: Opens Forms for Create/Edit
+CRUD Template > Entity Detail Dialog: Opens Detail Views
+Data Table > CRUD Template: Triggers Actions (Edit/Delete/View)
+CRUD Dialog > CRUD Template: Submits Form Data
+Entity Detail Dialog > CRUD Template: Optional Update Requests
+
+// User Interaction Flow
+User > Page Template: Access Page
+User > Data Table: View & Interact with Data
+User > CRUD Dialog: Create/Edit Records
+User > Entity Detail Dialog: View Full Details
+
+// Data Flow
+CRUD Template > Data Table: Provides Data & Handlers
+CRUD Template > CRUD Dialog: Manages Form State
+CRUD Template > Entity Detail Dialog: Provides Record Data
