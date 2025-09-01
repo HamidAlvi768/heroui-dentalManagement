@@ -23,7 +23,7 @@ const initialFormData = {
 const filterColumns = [
   { key: 'entity_type', label: 'Entity Type', type: 'text', required: true, readonly: 'readonly' },
   { key: 'label', label: 'Label', type: 'text', required: true },
-  { key: 'active', label: 'Active', type: 'select', options: [{ value: '1', label: 'Yes' }, { value: '0', label: 'No' }], required: true },
+  { key: 'active', label: 'Active', type: 'select', options: [{ value: '1', label: 'Active' }, { value: '0', label: 'Inactive' }], required: true },
 ];
 
 function GenericRecordsPage() {
@@ -47,7 +47,7 @@ function GenericRecordsPage() {
   const formFields = [
     { key: 'entity_type', label: 'Entity Type', type: 'text', readonly: 'readonly', required: true, },
     { key: 'label', label: 'Label', type: 'text', required: true },
-    { key: 'active', label: 'Active', type: 'select', options: [{ value: '1', label: 'Yes' }, { value: '0', label: 'No' }], required: true },
+    { key: 'active', label: 'Active', type: 'select', options: [{ value: '1', label: 'Active' }, { value: '0', label: 'Inactive' }], required: true },
     { key: 'description', label: 'Description', type: 'textarea', required: true },
   ];
 
@@ -66,7 +66,7 @@ function GenericRecordsPage() {
     config.getData(`/genericrecords/list?perpage=${perpage}&page=${page}&entity_type=${entityTypeName}&email=${filters.email || ''}&role=${filters.role || ''}&verified=${filters.verified || ''}`)
       .then(data => {
         const _datalist = data.data.data.map(item => {
-          item.verified = item.verified === 1 ? 'Yes' : 'No';
+          item.verified = item.verified === 1 ? 'Active' : 'Inactive';
           return item;
         });
         setDataList(_datalist);
@@ -103,8 +103,8 @@ function GenericRecordsPage() {
       form={genericForm}
       filterColumns={filterColumns}
       onInputChange={(inputFormData) => {
-
-        console.log('Form data:', formData);
+        // Remove this callback as it interferes with form reset
+        // The form will handle input changes internally
       }}
       onFilterChange={(filters) => {
         console.log('Filters:', filters);
@@ -117,30 +117,28 @@ function GenericRecordsPage() {
         console.log('Page:', page, 'Perpage:', perpage);
         getUsers(perpage, page);
       }}
-      onSave={(data, isEditing) => {
-        console.log('Save patient:', data, 'isEditing:', isEditing);
-        if (isEditing) {
-          // Update existing user
-          config.postData(`/genericrecords/edit?id=${data.id}`, data)
-            .then(response => {
-              console.log('Item updated:', response.data);
-              setDataList(users.map(user => user.id === data.id ? data : user));
-              toast.success('Item updated successfully!');
-            })
-            .catch(error => {
-              console.error('Error updating user:', error);
-            });
-        } else {
-          // Create new user
-          config.postData('/genericrecords/create', data)
-            .then(response => {
-              console.log('Item created:', response.data.user);
-              setDataList([...users, response.data.user]);
-              toast.success('Item created successfully!');
-            })
-            .catch(error => {
-              console.error('Error creating user:', error);
-            });
+      onSave={async (data, isEditing) => {
+        console.log('Save generic record:', data, 'isEditing:', isEditing);
+        try {
+          if (isEditing) {
+            // Update existing user
+            const response = await config.postData(`/genericrecords/edit?id=${data.id}`, data);
+            console.log('Item updated:', response.data);
+            setDataList(users.map(user => user.id === data.id ? data : user));
+            toast.success('Item updated successfully!');
+            return true; // Signal successful save
+          } else {
+            // Create new user
+            const response = await config.postData('/genericrecords/create', data);
+            console.log('Item created:', response.data.user);
+            setDataList([...users, response.data.user]);
+            toast.success('Item created successfully!');
+            return true; // Signal successful save
+          }
+        } catch (error) {
+          console.error('Error saving generic record:', error);
+          toast.error('Failed to save generic record');
+          return false;
         }
       }}
       onDelete={(item) => {

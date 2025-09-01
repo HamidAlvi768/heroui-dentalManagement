@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CrudTemplate } from '../../components/crud-template';
 import { Avatar } from '@heroui/react';
 import config from '../../config/config';
@@ -8,9 +8,16 @@ import { LucideActivity } from 'lucide-react';
 import { useDisclosure } from "@heroui/react";
 import { EntityDetailDialog } from '../../components/entity-detail-dialog';
 import { CrudDialog } from '../../components/crud-dialog';
+import { toast } from 'react-toastify';
 
 const columns = [
-  { key: 'name', label: 'NAME' },
+  { key: 'name', label: 'NAME',
+    render: (item) => (
+      <div>
+        <div className="font-medium">{item.name}</div>
+      </div>
+    )
+   },
   { key: 'description', label: 'DESCRIPTION' },
   // { key: 'inventory_count', label: 'INVENTORY ITEMS' },
   { key: 'active', label: 'STATUS' },
@@ -150,43 +157,70 @@ function CategoriesPage() {
         console.log('Page:', page, 'Perpage:', perpage);
         getData(perpage, page);
       }}
-      onSave={(data, isEditing) => {
-        console.log('Save patient:', data, 'isEditing:', isEditing);
-        if (isEditing) {
-          // Update existing Category
-          config.postData(`/categories/edit?id=${data.id}`, data)
-            .then(response => {
-              console.log('Category updated:', response.data);
-              setDataList(dataList.map(item => item.id === data.id ? data : item));
+      onSave={async (data, isEditing) => {
+        console.log('Save category:', data, 'isEditing:', isEditing);
+        try {
+          if (isEditing) {
+            // Update existing category
+            const response = await config.postData(`/categories/edit?id=${data.id}`, data);
+            console.log('Category updated:', response.data);
+            // Reload data to show updated information
+            getData(itemsPerPage, currentPage);
+            // Show toast message from API response
+            if (response.data.message) {
+              toast.success(response.data.message);
+            } else {
               toast.success('Category updated successfully!');
-            })
-            .catch(error => {
-              console.error('Error updating Category:', error);
-            });
-        } else {
-          // Create new Category
-          config.postData('/categories/create', data)
-            .then(response => {
-              console.log('Category created:', response.data.category);
-              setDataList([ response.data.category, ...dataList]);
+            }
+            return true; // Signal successful save
+          } else {
+            // Create new category
+            const response = await config.postData('/categories/create', data);
+            console.log('Category created:', response.data.category);
+            // Reload data to show new item
+            getData(itemsPerPage, 1);
+            // Show toast message from API response
+            if (response.data.message) {
+              toast.success(response.data.message);
+            } else {
               toast.success('Category created successfully!');
-            })
-            .catch(error => {
-              console.error('Error creating Category:', error);
-            });
+            }
+            return true; // Signal successful save
+          }
+        } catch (error) {
+          console.error('Error saving category:', error);
+          // Show error message from API response if available
+          if (error.response && error.response.data && error.response.data.message) {
+            toast.error(error.response.data.message);
+          } else {
+            toast.error('Failed to save category');
+          }
+          return false;
         }
       }}
       onDelete={(item) => {
         config.postData(`/categories/delete?id=${item.id}`, item)
           .then(response => {
             console.log('Category deleted:', response.data);
-            setDataList(dataList.filter(filterItem => filterItem.id !== item.id));
-            toast.success('Category deleted successfully!');
+            // Reload data to show updated list
+            getData(itemsPerPage, currentPage);
+            // Show success message from API response
+            if (response.data.message) {
+              toast.success(response.data.message);
+            } else {
+              toast.success('Category deleted successfully!');
+            }
           })
           .catch(error => {
             console.error('Error deleting Category:', error);
+            // Show error message from API response if available
+            if (error.response && error.response.data && error.response.data.message) {
+              toast.error(error.response.data.message);
+            } else {
+              toast.error('Failed to delete category');
+            }
           });
-        console.log('Delete patient:', item);
+        console.log('Delete category:', item);
       }}
       onClick={()=>{
         
@@ -199,7 +233,6 @@ function CategoriesPage() {
             onOpenChange={setIsDetailOpen}
             entity={selectedCategory}
             entityType="category"
-            onEdit={handleEdit}
           />
           <CrudDialog
               isOpen={isEditOpen}

@@ -1,52 +1,37 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
 } from "react-router-dom";
-import { useAuth } from "./auth/AuthContext";
-import { Dashboard } from "./components/dashboard";
-import DoctorsPage from "./pages/doctors-page";
-import PatientsPage from "./pages/patients-page";
-import PatientDetailsPage from "./pages/patient-details-page";
-import AppointmentsPage from "./pages/appointments-page";
-import PrescriptionPage from "./pages/prescription-page";
-import InventoryPage from "./pages/inventory-page";
-import ReportsPage from "./pages/reports-page";
-import ProfilePage from "./pages/profile-page";
-import SettingsPage from "./pages/settings-page";
-import LoginPage from "./pages/login";
-import SignupPage from "./pages/signup";
-import UsersPage from "./pages/settings/users-page";
-import InvoicesPage from "./pages/invoices-page";
-import ExpensePage from "./pages/expense-page";
-import CategoriesPage from "./pages/settings/categories-page";
-import ForgotPasswordPage from "./pages/forgot-password";
-import ApplicationSettings from "./pages/settings/application-settings";
-import ConfigurationSettings from "./pages/settings/generic-records";
-import EntitiesPage from "./pages/settings/entities-page";
-import GenericRecordsPage from "./pages/settings/generic-records";
-// import Test from "./pages/test";
+import PrivateRoute from "./components/PrivateRoute";
+import PublicRoute from "./components/PublicRoute";
+import AppLayout from "./components/AppLayout";
+import PageLoader from "./components/PageLoader";
 
-function PrivateRoute({ children }) {
-  const { token } = useAuth();
-  return token ? children : <Navigate to="/login" />;
-}
-
-function PublicRoute({ children }) {
-  const { token } = useAuth();
-  return !token ? children : <Navigate to="/dashboard" />;
-}
-
-function AppLayout({ children }) {
-  return (
-    <div className="flex h-screen bg-background">
-      {/* <Sidebar /> */}
-      <div className="flex-1 w-0 overflow-auto">{children}</div>
-    </div>
-  );
-}
+// Lazy load all page components for better performance
+const Dashboard = lazy(() => import("./components/dashboard").then(module => ({ default: module.Dashboard })));
+const DoctorsPage = lazy(() => import("./pages/doctors-page"));
+const PatientsPage = lazy(() => import("./pages/patients-page"));
+const PatientDetailsPage = lazy(() => import("./pages/patient-details-page"));
+const AppointmentsPage = lazy(() => import("./pages/appointments-page"));
+const PrescriptionPage = lazy(() => import("./pages/prescription-page"));
+const InventoryPage = lazy(() => import("./pages/inventory-page"));
+const ReportsPage = lazy(() => import("./pages/reports-page"));
+const ProfilePage = lazy(() => import("./pages/profile-page"));
+const SettingsPage = lazy(() => import("./pages/settings-page"));
+const LoginPage = lazy(() => import("./pages/login"));
+const SignupPage = lazy(() => import("./pages/signup"));
+const UsersPage = lazy(() => import("./pages/settings/users-page"));
+const InvoicesPage = lazy(() => import("./pages/invoices-page"));
+const ExpensePage = lazy(() => import("./pages/expense-page"));
+const CategoriesPage = lazy(() => import("./pages/settings/categories-page"));
+const ForgotPasswordPage = lazy(() => import("./pages/forgot-password"));
+const ApplicationSettings = lazy(() => import("./pages/settings/application-settings"));
+const ConfigurationSettings = lazy(() => import("./pages/settings/generic-records"));
+const EntitiesPage = lazy(() => import("./pages/settings/entities-page"));
+const GenericRecordsPage = lazy(() => import("./pages/settings/generic-records"));
 
 
 export default function App() {
@@ -71,7 +56,9 @@ export default function App() {
           path="/login"
           element={
             <PublicRoute>
-              <LoginPage />
+              <Suspense fallback={<PageLoader />}>
+                <LoginPage />
+              </Suspense>
             </PublicRoute>
           }
         />
@@ -79,7 +66,9 @@ export default function App() {
           path="/signup"
           element={
             <PublicRoute>
-              <SignupPage />
+              <Suspense fallback={<PageLoader />}>
+                <SignupPage />
+              </Suspense>
             </PublicRoute>
           }
         />
@@ -87,7 +76,9 @@ export default function App() {
           path="/forgot-password"
           element={
             <PublicRoute>
-              <ForgotPasswordPage />
+              <Suspense fallback={<PageLoader />}>
+                <ForgotPasswordPage />
+              </Suspense>
             </PublicRoute>
           }
         />
@@ -98,7 +89,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <Dashboard />
+                <Suspense fallback={<PageLoader />}>
+                  <Dashboard />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -108,7 +101,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <DoctorsPage />
+                <Suspense fallback={<PageLoader />}>
+                  <DoctorsPage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -118,7 +113,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <PatientsPage />
+                <Suspense fallback={<PageLoader />}>
+                  <PatientsPage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -128,7 +125,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <PatientDetailsPage />
+                <Suspense fallback={<PageLoader />}>
+                  <PatientDetailsPage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -138,7 +137,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <AppointmentsPage />
+                <Suspense fallback={<PageLoader />}>
+                  <AppointmentsPage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -148,7 +149,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <PrescriptionPage />
+                <Suspense fallback={<PageLoader />}>
+                  <PrescriptionPage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -158,7 +161,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <CategoriesPage />
+                <Suspense fallback={<PageLoader />}>
+                  <CategoriesPage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -168,7 +173,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <InventoryPage />
+                <Suspense fallback={<PageLoader />}>
+                  <InventoryPage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -178,7 +185,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <ReportsPage />
+                <Suspense fallback={<PageLoader />}>
+                  <ReportsPage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -188,7 +197,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <UsersPage />
+                <Suspense fallback={<PageLoader />}>
+                  <UsersPage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -198,7 +209,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <ProfilePage />
+                <Suspense fallback={<PageLoader />}>
+                  <ProfilePage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -208,7 +221,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <SettingsPage />
+                <Suspense fallback={<PageLoader />}>
+                  <SettingsPage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -218,7 +233,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <ApplicationSettings />
+                <Suspense fallback={<PageLoader />}>
+                  <ApplicationSettings />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -228,7 +245,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <GenericRecordsPage />
+                <Suspense fallback={<PageLoader />}>
+                  <GenericRecordsPage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -238,7 +257,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <EntitiesPage />
+                <Suspense fallback={<PageLoader />}>
+                  <EntitiesPage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -258,7 +279,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <InvoicesPage />
+                <Suspense fallback={<PageLoader />}>
+                  <InvoicesPage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -268,7 +291,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <InvoicesPage />
+                <Suspense fallback={<PageLoader />}>
+                  <InvoicesPage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }
@@ -278,7 +303,9 @@ export default function App() {
           element={
             <PrivateRoute>
               <AppLayout>
-                <ExpensePage />
+                <Suspense fallback={<PageLoader />}>
+                  <ExpensePage />
+                </Suspense>
               </AppLayout>
             </PrivateRoute>
           }

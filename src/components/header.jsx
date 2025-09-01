@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback, memo } from "react";
 import { Icon } from "@iconify/react";
 import {
   Avatar,
@@ -9,25 +9,85 @@ import {
 } from "@heroui/react";
 import { useAuth } from "@/auth/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useLogout } from "@/hooks/useAuthRedirect";
 import config from "../config/config";
 import { useLocation } from "react-router-dom";
 import useFormData from "../hooks/useFormData";
 
-export function Header() {
+export const Header = memo(() => {
   const dynamicFormData = useFormData();
-  const { logout, user } = useAuth();
+  const { user } = useAuth();
+  const { handleLogout } = useLogout("/login");
   const navigate = useNavigate();
   const location = useLocation();
-  const [notifications] = useState([
+  
+  // Memoize notifications to prevent recreation on every render
+  const notifications = useMemo(() => [
     { id: 1, message: "New appointment request", time: "5m ago" },
     { id: 2, message: "Patient records updated", time: "1h ago" },
-  ]);
+  ], []);
+  
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
   const navRef = useRef(null);
 
   // Store the scroll position in session storage to persist between route changes
   const navScrollPositionKey = "nav-scroll-position";
+
+  // Memoize navigation items to prevent recreation
+  const navigationItems = useMemo(() => [
+    { label: "Doctors", path: "/doctors" },
+    { label: "Patients", path: "/patients" },
+    { label: "Appointments", path: "/appointments" },
+    { label: "Prescriptions", path: "/prescriptions" },
+    { label: "Inventory", path: "/inventory" },
+    { label: "Invoices", path: "/invoices" },
+    { label: "Settings", path: "/settings" },
+  ], []);
+
+  // Memoize update arrows function
+  const updateArrows = useCallback(() => {
+    if (navRef.current) {
+      setShowLeftArrow(navRef.current.scrollLeft > 0);
+      setShowRightArrow(navRef.current.scrollLeft + navRef.current.offsetWidth < navRef.current.scrollWidth - 1);
+    }
+  }, []);
+
+  // Memoize scroll handler
+  const handleScroll = useCallback(() => {
+    if (navRef.current) {
+      sessionStorage.setItem(navScrollPositionKey, navRef.current.scrollLeft.toString());
+      updateArrows();
+    }
+  }, [updateArrows]);
+
+  // Memoize navigation handler
+  const handleNavigation = useCallback((e, path) => {
+    e.preventDefault();
+    // Save the current scroll position explicitly before navigation
+    if (navRef.current) {
+      sessionStorage.setItem(
+        navScrollPositionKey,
+        navRef.current.scrollLeft.toString()
+      );
+    }
+    navigate(path);
+  }, [navigate]);
+
+  // Memoize scroll with animation function
+  const scrollWithAnimation = useCallback((amount) => {
+    const nav = navRef.current;
+    if (!nav) return;
+
+    // Temporarily enable smooth scrolling
+    nav.style.scrollBehavior = "smooth";
+    nav.scrollBy({ left: amount });
+
+    // Reset scroll behavior after animation
+    setTimeout(() => {
+      nav.style.scrollBehavior = "auto";
+    }, 300); // slightly longer than the animation duration
+  }, []);
 
   useEffect(() => {
     const nav = navRef.current;
@@ -48,17 +108,6 @@ export function Header() {
       nav.style.scrollBehavior = originalScrollBehavior;
     }, 0);
 
-    const updateArrows = () => {
-      setShowLeftArrow(nav.scrollLeft > 0);
-      setShowRightArrow(nav.scrollLeft + nav.offsetWidth < nav.scrollWidth - 1);
-    };
-
-    // Save the current scroll position whenever it changes
-    const handleScroll = () => {
-      sessionStorage.setItem(navScrollPositionKey, nav.scrollLeft.toString());
-      updateArrows();
-    };
-
     updateArrows();
     nav.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", updateArrows);
@@ -67,39 +116,25 @@ export function Header() {
       nav.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", updateArrows);
     };
-  }, []);
+  }, [handleScroll, updateArrows]);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  // Listen for auth events (unauthorized/forbidden)
+  useEffect(() => {
+    const handleAuthEvent = (event) => {
+      if (event.type === 'auth:unauthorized' || event.type === 'auth:forbidden') {
+        // Redirect to login using React Router
+        navigate('/login', { replace: true });
+      }
+    };
 
-  const handleNavigation = (e, path) => {
-    e.preventDefault();
-    // Save the current scroll position explicitly before navigation
-    if (navRef.current) {
-      sessionStorage.setItem(
-        navScrollPositionKey,
-        navRef.current.scrollLeft.toString()
-      );
-    }
-    navigate(path);
-  };
+    window.addEventListener('auth:unauthorized', handleAuthEvent);
+    window.addEventListener('auth:forbidden', handleAuthEvent);
 
-  // Function to scroll with animation (for arrow buttons only)
-  const scrollWithAnimation = (amount) => {
-    const nav = navRef.current;
-    if (!nav) return;
-
-    // Temporarily enable smooth scrolling
-    nav.style.scrollBehavior = "smooth";
-    nav.scrollBy({ left: amount });
-
-    // Reset scroll behavior after animation
-    setTimeout(() => {
-      nav.style.scrollBehavior = "auto";
-    }, 300); // slightly longer than the animation duration
-  };
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleAuthEvent);
+      window.removeEventListener('auth:forbidden', handleAuthEvent);
+    };
+  }, [navigate]);
 
   return (
     <header className="bg-primary h-16 flex items-center justify-between px-6">
@@ -108,14 +143,14 @@ export function Header() {
           className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
           onClick={() => navigate("/dashboard")}
         >
-          {/* <Icon icon="lucide:activity" className="text-white mr-2" width={20} /> */}
           <img 
-          src={dynamicFormData.logo}
-          alt="Logo"
-          className="text-white mr-2" width={20}
+            src={dynamicFormData.logo}
+            alt="Logo"
+            className="text-white mr-2" 
+            width={20}
           />
           <span className="text-white text-xl font-semibold">
-          {dynamicFormData.websiteName}
+            {dynamicFormData.websiteName}
           </span>
         </div>
 
@@ -140,19 +175,7 @@ export function Header() {
             className="flex gap-2 overflow-x-auto scrollbar-hide"
             style={{ scrollBehavior: "auto" }}
           >
-            {[
-              // { label: 'Dashboard', path: '/dashboard' },
-              // { label: 'Users', path: '/users' },
-              { label: "Doctors", path: "/doctors" },
-              { label: "Patients", path: "/patients" },
-              { label: "Appointments", path: "/appointments" },
-              { label: "Prescriptions", path: "/prescriptions" },
-              { label: "Inventory", path: "/inventory" },
-              // { label: 'Reports', path: '/reports' },
-              { label: "Invoices", path: "/invoices" },
-              // { label: 'Expenses', path: '/expenses' },
-              { label: "Settings", path: "/settings" },
-            ].map((item) => (
+            {navigationItems.map((item) => (
               <a
                 key={item.path}
                 href="#"
@@ -256,4 +279,6 @@ export function Header() {
       </div>
     </header>
   );
-}
+});
+
+Header.displayName = 'Header';

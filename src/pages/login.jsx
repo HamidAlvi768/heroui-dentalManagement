@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/auth/AuthContext';
+import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 import config from '../config/config';
 import { showToast } from '../utils/toast';
 import { Eye, EyeOff } from 'lucide-react';
@@ -16,6 +17,10 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isSending, setIsSending] = useState(false);
+  
+  // Redirect if already authenticated
+  const { shouldRender } = useAuthRedirect(false, '/login', '/dashboard');
+  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -48,6 +53,8 @@ export default function LoginPage() {
             user: user,
           });
           showToast.success(message);
+          // Redirect to dashboard after successful login
+          navigate('/dashboard', { replace: true });
         }
         else {
           showToast.error(message);
@@ -55,12 +62,17 @@ export default function LoginPage() {
       })
       .catch(error => {
         console.error('Login error:', error);
-        showToast.error(error.message);
+        showToast.error(error.message || 'Login failed. Please try again.');
       })
       .finally(() => {
         setIsSending(false);
       });
   };
+
+  // Don't render if user is already authenticated
+  if (!shouldRender) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

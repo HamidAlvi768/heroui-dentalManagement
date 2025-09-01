@@ -35,6 +35,12 @@ export function CrudTemplate({
   backButton, // ✅ Accept backButton prop
   disableAutoStateUpdate = false, // New prop to disable automatic state updates
   disableAutoDeleteUpdate = false, // New prop to disable automatic delete state updates
+  customEditHandler, // New prop for custom edit handling with view API
+  disableBuiltInModal = false, // New prop to disable built-in CrudDialog
+  onAdd, // New prop for custom onAdd handler
+  inventoryItems = [], // New prop for inventory items
+  categories = [], // New prop for procedure categories
+  procedures = [], // New prop for procedures
 }) {
   const [items, setItems] = React.useState(data);
   const [currentItem, setCurrentItem] = React.useState(null);
@@ -53,15 +59,26 @@ export function CrudTemplate({
   }, [data]);
 
   const handleAddNew = () => {
+    // If custom onAdd handler is provided, use it instead of internal modal
+    if (onAdd) {
+      onAdd();
+      return;
+    }
+    
+    // Default behavior (existing logic)
     setCurrentItem(initialFormData);
     setIsEditing(false);
     onOpen();
   };
 
   const handleEdit = (item) => {
-    console.log("🔍 EDIT CLICKED - Raw item data:", item);
-    console.log("🔍 Item keys:", Object.keys(item));
-    console.log("🔍 Item values:", Object.values(item));
+    // If custom edit handler is provided, use it (for view API integration)
+    if (customEditHandler) {
+      customEditHandler(item);
+      return;
+    }
+    
+    // Default behavior (existing logic) - always available unless customEditHandler is provided
     setCurrentItem(item);
     setIsEditing(true);
     onOpen();
@@ -74,7 +91,7 @@ export function CrudTemplate({
 
   const confirmDelete = () => {
     // Only update local state if auto delete update is not disabled
-    if (!disableAutoDeleteUpdate) {
+    if (disableAutoDeleteUpdate) {
       const updatedItems = items.filter((i) => i.id !== itemToDelete.id);
       setItems(updatedItems);
     }
@@ -83,7 +100,7 @@ export function CrudTemplate({
     setItemToDelete(null);
     
     // Only show toast if auto delete update is not disabled
-    if (!disableAutoDeleteUpdate) {
+    if (disableAutoDeleteUpdate) {
       showToast.success(`${title.slice(0, -1)} deleted successfully`);
     }
   };
@@ -104,14 +121,14 @@ export function CrudTemplate({
     onPaginate(page, perPage);
   };
 
-  const handleSave = (formData) => {
+  const handleSave = async (formData) => {
     let updatedItems;
 
     if (isEditing) {
       updatedItems = items.map((item) =>
         item.id === formData.id ? { ...item, ...formData } : item
       );
-      if (!disableAutoStateUpdate) {
+      if (disableAutoStateUpdate) {
         showToast.success(`${title.slice(0)} updated successfully`);
       }
     } else {
@@ -120,20 +137,57 @@ export function CrudTemplate({
         id: Date.now().toString(),
       };
       updatedItems = [...items, newItem];
-      if (!disableAutoStateUpdate) {
+      if (disableAutoStateUpdate) {
         showToast.success(`${title.slice(0)} created successfully`);
       }
     }
 
     // Only update local state if auto state update is not disabled
-    if (!disableAutoStateUpdate) {
+    if (disableAutoStateUpdate) {
       setItems(updatedItems);
     }
     
-    onClose();
-    if (onSave) onSave(formData, isEditing);
-    setCurrentItem(null);
-    setIsEditing(false);
+    // Call onSave and check if it was successful
+    let saveSuccess = true;
+    if (onSave) {
+      try {
+        const result = await onSave(formData, isEditing);
+        saveSuccess = result === true; // Only close if explicitly returned true
+      } catch (error) {
+        saveSuccess = false; // Don't close on error
+      }
+    }
+    
+    // Only close dialog and reset state if save was successful
+    if (saveSuccess) {
+      onClose();
+      setCurrentItem(null);
+      setIsEditing(false);
+    }
+  };
+
+  // Add effect to reset form data when modal closes
+  React.useEffect(() => {
+    if (!isOpen) {
+      // Reset form data when modal closes
+      setCurrentItem(null);
+      setIsEditing(false);
+    }
+  }, [isOpen]);
+
+  // Custom handler for modal open/close to ensure form data is reset
+  const handleModalOpenChange = (open) => {
+    if (!open) {
+      // Reset form data when modal is closed
+      setCurrentItem(null);
+      setIsEditing(false);
+    } else {
+      // When opening, ensure we have the right initial data for create mode
+      if (!isEditing && !currentItem) {
+        setCurrentItem(initialFormData);
+      }
+    }
+    onOpenChange(open);
   };
 
   // Add a function to process form fields and handle calculated values
@@ -172,8 +226,6 @@ export function CrudTemplate({
     return processFormFields(formFields);
   }, [formFields, processFormFields]);
 
-  console.log("Items:", items);
-
   return (
     <PageTemplate
       title={title}
@@ -200,24 +252,32 @@ export function CrudTemplate({
         onExport={onExport}
         filterColumns={filterColumns}
         customRowActions={customRowActions}
+        filterLoading={loading} // Pass loading state to filter buttons
         onFilterChange={(filters) => {
           onFilterChange(filters);
         }}
       />
-      <CrudDialog
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        title={
-          isEditing
-            ? `Edit ${title.endsWith('s') ? title.slice(0, -1) : title}`
-            : `Add New ${title.endsWith('s') ? title.slice(0, -1) : title}`
-         }
-        formData={currentItem}
-        form={processedForm || undefined}
-        formFields={processedFormFields}
-        onSave={handleSave}
-        onInputChange={onInputChange}
-      />
+      {!disableBuiltInModal && (
+        <CrudDialog
+          key={`${isOpen}-${isEditing}-${currentItem?.id || 'new'}`}
+          isOpen={isOpen}
+          onOpenChange={handleModalOpenChange}
+          title={
+            isEditing
+              ? `Edit ${title.endsWith('s') ? title.slice(0, -1) : title}`
+              : `Add New ${title.endsWith('s') ? title.slice(0, -1) : title}`
+           }
+          formData={currentItem}
+          form={processedForm || undefined}
+          formFields={processedFormFields}
+          onSave={handleSave}
+                        onInputChange={onInputChange}
+              operationLoading={loading}
+              inventoryItems={inventoryItems}
+              categories={categories}
+              procedures={procedures}
+            />
+      )}
       {DetailDialog && !onRowClick && viewItem && (
         <DetailDialog
           isOpen={!!viewItem}
