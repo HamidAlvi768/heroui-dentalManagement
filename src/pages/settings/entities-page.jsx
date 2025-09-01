@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CrudTemplate } from '../../components/crud-template';
 import { Avatar } from '@heroui/react';
 import config from '../../config/config';
@@ -23,29 +23,18 @@ const columns = [
 
 const initialFormData = {
   entity_name: '',
-  entity_type: '',
   active: '',
+  description: '',
 };
 
-const formFields = [
-  { key: 'entity_name', label: 'Entity Name', type: 'text', required: true },
-  { key: 'entity_type', label: 'Entity Type', type: 'text', required: true, readonly: true },
-  { key: 'active', label: 'Active', type: 'select', options: [{ value: '1', label: 'Active' }, { value: '0', label: 'Inactive' }], required: true },
-];
+// Form fields will be defined inside the component to access the slug generation function
 
-const entityForm = {
-  sections: [
-    {
-      fields: formFields
-    }
-  ]
-};
+// Entity form will be defined inside the component
 
 // Filter columns
 const filterColumns = [
-  { key: 'entity_name', label: 'Entity Name', type: 'text', required: true },
-  { key: 'entity_type', label: 'Entity Type', type: 'text', required: true, readonly: 'readonly' },
-  { key: 'active', label: 'Active', type: 'select', options: [{ value: '1', label: 'Yes' }, { value: '0', label: 'No' }], required: true },
+  { key: 'entity_name', label: 'Entity Name', type: 'text', required: true, className: 'col-span-2' },
+  { key: 'active', label: 'Active', type: 'select', options: [{ value: '1', label: 'Active' }, { value: '0', label: 'Inactive' }], required: true, className: 'col-span-1' },
 ];
 
 function EntitiesPage() {
@@ -58,13 +47,54 @@ function EntitiesPage() {
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [formData, setFormData] = useState(initialFormData);
 
+
+
+  // Define form fields inside component
+  const formFields = [
+    { 
+      key: 'entity_name', 
+      label: 'Entity Name', 
+      type: 'text', 
+      required: true, 
+      className: 'col-span-2',
+      placeholder: 'Enter entity name (e.g., Patient, Doctor, Medicine)'
+    },
+    { 
+      key: 'active', 
+      label: 'Active', 
+      type: 'select', 
+      options: [{ value: '1', label: 'Active' }, { value: '0', label: 'Inactive' }], 
+      required: true, 
+      className: 'col-span-1' 
+    },
+    { 
+      key: 'description', 
+      label: 'Description', 
+      type: 'textarea', 
+      required: false, 
+      className: 'col-span-full',
+      placeholder: 'Optional description for this entity type'
+    },
+  ];
+
+  // Define entity form inside component
+  const entityForm = {
+    sections: [
+      {
+        title: 'Entity Information',
+        fields: formFields,
+        className: 'grid grid-cols-3 gap-6 auto-rows-auto'
+      }
+    ]
+  };
+
   function getDataList(perpage = 5, page = 1, filters = {}) {
     setLoading(true);
     config.initAPI(token);
     config.getData(`/genericentities/list?perpage=${perpage}&page=${page}&username=${filters.username || ''}&email=${filters.email || ''}&role=${filters.role || ''}&verified=${filters.verified || ''}`)
       .then(data => {
         const _datalist = data.data.data.map(item => {
-          item.active = item.active === 1 ? 'Yes' : 'No';
+          item.active = item.active === 1 ? 'Active' : 'Inactive';
           return item;
         });
         console.log(_datalist)
@@ -83,7 +113,11 @@ function EntitiesPage() {
 
   useEffect(() => {
     getDataList(5, 1);
+  }, []);
 
+  // Reset form data when component mounts or when needed
+  useEffect(() => {
+    setFormData(initialFormData);
   }, []);
 
   return (
@@ -98,14 +132,12 @@ function EntitiesPage() {
       totalItems={totalItems}
       currentPage={currentPage}
       itemsPerPage={itemsPerPage}
-      initialFormData={formData}
+      initialFormData={initialFormData}
+      formData={formData}
       form={entityForm}
       filterColumns={filterColumns}
       onInputChange={(inputFormData) => {
-        const entity_name = inputFormData.entity_name.toLowerCase().replace(/ /g, '_');
-        inputFormData.entity_type = entity_name;
         setFormData(inputFormData);
-        console.log('Form data:', formData);
       }}
       onFilterChange={(filters) => {
         console.log('Filters:', filters);
@@ -118,29 +150,44 @@ function EntitiesPage() {
         console.log('Page:', page, 'Perpage:', perpage);
         getDataList(perpage, page);
       }}
-      onSave={(data, isEditing) => {
-        if (isEditing) {
-          // Update existing item
-          config.postData(`/genericentities/edit?id=${data.id}`, data)
-            .then(response => {
-              console.log('Item updated:', response.data);
-              setDataList(dataList.map(item => item.id === data.id ? data : item));
+      onSave={async (data, isEditing) => {
+        try {
+          if (isEditing) {
+            // Update existing item
+            const response = await config.postData(`/genericentities/edit?id=${data.id}`, data);
+            console.log('Item updated:', response.data);
+            // Reload data to show updated information
+            getDataList(itemsPerPage, currentPage);
+            // Show toast message from API response
+            if (response.data.message) {
+              toast.success(response.data.message);
+            } else {
               toast.success('Item updated successfully!');
-            })
-            .catch(error => {
-              console.error('Error updating item:', error);
-            });
-        } else {
-          // Create new item
-          config.postData('/genericentities/create', data)
-            .then(response => {
-              console.log('Item created:', response.data.item);
-              setDataList([...dataList, response.data.item]);
+            }
+            return true; // Signal successful save
+          } else {
+            // Create new item
+            const response = await config.postData('/genericentities/create', data);
+            console.log('Item created:', response.data.item);
+            // Reload data to show new item
+            getDataList(itemsPerPage, 1);
+            // Show toast message from API response
+            if (response.data.message) {
+              toast.success(response.data.message);
+            } else {
               toast.success('Item created successfully!');
-            })
-            .catch(error => {
-              console.error('Error creating user:', error);
-            });
+            }
+            return true; // Signal successful save
+          }
+        } catch (error) {
+          console.error('Error saving item:', error);
+          // Show error message from API response if available
+          if (error.response && error.response.data && error.response.data.message) {
+            toast.error(error.response.data.message);
+          } else {
+            toast.error('Failed to save item');
+          }
+          return false;
         }
       }}
       onDelete={(item) => {
@@ -148,15 +195,32 @@ function EntitiesPage() {
           .then(response => {
             console.log('Item deleted:', response.data.success);
             if (response.data.success === true) {
-              setDataList(dataList.filter(item => item.id !== data.item.id));
-              toast.success(response.data.message);
+              // Reload data to show updated list
+              getDataList(itemsPerPage, currentPage);
+              // Show success message from API response
+              if (response.data.message) {
+                toast.success(response.data.message);
+              } else {
+                toast.success('Item deleted successfully!');
+              }
             }
             else {
-              toast.error(response.data.message);
+              // Show error message from API response
+              if (response.data.message) {
+                toast.error(response.data.message);
+              } else {
+                toast.error('Failed to delete item');
+              }
             }
           })
           .catch(error => {
             console.error('Error deleting item:', error);
+            // Show error message from API response if available
+            if (error.response && error.response.data && error.response.data.message) {
+              toast.error(error.response.data.message);
+            } else {
+              toast.error('Failed to delete item');
+            }
           });
       }}
     />

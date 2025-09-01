@@ -136,18 +136,6 @@ export function DoctorDetailDialog({ isOpen, onOpenChange, doctor, onEdit }) {
             </ModalBody>
             <ModalFooter>
               <Button color="default" variant="light" onPress={onClose}>Close</Button>
-              {onEdit && (
-                <Button 
-                  color="primary"
-                  onPress={() => {
-                    onEdit(doctor);
-                    onClose();
-                  }}
-                  startContent={<Icon icon="lucide:edit-2" width={16} />}
-                >
-                  Edit
-                </Button>
-              )}
             </ModalFooter>
           </>
         )}

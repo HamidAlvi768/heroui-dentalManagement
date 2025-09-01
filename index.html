@@ -1,36 +1,39 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg" /> -->
-    <!-- <link rel="icon" type="image/svg+xml" href="https://api.iconify.design/lucide:activity.svg" /> -->
-
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- <title>Dental Doctors</title> -->
-    <script>
-        const saved = localStorage.getItem('formData');
-        const data = saved ? JSON.parse(saved) : {};
-        if (data.favicon) {
-          const link = document.createElement('link');
-          link.rel = 'icon';
-          link.type = 'image/png';
-          link.href = data.favicon;
-
-          // Remove existing favicons
-          const existingFavicons = document.querySelectorAll('link[rel="icon"]');
-          existingFavicons.forEach(f => f.remove());
-
-          document.head.appendChild(link);
-        }
-        if(data.websiteName){
-          document.title= data.websiteName;
-        }
-    </script>
-
+    <meta name="description" content="Dental Management System - Professional dental practice management solution" />
+    <meta name="theme-color" content="#0070f0" />
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/index.css" as="style" />
+    <link rel="preload" href="/src/main.jsx" as="script" />
+    
+    <!-- DNS prefetch for external resources -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net" />
+    
+    <!-- Performance optimizations -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="format-detection" content="telephone=no" />
+    
+    <title>Dental Management System</title>
   </head>
-  <body class="h-full min-h-screen">
+  <body>
     <div id="root"></div>
-    <script src="https://cdn.jsdelivr.net/npm/heroui-chat-script@0.0.1/dist/index.min.js"></script>
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Performance monitoring -->
+    <script>
+      // Performance monitoring
+      if ('performance' in window) {
+        window.addEventListener('load', () => {
+          const perfData = performance.getEntriesByType('navigation')[0];
+          console.log('Page Load Time:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
+        });
+      }
+    </script>
   </body>
 </html>

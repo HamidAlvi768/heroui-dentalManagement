@@ -32,7 +32,7 @@ const formFields = [
     { value: 'utilities', label: 'Utilities' },
     { value: 'supplies', label: 'Supplies' },
   ] },
-  { key: 'amount', label: 'Amount', type: 'number', required: true },
+  { key: 'amount', label: 'Amount', type: 'number', required: true, min: 0, step: 0.01 },
   { key: 'paidBy', label: 'Paid By', type: 'text', required: true },
   { key: 'materialName', label: 'Material Name', type: 'text' },
   { key: 'paymentMethod', label: 'Payment Method', type: 'text' },
@@ -113,7 +113,6 @@ export default function ExpensePage() {
           onOpenChange={setIsDetailOpen}
           entity={selectedExpense}
           title={`Expense Details - ${selectedExpense.receiverName}`}
-          onEdit={() => console.log('Edit expense:', selectedExpense)}
           entityType="expense"
         />
       )}

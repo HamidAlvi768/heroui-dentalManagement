@@ -35,7 +35,7 @@ const clinicInfo = {
 };
 
 const formatValue = (value, format) => {
-  if (!value) return '-';
+  if (!value || value === '' || value === null || value === undefined) return '-';
   
   // Handle nested object properties
   if (typeof value === 'object' && value !== null) {
@@ -44,18 +44,72 @@ const formatValue = (value, format) => {
 
   switch (format) {
     case 'date':
-      return new Date(value).toLocaleDateString('en-US', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      });
+      try {
+        // Check if value is valid and not empty
+        if (!value || value === '-' || value === '') {
+          return '-';
+        }
+        
+        const date = new Date(value);
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+          return '-';
+        }
+        
+        return date.toLocaleDateString('en-US', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        });
+      } catch (error) {
+        return '-';
+      }
     case 'currency':
       return `Rs. ${Number(value).toLocaleString()}`;
     case 'datetime':
-      return new Date(value).toLocaleString('en-US', {
-        dateStyle: 'short',
-        timeStyle: 'short',
-      });
+      try {
+        // Check if value is valid and not empty
+        if (!value || value === '-' || value === '') {
+          return '-';
+        }
+        
+        const date = new Date(value);
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+          return '-';
+        }
+        
+        return date.toLocaleString('en-US', {
+          dateStyle: 'short',
+          timeStyle: 'short',
+        });
+      } catch (error) {
+        return '-';
+      }
+    case 'datetime_full':
+      try {
+        // Check if value is valid and not empty
+        if (!value || value === '-' || value === '') {
+          return '-';
+        }
+        
+        const date = new Date(value);
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+          return '-';
+        }
+        
+        return date.toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+      } catch (error) {
+        return '-';
+      }
     case 'status':
       return (
         <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${value === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'}`}>
@@ -64,6 +118,35 @@ const formatValue = (value, format) => {
       );
     case 'commission':
       return `${value}%`;
+    case 'frequency':
+      // Format frequency values for better display
+      const frequencyMap = {
+        'once_daily': 'Once daily',
+        'twice_daily': 'Twice daily',
+        'three_times_daily': 'Three times daily',
+        'four_times_daily': 'Four times daily',
+        'as_needed': 'As needed',
+        'before_meals': 'Before meals',
+        'after_meals': 'After meals',
+        'at_bedtime': 'At bedtime'
+      };
+      return frequencyMap[value] || value;
+    case 'diagnosis':
+      // Format diagnosis values for better display
+      const diagnosisMap = {
+        'general': 'General Checkup',
+        'followup': 'Follow-up Visit',
+        'specialist': 'Specialist Consultation',
+        'emergency': 'Emergency Visit',
+        'routine': 'Routine Visit'
+      };
+      return diagnosisMap[value] || value;
+    case 'duration':
+      // Format duration values for better display
+      if (value && !isNaN(value)) {
+        return `${value} day${value > 1 ? 's' : ''}`;
+      }
+      return value;
     default:
       return value;
   }
@@ -71,62 +154,93 @@ const formatValue = (value, format) => {
 
 // Add a helper function to get nested object values
 const getNestedValue = (obj, path) => {
-  return path.split('.').reduce((current, key) => {
-    return current && current[key] !== undefined ? current[key] : '-';
+  const value = path.split('.').reduce((current, key) => {
+    return current && current[key] !== undefined ? current[key] : null;
   }, obj);
+  
+  // Return "-" for null, undefined, or empty string values
+  if (value === null || value === undefined || value === '') {
+    return '-';
+  }
+  
+  return value;
 };
 
 const renderList = (section, entity) => (
   <Card className="w-full">
     <CardBody className="p-4">
-      <div className="flex items-center justify-between overflow-x-auto gap-x-4 min-w-0">
-        {section.fields.map((field, index) => (
-          <div key={index} className="flex items-center min-w-0 shrink-0">
-            <span className="text-default-500 text-xs mr-1">{field.label}:</span>
-            <span className="font-medium text-xs">
-              {formatValue(getNestedValue(entity, field.key), field.format)}
-            </span>
-          </div>
-        ))}
+      <div className="font-medium mb-4 text-default-700">{section.title}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {section.fields.map((field, index) => {
+          let value = getNestedValue(entity, field.key);
+          
+          // Apply transform if specified
+          if (field.transform && typeof field.transform === 'function') {
+            value = field.transform(value);
+          }
+          
+          return (
+            <div key={index} className="flex flex-col space-y-1">
+              <span className="text-default-500 text-sm font-medium">{field.label}:</span>
+              <span className="font-medium text-sm text-default-800">
+                {formatValue(value, field.format)}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </CardBody>
   </Card>
-);
+ );
 
 const renderTable = (section, entity, prescriptionItems) => {
   console.log("Render Table Props:", { section, entity, prescriptionItems });
   console.log("DataKey:", section.dataKey);
   console.log("Items to render:", section.dataKey === 'prescriptionItems' ? prescriptionItems : entity[section.dataKey] || []);
 
+  const itemsToRender = section.dataKey === 'prescriptionItems' ? prescriptionItems : entity[section.dataKey] || [];
+  
+  console.log("Items to render (final):", itemsToRender);
+  console.log("Items length:", itemsToRender.length);
+  console.log("Items type:", Array.isArray(itemsToRender));
+
   return (
     <Card>
       <CardBody className="p-4">
         <div className="font-medium mb-4">{section.title}</div>
-        <Table aria-label={section.title}>
-          <TableHeader>
-            {section.columns.map((col, index) => (
-              <TableColumn key={index}>{col.label}</TableColumn>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {(section.dataKey === 'prescriptionItems' ? prescriptionItems : entity[section.dataKey] || []).map((item, rowIndex) => {
-              console.log("Rendering item:", item);
-              return (
-                <TableRow key={rowIndex}>
-                  {section.columns.map((col, colIndex) => {
-                    const value = getNestedValue(item, col.key);
-                    console.log(`Column ${col.key} value:`, value);
-                    return (
-                      <TableCell key={colIndex}>
-                        {col.key === 'index' ? rowIndex + 1 : formatValue(value, col.format)}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+        {itemsToRender.length === 0 ? (
+          <div className="text-center py-8 text-default-500">
+            <Icon icon="lucide:package" className="mx-auto mb-2" width={24} />
+            <p>No {section.title.toLowerCase()} found</p>
+            <p className="text-xs text-default-400 mt-1">Items array is empty</p>
+          </div>
+        ) : (
+          <Table aria-label={`${section.title} table`}>
+            <TableHeader>
+              {section.columns.map((col, index) => (
+                <TableColumn key={index} aria-label={col.label}>{col.label}</TableColumn>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {itemsToRender.map((item, rowIndex) => {
+                console.log("Rendering item:", item);
+                return (
+                  <TableRow key={rowIndex}>
+                    {section.columns.map((col, colIndex) => {
+                      const value = getNestedValue(item, col.key);
+                      console.log(`Column ${col.key} value:`, value);
+                      return (
+                        <TableCell key={colIndex}>
+                          {col.key === 'index' ? rowIndex + 1 : formatValue(value, col.format)}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
       </CardBody>
     </Card>
   );
@@ -258,13 +372,13 @@ const entityConfigs = {
     sections: [
       {
         type: 'list',
+        title: 'Prescription Information',
         fields: [
-          { label: 'Prescription ID', key: 'id' },
-          { label: 'Date', key: 'prescription_date', format: 'date' },
           { label: 'Doctor', key: 'doctor.username' },
           { label: 'Patient', key: 'patient.full_name' },
-          { label: 'Phone', key: 'patient.contact_number' },
-          { label: 'MRN no', key: 'mrn_number' },
+          { label: 'Diagnosis', key: 'diagnosis', format: 'diagnosis' },
+          { label: 'Date', key: 'prescription_date', format: 'date' },
+          { label: 'Notes', key: 'notes' },
         ],
       },
       {
@@ -272,28 +386,16 @@ const entityConfigs = {
         title: 'Medications',
         columns: [
           { label: 'MEDICINE NAME', key: 'medicine_name' },
-          { label: 'DESCRIPTION', key: 'instructions' },
-          { label: 'DURATION', key: 'duration' },
+          { label: 'DOSAGE', key: 'dosage' },
+          { label: 'FREQUENCY', key: 'frequency', format: 'frequency' },
+          { label: 'DURATION', key: 'duration', format: 'duration' },
+          { label: 'INSTRUCTIONS', key: 'instructions' },
         ],
         dataKey: 'prescriptionItems',
-      },
-      {
-        type: 'list',
-        title: 'Notes',
-        fields: [
-          { label: 'Notes', key: 'notes' }
-        ]
-      },
+      }
     ],
     footerActions: (onClose, handlePrint, onEdit) => [
       { label: 'Close', color: 'primary', variant: 'light', onPress: onClose },
-      {
-        label: 'Edit Prescription',
-        color: 'primary',
-        onPress: () => { onEdit(); onClose(); },
-        icon: 'lucide:edit',
-      },
-      { label: 'Print Invoice', color: 'primary', onPress: handlePrint, icon: 'lucide:printer' }
     ],
   },
   inventory: {
@@ -301,12 +403,32 @@ const entityConfigs = {
     sections: [
       {
         type: 'list',
+        title: 'Basic Information',
         fields: [
-          { label: 'Item', key: 'name' },
-          { label: 'Category', key: 'category' },
-          { label: 'Sub Category', key: 'subCategory' },
-          { label: 'Qty in stock', key: 'qtyInStock' },
-          { label: 'Unit Price', key: 'unitPrice', format: 'currency' },
+          { label: 'Item Name', key: 'name' },
+          { label: 'Code', key: 'code' },
+          { label: 'Description', key: 'description' },
+          { label: 'Category', key: 'category_name' },
+          { label: 'Category Description', key: 'category_description' },
+        ],
+      },
+      {
+        type: 'list',
+        title: 'Pricing & Stock',
+        fields: [
+          { label: 'Cost Price', key: 'cost_price', format: 'currency' },
+          { label: 'Selling Price', key: 'selling_price', format: 'currency' },
+          { label: 'Quantity in Stock', key: 'quantity' },
+          { label: 'Expiry Date', key: 'formatted_expiry_date' },
+        ],
+      },
+      {
+        type: 'list',
+        title: 'System Information',
+        fields: [
+          { label: 'Status', key: 'active', format: 'status', transform: (value) => value === 1 ? 'Active' : 'Inactive' },
+          { label: 'Created At', key: 'formatted_created_at' },
+          { label: 'Updated At', key: 'formatted_updated_at' },
         ],
       },
       {
@@ -314,7 +436,7 @@ const entityConfigs = {
         title: 'Consumption History',
         columns: [
           { label: 'USERNAME', key: 'username' },
-          { label: 'CONSUMED QTY', key: 'quantity' },
+          { label: 'CONSUMED QTY', key: 'additionQty' },
           { label: 'TIME', key: 'time', format: 'datetime' },
         ],
         dataKey: 'consumptionHistory',
@@ -324,7 +446,7 @@ const entityConfigs = {
         title: 'Addition History',
         columns: [
           { label: 'USERNAME', key: 'username' },
-          { label: 'ADDITION QTY', key: 'quantity' },
+          { label: 'ADDITION QTY', key: 'additionQty' },
           { label: 'UNIT PRICE', key: 'unitPrice', format: 'currency' },
           { label: 'TIME', key: 'time', format: 'datetime' },
         ],
@@ -333,12 +455,6 @@ const entityConfigs = {
     ],
     footerActions: (onClose, handlePrint, onEdit) => [
       { label: 'Close', color: 'primary', variant: 'light', onPress: onClose },
-      ...(onEdit ? [{
-        label: 'Edit Item',
-        color: 'primary',
-        onPress: () => { onEdit(); onClose(); },
-        icon: 'lucide:edit',
-      }] : []),
     ],
   },
   invoice: {
@@ -378,7 +494,6 @@ const entityConfigs = {
     ],
     footerActions: (onClose, handlePrint) => [
       { label: 'Close', color: 'primary', variant: 'light', onPress: onClose },
-      { label: 'Print Invoice', color: 'primary', onPress: handlePrint, icon: 'lucide:printer' },
     ],
   },
   expense: {
@@ -397,12 +512,6 @@ const entityConfigs = {
     ],
     footerActions: (onClose, handlePrint, onEdit) => [
       { label: 'Close', color: 'primary', variant: 'light', onPress: onClose },
-      ...(onEdit ? [{
-        label: 'Edit Expense',
-        color: 'primary',
-        onPress: () => { onEdit(); onClose(); },
-        icon: 'lucide:edit',
-      }] : []),
     ],
   },
 
@@ -420,12 +529,41 @@ const entityConfigs = {
     ],
     footerActions: (onClose, handlePrint, onEdit, entity) => [
       { label: 'Close', color: 'default', variant: 'light', onPress: onClose },
-      ...(onEdit ? [{
-        label: 'Edit',
-        color: 'primary',
-        onPress: () => { onEdit(entity); onClose()},
-        icon: 'lucide:edit-2',
-      }] : []),
+    ],
+  },
+
+  user: {
+    title: 'User Info',
+    sections: [
+      {
+        type: 'list',
+        title: 'Basic Information',
+        fields: [
+          { label: 'Username', key: 'username' },
+          { label: 'Email', key: 'email' },
+          { label: 'Role', key: 'role' },
+          { label: 'Verified', key: 'verified', format: 'status' },
+          { label: 'Created At', key: 'created_at', format: 'datetime' },
+        ],
+      },
+      {
+        type: 'list',
+        title: 'Profile Details',
+        fields: [
+          { label: 'Gender', key: 'gender' },
+          { label: 'Date of Birth', key: 'date_of_birth', format: 'date' },
+          { label: 'Blood Group', key: 'blood_group' },
+          { label: 'Phone', key: 'phone' },
+          { label: 'Address', key: 'address' },
+          { label: 'Specialization', key: 'specialization' },
+          { label: 'Qualification', key: 'qualification' },
+          { label: 'Experience (Years)', key: 'experience' },
+          { label: 'Commission Percentage', key: 'commission_percentage' },
+        ],
+      },
+    ],
+    footerActions: (onClose, handlePrint, onEdit, entity) => [
+      { label: 'Close', color: 'default', variant: 'light', onPress: onClose },
     ],
   },
 
@@ -477,12 +615,6 @@ const entityConfigs = {
     ],
     footerActions: (onClose, handlePrint, onEdit, entity) => [
       { label: 'Close', color: 'default', variant: 'light', onPress: onClose },
-      ...(onEdit ? [{
-        label: 'Edits',
-        color: 'primary',
-        onPress: () => { onEdit(entity); onClose()},
-        icon: 'lucide:edit-2',
-      }] : []),
     ],
   },
 };
@@ -517,13 +649,18 @@ export function EntityDetailDialog({
   entityType,
   onStatusChange,
   prescriptionItems,
+  loading,
 }) {
   console.log("EntityDetailDialog Props:", {
     entity,
     entityType,
     prescriptionItems,
-    isOpen
+    isOpen,
+    loading
   });
+  console.log("Entity object:", entity);
+  console.log("Prescription items:", prescriptionItems);
+  console.log("Entity type:", entityType);
 
   // Print preview dialog state
   const [isPrintPreviewOpen, setPrintPreviewOpen] = useState(false);
@@ -542,12 +679,6 @@ export function EntityDetailDialog({
     sections: fields.length ? [{ type: 'list', fields }] : [],
     footerActions: (onClose, handlePrint, onEdit, entity) => [
       { label: 'Close', color: 'default', variant: 'light', onPress: onClose },
-      ...(onEdit ? [{
-        label: 'Edit',
-        color: 'primary',
-        onPress: () => { onEdit(entity); onClose(); },
-        icon: 'lucide:edit',
-      }] : []),
     ],
   };
 

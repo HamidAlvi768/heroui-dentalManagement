@@ -20,7 +20,7 @@ export default function SettingsPage() {
     config.getData(`/genericentities/list?perpage=${perpage}&page=${page}&username=${filters.username || ''}&email=${filters.email || ''}&role=${filters.role || ''}&verified=${filters.verified || ''}`)
       .then(data => {
         const _datalist = data.data.data.map(item => {
-          item.verified = item.verified === 1 ? 'Yes' : 'No';
+          item.verified = item.verified === 1 ? 'Active' : 'Inactive';
           return item;
         });
         setDataList(_datalist);

@@ -196,7 +196,6 @@ function PrescriptionPage() {
             onOpenChange={setIsDetailOpen}
             entity={selectedPrescription}
             title="Prescription Details"
-            onEdit={handleEdit}
             entityType="prescription"
           />
           <CrudDialog

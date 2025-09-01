@@ -75,3 +75,6 @@
     @apply bg-background text-foreground;
   }
 }
+div[data-slot="content"] {
+  width: fit-content !important;
+}
