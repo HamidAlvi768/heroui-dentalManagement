@@ -363,8 +363,9 @@ const entityConfigs = {
   appointment: {
     title: 'Appointment Details',
     renderBody: (entity, onStatusChange) => renderAppointmentDetails(entity, onStatusChange),
-    footerActions: (onClose,) => [
+    footerActions: (onClose, handlePrint) => [
       { label: 'Close', color: 'default', variant: 'light', onPress: onClose },
+      { label: 'Print', color: 'primary', variant: 'light', onPress: handlePrint, icon: 'lucide:printer' },
     ],
   },
   prescription: {
@@ -665,9 +666,9 @@ export function EntityDetailDialog({
   // Print preview dialog state
   const [isPrintPreviewOpen, setPrintPreviewOpen] = useState(false);
 
-  // Open print preview for invoice or prescription, otherwise fallback to window.print
+  // Open print preview for invoice, prescription, or appointment, otherwise fallback to window.print
   const handlePrint = () => {
-    if (entityType === 'invoice' || entityType === 'prescription') {
+    if (entityType === 'invoice' || entityType === 'prescription' || entityType === 'appointment') {
       setPrintPreviewOpen(true);
     } else {
       window.print();
@@ -722,8 +723,8 @@ export function EntityDetailDialog({
           )}
         </ModalContent>
       </Modal>
-      {/* Print Preview Dialog for Invoice or Prescription */}
-      {(entityType === 'invoice' || entityType === 'prescription') && (
+      {/* Print Preview Dialog for Invoice, Prescription, or Appointment */}
+      {(entityType === 'invoice' || entityType === 'prescription' || entityType === 'appointment') && (
         <PrintPreviewDialog
           isOpen={isPrintPreviewOpen}
           onClose={() => setPrintPreviewOpen(false)}

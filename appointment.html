@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Appointment - APT-20241201-143022-123</title>
+    <style>
+      @media print {
+        body { margin: 0; padding: 12px; font-family: 'Arial', sans-serif; }
+        .no-print { display: none; }
+      }
+      body { font-family: 'Arial', sans-serif; margin: 0; padding: 12px; background: white; }
+      .appointment-container { max-width: 650px; margin: 0 auto; }
+      
+      /* Type Scale - Base: 12px */
+      .text-h1 { font-size: 20px; font-weight: bold; } /* 1.67x base */
+      .text-h2 { font-size: 16px; font-weight: bold; } /* 1.33x base */
+      .text-h3 { font-size: 14px; font-weight: bold; } /* 1.17x base */
+      .text-body { font-size: 12px; } /* base */
+      .text-small { font-size: 10px; } /* 0.83x base */
+      /* Spacing Scale - Base: 4px (use 4, 8, 12, 16, 20) */
+      
+      .appointment-header { text-align: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #00a59e; }
+      .appointment-title { font-size: 20px; font-weight: bold; color: #00a59e; margin-bottom: 4px; }
+      .appointment-number { font-size: 14px; color: #69717D; font-weight: 500; }
+      .appointment-date { font-size: 10px; color: #69717D; margin-top: 4px; }
+      .info-section { margin-bottom: 20px; }
+      .info-card { background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #00a59e; }
+      .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .info-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+      .info-label { color: #69717D; font-weight: 500; font-size: 12px; }
+      .info-value { color: #11181C; font-weight: 600; font-size: 12px; }
+      .clinic-section { margin-bottom: 20px; }
+      .clinic-title { font-size: 16px; font-weight: bold; color: #00a59e; margin-bottom: 8px; }
+      .clinic-info { background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #00a59e; }
+      .clinic-name { font-size: 14px; font-weight: bold; color: #11181C; margin-bottom: 4px; }
+      .clinic-details { font-size: 10px; color: #69717D; line-height: 1.4; }
+      .patient-section { margin-bottom: 20px; }
+      .patient-title { font-size: 16px; font-weight: bold; color: #00a59e; margin-bottom: 8px; }
+      .patient-info { background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #00a59e; }
+      .patient-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+      .appointment-details-section { margin-bottom: 20px; }
+      .appointment-details-title { font-size: 16px; font-weight: bold; color: #00a59e; margin-bottom: 8px; }
+      .appointment-details-info { background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #00a59e; }
+      .appointment-details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+      .status-badge { text-align: center; margin-top: 12px; padding: 8px; border-radius: 16px; font-weight: bold; font-size: 10px; }
+      .status-scheduled { background: #E3F2FD; color: #1976D2; border: 2px solid #2196F3; }
+      .status-checked-in { background: #E8F5E8; color: #2E7D32; border: 2px solid #4CAF50; }
+      .status-in-progress { background: #FFF3E0; color: #F57C00; border: 2px solid #FF9800; }
+      .status-completed { background: #E8F5E8; color: #2E7D32; border: 2px solid #4CAF50; }
+      .status-cancelled { background: #FFEBEE; color: #C62828; border: 2px solid #F44336; }
+      
+      .notes-section { background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #00a59e; margin-top: 12px; }
+      .notes-title { font-size: 14px; font-weight: bold; color: #00a59e; margin-bottom: 8px; }
+      .notes-content { color: #11181C; line-height: 1.4; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="appointment-container">
+      <div style="background: white; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px;">
+        <!-- Appointment Header -->
+        <div style="text-align: center; border-bottom: 2px solid #00a59e; padding-bottom: 16px; margin-bottom: 20px;">
+          <h2 style="font-size: 20px; font-weight: bold; color: #00a59e; margin: 0 0 6px 0;">APPOINTMENT</h2>
+          <p style="font-size: 14px; color: #69717D; font-weight: 500; margin: 0;">
+            APT-20241201-143022-123
+          </p>
+          <p style="font-size: 10px; color: #69717D; margin: 4px 0 0 0;">
+            Date: 2024-12-01
+          </p>
+        </div>
+
+        <!-- Clinic Information -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 16px; font-weight: bold; color: #00a59e; margin: 0 0 8px 0;">Clinic Information</h3>
+          <div style="background: #F4F4F5;padding: 12px;border-radius: 6px;border-left: 3px solid #00a59e;display: flex;justify-content: space-between;align-items: center;">
+            <div style="font-size: 14px; font-weight: bold; color: #11181C; margin-bottom: 4px;">J Dent Lite</div>
+            <div style="font-size: 10px; color: #69717D; line-height: 1.4;">
+              Office#1, City Plaza, F-10 Markaz, Islamabad<br>
+              Email: info@jdentlite.com | Phone: 0516131786
+            </div>
+          </div>
+        </div>
+
+        <!-- Patient Information -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 16px; font-weight: bold; color: #00a59e; margin: 0 0 8px 0;">Patient Information</h3>
+          <div style="background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #00a59e;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+              <div style="display: flex; justify-content: space-between; margin: 0;">
+                <span style="color: #69717D; font-weight: 500; font-size: 12px;">Name:</span>
+                <span style="color: #11181C; font-weight: 600; font-size: 12px;">John Doe</span>
+              </div>
+              
+              <div style="display: flex; justify-content: space-between; margin: 0;">
+                <span style="color: #69717D; font-weight: 500; font-size: 12px;">Gender:</span>
+                <span style="color: #11181C; font-weight: 600; font-size: 12px;">Male</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin: 0;">
+                <span style="color: #69717D; font-weight: 500; font-size: 12px;">Phone:</span>
+                <span style="color: #11181C; font-weight: 600; font-size: 12px;">+92 300 1234567</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin: 0;">
+                <span style="color: #69717D; font-weight: 500; font-size: 12px;">Email:</span>
+                <span style="color: #11181C; font-weight: 600; font-size: 12px;">john.doe@email.com</span>
+              </div>
+              
+            </div>
+            <div style="margin-top: 8px;">
+              <div style="display: flex; justify-content: space-between; margin: 0;">
+                <span style="color: #69717D; font-weight: 500; font-size: 12px;">Address:</span>
+                <span style="color: #11181C; font-weight: 600; font-size: 12px;">House 123, Street 45, Islamabad</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Appointment Details -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 16px; font-weight: bold; color: #00a59e; margin: 0 0 8px 0;">Appointment Details</h3>
+          <div style="background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #00a59e;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+              <div style="display: flex; justify-content: space-between; margin: 0;">
+                <span style="color: #69717D; font-weight: 500; font-size: 12px;">Appointment ID:</span>
+                <span style="color: #11181C; font-weight: 600; font-size: 12px;">APT-20241201-143022-123</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin: 0;">
+                <span style="color: #69717D; font-weight: 500; font-size: 12px;">Doctor:</span>
+                <span style="color: #11181C; font-weight: 600; font-size: 12px;">Dr. Sarah Smith</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin: 0;">
+                <span style="color: #69717D; font-weight: 500; font-size: 12px;">Date:</span>
+                <span style="color: #11181C; font-weight: 600; font-size: 12px;">01-Dec-2024</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin: 0;">
+                <span style="color: #69717D; font-weight: 500; font-size: 12px;">Time:</span>
+                <span style="color: #11181C; font-weight: 600; font-size: 12px;">10:00 AM - 11:00 AM</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin: 0;">
+                <span style="color: #69717D; font-weight: 500; font-size: 12px;">Duration:</span>
+                <span style="color: #11181C; font-weight: 600; font-size: 12px;">60 minutes</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin: 0;">
+                <span style="color: #69717D; font-weight: 500; font-size: 12px;">Status:</span>
+                <span style="color: #11181C; font-weight: 600; font-size: 12px;">Scheduled</span>
+              </div>
+            </div>
+            <div style="text-align: center; margin-top: 12px; padding: 8px; border-radius: 16px; font-weight: bold; font-size: 10px; background: #E3F2FD; color: #1976D2; border: 2px solid #2196F3;">
+              📅 SCHEDULED
+            </div>
+          </div>
+        </div>
+
+        
+
+        <!-- Medical History & Allergies -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 16px; font-weight: bold; color: #00a59e; margin: 0 0 8px 0;">Medical Information</h3>
+          <div style="background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #00a59e; display: flex; justify-content: space-between;">
+            <div >
+              <div style="display: flex; justify-content: space-between; margin: 0; gap: 1rem;">
+                <span style="color: #69717D; font-weight: 500; font-size: 12px;">Medical History:</span>
+                <span style="color: #11181C; font-weight: 600; font-size: 12px;">Diabetes Type 2, Hypertension</span>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; margin: 0; gap: 1rem;">
+                <span style="color: #69717D; font-weight: 500; font-size: 12px;">Allergies:</span>
+                <span style="color: #11181C; font-weight: 600; font-size: 12px;">Penicillin, Latex</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes Section -->
+        <div style="background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #00a59e;">
+          <h3 style="font-size: 14px; font-weight: bold; color: #00a59e; margin: 0 0 8px 0;">Notes</h3>
+          <p style="color: #11181C; line-height: 1.4; font-size: 12px; margin: 0;">Please arrive 15 minutes before your scheduled appointment time. Bring your insurance card and any relevant medical records. If you need to reschedule, please call at least 24 hours in advance.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

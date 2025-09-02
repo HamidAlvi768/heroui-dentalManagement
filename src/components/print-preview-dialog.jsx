@@ -4,6 +4,183 @@ import { Icon } from '@iconify/react';
 import config from '../config/config';
 import useFormData from '../hooks/useFormData';
 
+// Print-optimized Appointment Layout
+function AppointmentPrintView({ entity }) {
+  const dynamicFormData = useFormData();
+  if (!entity) return null;
+  
+  // Helper function to format date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Not specified';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  // Helper function to format time
+  const formatTime = (timeString) => {
+    if (!timeString) return 'Not specified';
+    try {
+      if (timeString.includes(':')) {
+        const [hours, minutes] = timeString.split(':');
+        const hour = parseInt(hours);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour % 12 || 12;
+        return `${displayHour}:${minutes} ${ampm}`;
+      }
+      return timeString;
+    } catch (e) {
+      return timeString;
+    }
+  };
+
+  // Helper function to get status badge class
+  const getStatusClass = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'scheduled':
+        return 'status-scheduled';
+      case 'checked in':
+        return 'status-checked-in';
+      case 'in progress':
+        return 'status-in-progress';
+      case 'completed':
+        return 'status-completed';
+      case 'cancelled':
+        return 'status-cancelled';
+      default:
+        return 'status-scheduled';
+    }
+  };
+
+  return (
+    <div className="print-appointment p-8 bg-white text-black min-w-[700px] max-w-[900px] mx-auto h-auto">
+      {/* Header */}
+      <div style={{ textAlign: 'center', borderBottom: '2px solid #00a59e', paddingBottom: '16px', marginBottom: '20px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#00a59e', margin: '0 0 6px 0' }}>APPOINTMENT</h2>
+        <p style={{ fontSize: '14px', color: '#69717D', fontWeight: '500', margin: '0' }}>
+          APT-{entity.id || 'N/A'}
+        </p>
+        <p style={{ fontSize: '10px', color: '#69717D', margin: '4px 0 0 0' }}>
+          Date: {formatDate(entity.appointment_date)}
+        </p>
+      </div>
+
+      {/* Clinic Information */}
+      <div style={{ marginBottom: '20px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#00a59e', margin: '0 0 8px 0' }}>Clinic Information</h3>
+        <div style={{ background: '#F4F4F5', padding: '12px', borderRadius: '6px', borderLeft: '3px solid #00a59e' }}>
+          <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#11181C', marginBottom: '4px' }}>{dynamicFormData.websiteName || 'J Dent Lite'}</div>
+          <div style={{ fontSize: '10px', color: '#69717D', lineHeight: '1.4' }}>
+            Office#1, City Plaza, F-10 Markaz, Islamabad<br />
+            Email: info@jdentlite.com | Phone: 0516131786
+          </div>
+        </div>
+      </div>
+
+      {/* Patient Information */}
+      <div style={{ marginBottom: '20px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#00a59e', margin: '0 0 8px 0' }}>Patient Information</h3>
+        <div style={{ background: '#F4F4F5', padding: '12px', borderRadius: '6px', borderLeft: '3px solid #00a59e' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0' }}>
+              <span style={{ color: '#69717D', fontWeight: '500', fontSize: '12px' }}>Name:</span>
+              <span style={{ color: '#11181C', fontWeight: '600', fontSize: '12px' }}>{entity.patient_name || 'Not specified'}</span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0' }}>
+              <span style={{ color: '#69717D', fontWeight: '500', fontSize: '12px' }}>Gender:</span>
+              <span style={{ color: '#11181C', fontWeight: '600', fontSize: '12px' }}>{entity.patient_gender || 'Not specified'}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0' }}>
+              <span style={{ color: '#69717D', fontWeight: '500', fontSize: '12px' }}>Phone:</span>
+              <span style={{ color: '#11181C', fontWeight: '600', fontSize: '12px' }}>{entity.patient_phone || 'Not specified'}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0' }}>
+              <span style={{ color: '#69717D', fontWeight: '500', fontSize: '12px' }}>Email:</span>
+              <span style={{ color: '#11181C', fontWeight: '600', fontSize: '12px' }}>{entity.patient_email || 'Not specified'}</span>
+            </div>
+
+          </div>
+          <div style={{ marginTop: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0' }}>
+              <span style={{ color: '#69717D', fontWeight: '500', fontSize: '12px' }}>Address:</span>
+              <span style={{ color: '#11181C', fontWeight: '600', fontSize: '12px' }}>{entity.patient_address || 'Not specified'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Appointment Details */}
+      <div style={{ marginBottom: '20px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#00a59e', margin: '0 0 8px 0' }}>Appointment Details</h3>
+        <div style={{ background: '#F4F4F5', padding: '12px', borderRadius: '6px', borderLeft: '3px solid #00a59e' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0' }}>
+              <span style={{ color: '#69717D', fontWeight: '500', fontSize: '12px' }}>Appointment ID:</span>
+              <span style={{ color: '#11181C', fontWeight: '600', fontSize: '12px' }}>APT-{entity.id || 'N/A'}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0' }}>
+              <span style={{ color: '#69717D', fontWeight: '500', fontSize: '12px' }}>Doctor:</span>
+              <span style={{ color: '#11181C', fontWeight: '600', fontSize: '12px' }}>{entity.doctor_name || 'Not specified'}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0' }}>
+              <span style={{ color: '#69717D', fontWeight: '500', fontSize: '12px' }}>Date:</span>
+              <span style={{ color: '#11181C', fontWeight: '600', fontSize: '12px' }}>{formatDate(entity.appointment_date)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0' }}>
+              <span style={{ color: '#69717D', fontWeight: '500', fontSize: '12px' }}>Time:</span>
+              <span style={{ color: '#11181C', fontWeight: '600', fontSize: '12px' }}>{formatTime(entity.appointment_time)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0' }}>
+              <span style={{ color: '#69717D', fontWeight: '500', fontSize: '12px' }}>Status:</span>
+              <span style={{ color: '#11181C', fontWeight: '600', fontSize: '12px' }}>{entity.status || 'Not specified'}</span>
+            </div>
+          </div>
+          <div style={{ textAlign: 'center', marginTop: '12px', padding: '8px', borderRadius: '16px', fontWeight: 'bold', fontSize: '10px', background: '#E3F2FD', color: '#1976D2', border: '2px solid #2196F3' }}>
+            📅 {entity.status?.toUpperCase() || 'SCHEDULED'}
+          </div>
+        </div>
+      </div>
+
+
+
+      {/* Medical History & Allergies */}
+      <div style={{ marginBottom: '20px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#00a59e', margin: '0 0 8px 0' }}>Medical Information</h3>
+        <div style={{ background: '#F4F4F5', padding: '12px', borderRadius: '6px', borderLeft: '3px solid #00a59e' }}>
+          <div style={{ marginBottom: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0' }}>
+              <span style={{ color: '#69717D', fontWeight: '500', fontSize: '12px' }}>Medical History:</span>
+              <span style={{ color: '#11181C', fontWeight: '600', fontSize: '12px' }}>{entity.patient_medical_history || 'Not specified'}</span>
+            </div>
+          </div>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0' }}>
+              <span style={{ color: '#69717D', fontWeight: '500', fontSize: '12px' }}>Allergies:</span>
+              <span style={{ color: '#11181C', fontWeight: '600', fontSize: '12px' }}>{entity.patient_allergies || 'Not specified'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Notes Section */}
+      <div style={{ background: '#F4F4F5', padding: '12px', borderRadius: '6px', borderLeft: '3px solid #00a59e' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#00a59e', margin: '0 0 8px 0' }}>Notes</h3>
+        <p style={{ color: '#11181C', lineHeight: '1.4', fontSize: '12px', margin: '0' }}>
+          {entity.notes || 'Please arrive 15 minutes before your scheduled appointment time. Bring your insurance card and any relevant medical records. If you need to reschedule, please call at least 24 hours in advance.'}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // Print-optimized Invoice Layout
 function InvoicePrintView({ entity }) {
   const dynamicFormData = useFormData();
@@ -171,8 +348,8 @@ export default function PrintPreviewDialog({ isOpen, onClose, entity, type }) {
             min-width: 0 !important;
             max-width: 100% !important;
           }
-          /* Print-invoice container styles */
-          .print-invoice {
+          /* Print-invoice and print-appointment container styles */
+          .print-invoice, .print-appointment {
             overflow: visible !important;
             width: 100% !important;
             min-width: 0 !important;
@@ -205,6 +382,7 @@ export default function PrintPreviewDialog({ isOpen, onClose, entity, type }) {
               <ModalBody>
                 {type === 'invoice' && <InvoicePrintView entity={entity} />}
                 {type === 'prescription' && <PrescriptionPrintView entity={entity} />}
+                {type === 'appointment' && <AppointmentPrintView entity={entity} />}
               </ModalBody>
               <div className="print-preview-actions flex justify-end gap-2 px-6 pb-6">
                 <Button color="default" variant="light" onPress={onClose}>Close</Button>
