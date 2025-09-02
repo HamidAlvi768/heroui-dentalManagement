@@ -1045,15 +1045,15 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
               <div className="bg-gray-50 rounded-lg p-4 space-y-2">
                 <div className="flex justify-between">
                   <span className="font-medium">Total Amount:</span>
-                  <span className="font-bold text-lg">${total.toFixed(2)}</span>
+                  <span className="font-bold text-lg">PKR {total.toFixed(2)}</span> 
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">After Discount:</span>
-                  <span className="font-bold text-lg">${afterDiscount.toFixed(2)}</span>
+                  <span className="font-bold text-lg">PKR {afterDiscount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Balance:</span>
-                  <span className="font-bold text-lg">${balance.toFixed(2)}</span>
+                  <span className="font-bold text-lg">PKR {balance.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -1091,45 +1091,54 @@ const InvoiceDetailModal = ({ isOpen, onClose, invoice, loading }) => {
           <title>Invoice - ${invoice.invoiceNumber || invoice.invoice_number}</title>
           <style>
             @media print {
-              body { margin: 0; padding: 10px; font-family: 'Arial', sans-serif; }
+              body { margin: 0; padding: 12px; font-family: 'Arial', sans-serif; }
               .no-print { display: none; }
             }
-            body { font-family: 'Arial', sans-serif; margin: 0; padding: 10px; background: white; }
+            body { font-family: 'Arial', sans-serif; margin: 0; padding: 12px; background: white; }
             .invoice-container { max-width: 650px; margin: 0 auto; }
-            .invoice-header { text-align: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #006FEE; }
-            .invoice-title { font-size: 24px; font-weight: bold; color: #006FEE; margin-bottom: 4px; }
+            
+            /* Type Scale - Base: 12px */
+            .text-h1 { font-size: 20px; font-weight: bold; } /* 1.67x base */
+            .text-h2 { font-size: 16px; font-weight: bold; } /* 1.33x base */
+            .text-h3 { font-size: 14px; font-weight: bold; } /* 1.17x base */
+            .text-body { font-size: 12px; } /* base */
+            .text-small { font-size: 10px; } /* 0.83x base */
+            /* Spacing Scale - Base: 4px (use 4, 8, 12, 16, 20) */
+            
+            .invoice-header { text-align: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #00a59e; }
+            .invoice-title { font-size: 20px; font-weight: bold; color: #00a59e; margin-bottom: 4px; }
             .invoice-number { font-size: 14px; color: #69717D; font-weight: 500; }
-            .invoice-date { font-size: 12px; color: #69717D; margin-top: 4px; }
+            .invoice-date { font-size: 10px; color: #69717D; margin-top: 4px; }
             .info-section { margin-bottom: 20px; }
-            .info-card { background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #006FEE; }
-            .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+            .info-card { background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #00a59e; }
+            .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
             .info-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
             .info-label { color: #69717D; font-weight: 500; font-size: 12px; }
             .info-value { color: #11181C; font-weight: 600; font-size: 12px; }
             .items-section { margin-bottom: 20px; }
-            .items-title { font-size: 16px; font-weight: bold; color: #006FEE; margin-bottom: 10px; }
+            .items-title { font-size: 16px; font-weight: bold; color: #00a59e; margin-bottom: 8px; }
             .items-table { width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-            .items-table th { background: #006FEE; color: white; padding: 8px 6px; text-align: left; font-weight: 600; font-size: 11px; }
-            .items-table td { padding: 6px; border-bottom: 1px solid #E4E7EB; font-size: 11px; }
+            .items-table th { background: #00a59e; color: white; padding: 8px 8px; text-align: left; font-weight: 600; font-size: 10px; }
+            .items-table td { padding: 8px; border-bottom: 1px solid #E4E7EB; font-size: 10px; }
             .items-table tr:nth-child(even) { background: #F4F4F5; }
             .items-table tr:hover { background: #E4E7EB; }
-            .total-column { font-weight: bold; color: #006FEE; }
-            .financial-summary { background: #F4F4F5; padding: 16px; border-radius: 8px; border: 2px solid #006FEE; }
-            .financial-title { font-size: 16px; font-weight: bold; color: #006FEE; margin-bottom: 12px; text-align: center; }
+            .total-column { font-weight: bold; color: #00a59e; }
+            .financial-summary { background: #F4F4F5; padding: 16px; border-radius: 8px; border: 2px solid #00a59e; }
+            .financial-title { font-size: 16px; font-weight: bold; color: #00a59e; margin-bottom: 12px; text-align: center; }
             .financial-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
             .financial-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; }
             .financial-label { color: #11181C; font-weight: 600; }
             .financial-value { font-weight: bold; }
             .subtotal { color: #11181C; }
             .discount { color: #F31260; }
-            .net-amount { color: #006FEE; }
+            .net-amount { color: #00a59e; }
             .paid { color: #17C964; }
             .balance { color: #F5A524; }
-            .status-badge { text-align: center; margin-top: 12px; padding: 6px; border-radius: 16px; font-weight: bold; font-size: 12px; }
+            .status-badge { text-align: center; margin-top: 12px; padding: 8px; border-radius: 16px; font-weight: bold; font-size: 10px; }
             .status-paid { background: #F0FDF4; color: #166534; border: 2px solid #22C55E; }
             .status-pending { background: #FFFBEB; color: #92400E; border: 2px solid #F59E0B; }
-            .notes-section { background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #006FEE; margin-top: 12px; }
-            .notes-title { font-size: 14px; font-weight: bold; color: #006FEE; margin-bottom: 6px; }
+            .notes-section { background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #00a59e; margin-top: 12px; }
+            .notes-title { font-size: 14px; font-weight: bold; color: #00a59e; margin-bottom: 8px; }
             .notes-content { color: #11181C; line-height: 1.4; font-size: 12px; }
           </style>
         </head>
@@ -1137,20 +1146,20 @@ const InvoiceDetailModal = ({ isOpen, onClose, invoice, loading }) => {
           <div class="invoice-container">
             <div style="background: white; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px;">
               <!-- Invoice Header -->
-              <div style="text-align: center; border-bottom: 2px solid #006FEE; padding-bottom: 16px; margin-bottom: 20px;">
-                <h2 style="font-size: 24px; font-weight: bold; color: #006FEE; margin: 0 0 6px 0;">INVOICE</h2>
+              <div style="text-align: center; border-bottom: 2px solid #00a59e; padding-bottom: 16px; margin-bottom: 20px;">
+                <h2 style="font-size: 20px; font-weight: bold; color: #00a59e; margin: 0 0 6px 0;">INVOICE</h2>
                 <p style="font-size: 14px; color: #69717D; font-weight: 500; margin: 0;">
                   ${invoice.invoiceNumber || invoice.invoice_number}
                 </p>
-                <p style="font-size: 12px; color: #69717D; margin: 4px 0 0 0;">
+                <p style="font-size: 10px; color: #69717D; margin: 4px 0 0 0;">
                   Date: ${invoice.invoiceDate || invoice.invoice_date}
                 </p>
               </div>
 
               <!-- Invoice Information -->
               <div style="margin-bottom: 20px;">
-                <div style="background: #F4F4F5; padding: 16px; border-radius: 6px; border-left: 3px solid #006FEE;">
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="background: #F4F4F5; padding: 16px; border-radius: 6px; border-left: 3px solid #00a59e;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
                     <div style="display: flex; justify-content: space-between; margin: 0;">
                       <span style="color: #69717D; font-weight: 500; font-size: 12px;">Name:</span>
                       <span style="color: #11181C; font-weight: 600; font-size: 12px;">${invoice.patient?.fullName || 'N/A'}</span>
@@ -1184,29 +1193,29 @@ const InvoiceDetailModal = ({ isOpen, onClose, invoice, loading }) => {
                 <h3 style="font-size: 16px; font-weight: bold; color: #11181C; margin: 0 0 16px 0;">Invoice Items</h3>
                 <div style="background: white; border: 1px solid #E4E7EB; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
                   <table style="width: 100%; border-collapse: collapse;">
-                    <thead style="background: #006FEE; color: white;">
+                    <thead style="background: #00a59e; color: white;">
                       <tr>
-                        <th style="padding: 8px 6px; text-align: left; font-weight: 600; font-size: 11px;">#</th>
-                        <th style="padding: 8px 6px; text-align: left; font-weight: 600; font-size: 11px;">Description</th>
-                        <th style="padding: 8px 6px; text-align: left; font-weight: 600; font-size: 11px;">Qty</th>
-                        <th style="padding: 8px 6px; text-align: left; font-weight: 600; font-size: 11px;">Price</th>
-                        <th style="padding: 8px 6px; text-align: left; font-weight: 600; font-size: 11px;">Disc.</th>
-                        <th style="padding: 8px 6px; text-align: left; font-weight: 600; font-size: 11px;">Total</th>
+                        <th style="padding: 8px 8px; text-align: left; font-weight: 600; font-size: 10px;">#</th>
+                        <th style="padding: 8px 8px; text-align: left; font-weight: 600; font-size: 10px;">Description</th>
+                        <th style="padding: 8px 8px; text-align: left; font-weight: 600; font-size: 10px;">Qty</th>
+                        <th style="padding: 8px 8px; text-align: left; font-weight: 600; font-size: 10px;">Price</th>
+                        <th style="padding: 8px 8px; text-align: left; font-weight: 600; font-size: 10px;">Disc.</th>
+                        <th style="padding: 8px 8px; text-align: left; font-weight: 600; font-size: 10px;">Total</th>
                       </tr>
                     </thead>
                     <tbody style="border-top: 1px solid #E4E7EB;">
                       ${invoice.services && invoice.services.length > 0 ?
         invoice.services.map((item, index) => `
                           <tr style="background: ${index % 2 === 0 ? 'white' : '#F4F4F5'};">
-                            <td style="padding: 6px; border-bottom: 1px solid #E4E7EB; font-size: 11px; color: #11181C; font-weight: 500;">${item.index}</td>
-                            <td style="padding: 6px; border-bottom: 1px solid #E4E7EB; font-size: 11px; color: #11181C;">${item.description || 'No description'}</td>
-                            <td style="padding: 6px; border-bottom: 1px solid #E4E7EB; font-size: 11px; color: #11181C;">${item.quantity}</td>
-                            <td style="padding: 6px; border-bottom: 1px solid #E4E7EB; font-size: 11px; color: #11181C;">$${parseFloat(item.unit_price).toFixed(2)}</td>
-                            <td style="padding: 6px; border-bottom: 1px solid #E4E7EB; font-size: 11px; color: #11181C;">$${parseFloat(item.discount).toFixed(2)}</td>
-                            <td style="padding: 6px; border-bottom: 1px solid #E4E7EB; font-size: 11px; color: #006FEE; font-weight: bold;">$${parseFloat(item.total_price).toFixed(2)}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #E4E7EB; font-size: 10px; color: #11181C; font-weight: 500;">${item.index}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #E4E7EB; font-size: 10px; color: #11181C;">${item.description || 'No description'}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #E4E7EB; font-size: 10px; color: #11181C;">${item.quantity}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #E4E7EB; font-size: 10px; color: #11181C;">PKR ${parseFloat(item.unit_price).toFixed(2)}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #E4E7EB; font-size: 10px; color: #11181C;">PKR ${parseFloat(item.discount).toFixed(2)}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #E4E7EB; font-size: 10px; color: #00a59e; font-weight: bold;">PKR ${parseFloat(item.total_price).toFixed(2)}</td>
                           </tr>
                         `).join('') :
-        `<tr><td colspan="6" style="padding: 20px; text-align: center; color: #69717D; font-size: 11px;">No items found</td></tr>`
+        `<tr><td colspan="6" style="padding: 20px; text-align: center; color: #69717D; font-size: 10px;">No items found</td></tr>`
       }
                     </tbody>
                   </table>
@@ -1214,35 +1223,37 @@ const InvoiceDetailModal = ({ isOpen, onClose, invoice, loading }) => {
               </div>
 
               <!-- Financial Summary -->
-              <div style="background: #F4F4F5; padding: 16px; border-radius: 8px; border: 2px solid #006FEE; margin-bottom: 20px;">
-                <h3 style="font-size: 16px; font-weight: bold; color: #006FEE; margin: 0 0 16px 0; text-align: center;">Financial Summary</h3>
+              <div style="background: #F4F4F5; padding: 16px; border-radius: 8px; border: 2px solid #00a59e; margin-bottom: 20px;">
+                <h3 style="font-size: 16px; font-weight: bold; color: #00a59e; margin: 0 0 16px 0; text-align: center;">Financial Summary</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                   <div style="display: flex; flex-direction: column; gap: 12px;">
                     <div style="display: flex; justify-content: space-between; font-size: 12px;">
                       <span style="color: #11181C; font-weight: 600;">Subtotal:</span>
-                      <span style="color: #11181C; font-weight: bold; font-size: 14px;">$${parseFloat(invoice.totalAmount || 0).toFixed(2)}</span>
+                      <span style="color: #11181C; font-weight: bold; font-size: 12px;">PKR ${parseFloat(invoice.totalAmount || 0).toFixed(2)}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 12px;">
                       <span style="color: #11181C; font-weight: 600;">Discount:</span>
-                      <span style="color: #F31260; font-weight: bold; font-size: 14px;">-$${parseFloat(invoice.discountAmount || 0).toFixed(2)}</span>
+                      <span style="color: #F31260; font-weight: bold; font-size: 12px;">-PKR ${parseFloat(invoice.discountAmount || 0).toFixed(2)}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 12px;">
                       <span style="color: #11181C; font-weight: 600;">Net Amount:</span>
-                      <span style="color: #006FEE; font-weight: bold; font-size: 14px;">$${parseFloat(invoice.netAmount || 0).toFixed(2)}</span>
+                      <span style="color: #00a59e; font-weight: bold; font-size: 12px;">PKR ${parseFloat(invoice.netAmount || 0).toFixed(2)}</span>
                     </div>
                   </div>
                   <div style="display: flex; flex-direction: column; gap: 12px;">
                     <div style="display: flex; justify-content: space-between; font-size: 12px;">
                       <span style="color: #11181C; font-weight: 600;">Amount Paid:</span>
-                      <span style="color: #17C964; font-weight: bold; font-size: 14px;">$${parseFloat(invoice.paid || 0).toFixed(2)}</span>
+                      <span style="color: #17C964; font-weight: bold; font-size: 12px;">PKR ${parseFloat(invoice.paid || 0).toFixed(2)}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 12px;">
                       <span style="color: #11181C; font-weight: 600;">Balance:</span>
-                      <span style="color: #F5A524; font-weight: bold; font-size: 14px;">$${parseFloat(invoice.balance || 0).toFixed(2)}</span>
+                      <span style="color: #F5A524; font-weight: bold; font-size: 12px;">PKR ${parseFloat(invoice.balance || 0).toFixed(2)}</span>
                     </div>
                     <div style="padding-top: 12px; border-top: 1px solid #E4E7EB;">
-                        <div style="text-center margin-top: 6px; padding: 6px 16px; border-radius: 16px; font-weight: bold; font-size: 12px; ${(invoice.balance || 0) === 0 ? 'background: #F0FDF4; color: #166534; border: 2px solid #22C55E;' : 'background: #FFFBEB; color: #92400E; border: 2px solid #F59E0B;'}">
+                        <div style="text-align: right; margin-top: 8px;">
+                          <div style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; border: 2px dashed; ${(invoice.balance || 0) === 0 ? 'color: #166534; border-color: #22C55E;' : 'color: #92400E; border-color: #F59E0B;'}">
                           ${(invoice.balance || 0) === 0 ? '✅ PAID' : '⏳ PENDING'}
+                          </div>
                         </div>
                     </div>
                   </div>
@@ -1251,8 +1262,8 @@ const InvoiceDetailModal = ({ isOpen, onClose, invoice, loading }) => {
 
               <!-- Notes Section -->
               ${invoice.notes ? `
-                <div style="background: #F4F4F5; padding: 16px; border-radius: 6px; border-left: 3px solid #006FEE;">
-                  <h3 style="font-size: 14px; font-weight: bold; color: #006FEE; margin: 0 0 8px 0;">Notes</h3>
+                <div style="background: #F4F4F5; padding: 16px; border-radius: 6px; border-left: 3px solid #00a59e;">
+                  <h3 style="font-size: 14px; font-weight: bold; color: #00a59e; margin: 0 0 8px 0;">Notes</h3>
                   <p style="color: #11181C; line-height: 1.4; font-size: 12px; margin: 0;">${invoice.notes}</p>
                 </div>
               ` : ''}
@@ -1273,8 +1284,8 @@ const InvoiceDetailModal = ({ isOpen, onClose, invoice, loading }) => {
         <ModalHeader className="bg-white border-b border-gray-200">
           <div className="w-full flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Invoice Details</h1>
-              <p className="text-lg text-primary font-medium mt-1">
+              <h1 className="text-xl font-bold text-gray-900">Invoice Details</h1>
+              <p className="text-base text-primary font-medium mt-1">
                 {invoice.invoiceNumber || invoice.invoice_number}
               </p>
             </div>
@@ -1282,7 +1293,7 @@ const InvoiceDetailModal = ({ isOpen, onClose, invoice, loading }) => {
             </div>
           </div>
         </ModalHeader>
-        <ModalBody className="p-6">
+        <ModalBody className="p-5">
           {loading ? (
             <div className="flex justify-center items-center py-16">
               <div className="text-center">
@@ -1291,44 +1302,44 @@ const InvoiceDetailModal = ({ isOpen, onClose, invoice, loading }) => {
               </div>
             </div>
           ) : (
-            <div id="invoice-print-content" className="bg-white rounded-lg shadow-sm p-8 space-y-8">
+            <div id="invoice-print-content" className="bg-white rounded-lg shadow-sm p-6 space-y-6">
               {/* Invoice Header */}
-              <div className="text-center border-b-4 border-primary pb-6">
-                <h2 className="text-4xl font-bold text-primary mb-2">INVOICE</h2>
-                <p className="text-xl text-gray-600 font-medium">
+              <div className="text-center border-b-2 border-primary pb-4">
+                <h2 className="text-3xl font-bold text-primary mb-1">INVOICE</h2>
+                <p className="text-lg text-gray-600 font-medium">
                   {invoice.invoiceNumber || invoice.invoice_number}
                 </p>
-                <p className="text-lg text-gray-500 mt-2">
+                <p className="text-base text-gray-500 mt-1">
                   Date: {invoice.invoiceDate || invoice.invoice_date}
                 </p>
               </div>
 
               {/* Invoice Information */}
-              <div className="grid grid-cols-1 gap-8">
+              <div className="grid grid-cols-1 gap-6">
                 {/* Patient Information */}
-                <div className="bg-gray-100 p-6 rounded-lg border-l-4 border-primary">
-                  <div className="space-y-3 grid grid-cols-2 gap-10">
-                    <div className="flex justify-between align-center" style={{ margin: "0px" }}>
+                <div className="bg-gray-100 p-4 rounded-lg border-l-4 border-primary">
+                  <div className="space-y-2 grid grid-cols-3 gap-6">
+                    <div className="flex align-center gap-2" style={{ margin: "0px" }}>
                       <span className="text-gray-600 font-medium">Name:</span>
                       <span className="text-gray-900 font-semibold">{invoice.patient?.fullName || 'N/A'}</span>
                     </div>
-                    <div className="flex justify-between align-center" style={{ margin: "0px" }}>
+                    <div className="flex align-center gap-2" style={{ margin: "0px" }}>
                       <span className="text-gray-600 font-medium">MRN:</span>
                       <span className="text-gray-900 font-semibold">{invoice.patient?.mrnNumber || 'N/A'}</span>
                     </div>
-                    <div className="flex justify-between align-center" style={{ margin: "0px" }}>
+                    <div className="flex align-center gap-2" style={{ margin: "0px" }}>
                       <span className="text-gray-600 font-medium">Contact:</span>
                       <span className="text-gray-900 font-semibold">{invoice.patient?.contactNumber || 'N/A'}</span>
                     </div>
-                    <div className="flex justify-between align-center" style={{ margin: "0px" }}>
+                    <div className="flex align-center gap-2" style={{ margin: "0px" }}>
                       <span className="text-gray-600 font-medium">Email:</span>
                       <span className="text-gray-900 font-semibold">{invoice.patient?.email || 'N/A'}</span>
                     </div>
-                    <div className="flex justify-between align-center" style={{ margin: "0px" }}>
+                    <div className="flex align-center gap-2" style={{ margin: "0px" }}>
                       <span className="text-gray-600 font-medium">Doctor:</span>
                       <span className="text-gray-900 font-semibold">{invoice.doctor?.username || 'N/A'}</span>
                     </div>
-                    <div className="flex justify-between align-center" style={{ margin: "0px" }}>
+                    <div className="flex align-center gap-2" style={{ margin: "0px" }}>
                       <span className="text-gray-600 font-medium">Payment Method:</span>
                       <span className="text-gray-900 font-semibold capitalize">{invoice.paymentMethod || 'Not specified'}</span>
                     </div>
@@ -1338,34 +1349,34 @@ const InvoiceDetailModal = ({ isOpen, onClose, invoice, loading }) => {
 
               {/* Invoice Items */}
               <div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-6">Invoice Items</h3>
+                <h3 className="text-xl font-bold text-gray-800 mb-4">Invoice Items</h3>
                 <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
                   <table className="w-full">
                     <thead className="bg-primary text-white">
                       <tr>
-                        <th className="px-6 py-4 text-left font-semibold">#</th>
-                        <th className="px-6 py-4 text-left font-semibold">Description</th>
-                        <th className="px-6 py-4 text-left font-semibold">Quantity</th>
-                        <th className="px-6 py-4 text-left font-semibold">Unit Price</th>
-                        <th className="px-6 py-4 text-left font-semibold">Discount</th>
-                        <th className="px-6 py-4 text-left font-semibold">Total</th>
+                        <th className="px-4 py-3 text-left font-semibold">#</th>
+                        <th className="px-4 py-3 text-left font-semibold">Description</th>
+                        <th className="px-4 py-3 text-left font-semibold">Quantity</th>
+                        <th className="px-4 py-3 text-left font-semibold">Unit Price</th>
+                        <th className="px-4 py-3 text-left font-semibold">Discount</th>
+                        <th className="px-4 py-3 text-left font-semibold">Total</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {invoice.services && invoice.services.length > 0 ? (
                         invoice.services.map((item, index) => (
                           <tr key={index} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-6 py-4 text-gray-900 font-medium">{item.index}</td>
-                            <td className="px-6 py-4 text-gray-900">{item.description || 'No description'}</td>
-                            <td className="px-6 py-4 text-gray-900">{item.quantity}</td>
-                            <td className="px-6 py-4 text-gray-900">${parseFloat(item.unit_price).toFixed(2)}</td>
-                            <td className="px-6 py-4 text-gray-900">${parseFloat(item.discount).toFixed(2)}</td>
-                            <td className="px-6 py-4 font-bold text-primary">${parseFloat(item.total_price).toFixed(2)}</td>
+                            <td className="px-4 py-3 text-gray-900 font-medium">{item.index}</td>
+                            <td className="px-4 py-3 text-gray-900">{item.description || 'No description'}</td>
+                            <td className="px-4 py-3 text-gray-900">{item.quantity}</td>
+                            <td className="px-4 py-3 text-gray-900">PKR {parseFloat(item.unit_price).toFixed(2)}</td>
+                            <td className="px-4 py-3 text-gray-900">PKR {parseFloat(item.discount).toFixed(2)}</td>
+                            <td className="px-4 py-3 font-bold text-primary">PKR {parseFloat(item.total_price).toFixed(2)}</td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                          <td colSpan="6" className="px-4 py-6 text-center text-gray-500 text-sm">
                             No items found
                           </td>
                         </tr>
@@ -1376,38 +1387,38 @@ const InvoiceDetailModal = ({ isOpen, onClose, invoice, loading }) => {
               </div>
 
               {/* Financial Summary */}
-              <div className="bg-gray-100 p-8 rounded-xl border-2 border-primary">
-                <h3 className="text-2xl font-bold text-primary mb-6 text-center">Financial Summary</h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <div className="flex justify-between text-lg">
+              <div className="bg-gray-100 p-6 rounded-xl border-2 border-primary">
+                <h3 className="text-xl font-bold text-primary mb-4 text-center">Financial Summary</h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-base">
                       <span className="text-gray-700 font-semibold">Subtotal:</span>
-                      <span className="text-gray-900 font-bold text-xl">${parseFloat(invoice.totalAmount || 0).toFixed(2)}</span>
+                      <span className="text-gray-900 font-bold text-lg">PKR {parseFloat(invoice.totalAmount || 0).toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-lg">
+                    <div className="flex justify-between text-base">
                       <span className="text-gray-700 font-semibold">Discount:</span>
-                      <span className="text-danger font-bold text-xl">-${parseFloat(invoice.discountAmount || 0).toFixed(2)}</span>
+                      <span className="text-danger font-bold text-lg">-${parseFloat(invoice.discountAmount || 0).toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-lg">
+                    <div className="flex justify-between text-base">
                       <span className="text-gray-700 font-semibold">Net Amount:</span>
-                      <span className="text-primary font-bold text-xl">${parseFloat(invoice.netAmount || 0).toFixed(2)}</span>
+                      <span className="text-primary font-bold text-lg">PKR {parseFloat(invoice.netAmount || 0).toFixed(2)}</span>
                     </div>
                   </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between text-lg">
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-base">
                       <span className="text-gray-700 font-semibold">Amount Paid:</span>
-                      <span className="text-success font-bold text-xl">${parseFloat(invoice.paid || 0).toFixed(2)}</span>
+                      <span className="text-success font-bold text-lg">PKR {parseFloat(invoice.paid || 0).toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-lg">
+                    <div className="flex justify-between text-base">
                       <span className="text-gray-700 font-semibold">Balance:</span>
-                      <span className="text-warning font-bold text-xl">${parseFloat(invoice.balance || 0).toFixed(2)}</span>
+                      <span className="text-warning font-bold text-lg">PKR {parseFloat(invoice.balance || 0).toFixed(2)}</span>
                     </div>
-                    <div className="pt-4 border-t-2 border-gray-300">
-                      <div className="">
-                        <div className={`mt-2 px-6 py-3 rounded-full text-lg font-bold ${(invoice.balance || 0) === 0
-                          ? 'bg-success-100 text-success-800 border-2 border-success-300 text-center'
-                          : 'bg-warning-100 text-warning-800 border-2 border-warning-300 text-center'
-                          }`} style={{ textAlign: 'center' }}>
+                    <div className="pt-3 border-t-2 border-gray-300">
+                      <div className="flex justify-end">
+                        <div className={`mt-1 px-3 py-1.5 rounded text-xs font-bold inline-flex items-center whitespace-nowrap uppercase tracking-wider border-2 border-dashed ${(invoice.balance || 0) === 0
+                          ? 'text-success-700 border-success-600'
+                          : 'text-warning-700 border-warning-600'
+                          }`}>
                           {(invoice.balance || 0) === 0 ? '✅ PAID' : '⏳ PENDING'}
                         </div>
                       </div>
@@ -1418,9 +1429,9 @@ const InvoiceDetailModal = ({ isOpen, onClose, invoice, loading }) => {
 
               {/* Notes Section */}
               {invoice.notes && (
-                <div className="bg-gray-100 p-6 rounded-lg border-l-4 border-primary">
-                  <h3 className="text-xl font-bold text-primary mb-3">Notes</h3>
-                  <p className="text-gray-700 text-lg leading-relaxed">{invoice.notes}</p>
+                <div className="bg-gray-100 p-4 rounded-lg border-l-4 border-primary">
+                  <h3 className="text-lg font-bold text-primary mb-2">Notes</h3>
+                  <p className="text-gray-700 text-base leading-relaxed">{invoice.notes}</p>
                 </div>
               )}
             </div>
