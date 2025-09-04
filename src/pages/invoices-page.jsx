@@ -1848,33 +1848,32 @@ export default function InvoicesPage() {
       setLoading(true);
     }
 
-    // Build query parameters for filtering
+    // Build query parameters for filtering - only send parameters that backend supports
+    // Based on inventory page pattern, only send basic parameters to backend
     const queryParams = new URLSearchParams({
       perpage: perpage.toString(),
       page: page.toString(),
       ...(filters.invoiceNumber && { invoice_number: filters.invoiceNumber }),
       ...(filters.patient && { patient_id: filters.patient }),
-      ...(filters.doctor && { doctor_id: filters.doctor }),
-      ...(filters.status && { status: filters.status }),
-      ...(filters.payment_method && { payment_method: filters.payment_method }),
-      ...(filters.amount_range && { amount_range: filters.amount_range }),
-      ...(filters.startDate && { start_date: filters.startDate }),
-      ...(filters.endDate && { end_date: filters.endDate })
+      ...(filters.doctor && { doctor_id: filters.doctor })
     });
 
-    // Add additional common API parameters
-    if (filters.sortBy) queryParams.append('sort_by', filters.sortBy);
-    if (filters.sortOrder) queryParams.append('sort_order', filters.sortOrder);
+    // Add date range parameters if they exist (these might be supported by backend)
+    if (filters.startDate) queryParams.append('start_date', filters.startDate);
+    if (filters.endDate) queryParams.append('end_date', filters.endDate);
 
     // Log the filters being applied
+    console.log('=== FILTER DEBUG START ===');
     console.log('Filters being applied to API:', filters);
     console.log('Query parameters built:', queryParams.toString());
+    console.log('Query params object:', Object.fromEntries(queryParams.entries()));
     console.log('Final API URL will be:', `/invoices/list${queryParams.toString() ? `?${queryParams.toString()}` : ''}`);
 
     config.initAPI(token);
     const url = `/invoices/list${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
     console.log('Calling invoices API with URL:', url);
     console.log('Filters applied:', filters);
+    console.log('=== FILTER DEBUG END ===');
 
     config.getData(url)
       .then(data => {
@@ -1897,7 +1896,10 @@ export default function InvoicesPage() {
         }));
 
         // Apply client-side filtering for filters not supported by backend
+        // Note: status, payment_method, and amount_range are always client-side filtered
+        // Date range might be handled by backend, but we'll also apply it client-side for consistency
         if (filters.status || filters.payment_method || filters.amount_range || filters.startDate || filters.endDate) {
+          console.log('Applying client-side filters:', { status: filters.status, payment_method: filters.payment_method, amount_range: filters.amount_range, startDate: filters.startDate, endDate: filters.endDate });
           _data = _data.filter(item => {
             // Status filter
             if (filters.status && item.status !== filters.status) {
@@ -1914,7 +1916,7 @@ export default function InvoicesPage() {
               return false;
             }
 
-            // Date range filter
+            // Date range filter (applied client-side for consistency)
             if (filters.startDate || filters.endDate) {
               const invoiceDate = new Date(item.invoice_date);
               const startDate = filters.startDate ? new Date(filters.startDate) : null;
@@ -1930,6 +1932,7 @@ export default function InvoicesPage() {
 
             return true;
           });
+          console.log('Client-side filtering applied. Filtered data count:', _data.length);
         }
 
         // Update state with new data
@@ -2022,13 +2025,17 @@ export default function InvoicesPage() {
   };
 
   const handleFilterChange = useCallback((filters) => {
+    console.log('=== HANDLE FILTER CHANGE DEBUG START ===');
     console.log('handleFilterChange called with filters:', filters);
+    console.log('Filter keys:', Object.keys(filters));
+    console.log('Filter values:', Object.values(filters));
 
     // Store the current filters for pagination
     setCurrentFilters(filters);
 
     // Use filters directly without transformation - send IDs to API
     const apiFilters = { ...filters };
+    console.log('API filters prepared:', apiFilters);
 
     // Handle quick date range filters
     if (filters.quick_date_range && filters.quick_date_range !== '') {
@@ -2039,6 +2046,7 @@ export default function InvoicesPage() {
       console.log('Applying filters directly to API:', apiFilters);
       getData(itemsPerPage, 1, apiFilters, true);
     }
+    console.log('=== HANDLE FILTER CHANGE DEBUG END ===');
   }, [patients, doctors, itemsPerPage, getData]);
 
   const handleCreateInvoice = () => {

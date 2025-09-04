@@ -99,12 +99,17 @@ export const DataTable = memo(({
   }, [onFilterChange]);
 
   const applyFilters = useCallback(() => {
+    console.log('=== DATATABLE FILTER DEBUG START ===');
     console.log('DataTable: applyFilters called, setting isApplyingFilters to true');
+    console.log('DataTable: filterInputs being passed:', filterInputs);
+    console.log('DataTable: onFilterChange function:', onFilterChange);
     setIsApplyingFilters(true);
     setActiveFilters(filterInputs);
     if (onFilterChange) {
+      console.log('DataTable: Calling onFilterChange with:', filterInputs);
       onFilterChange(filterInputs);
     }
+    console.log('=== DATATABLE FILTER DEBUG END ===');
   }, [filterInputs, onFilterChange]);
 
   const handlePageChange = useCallback((newPage) => {
