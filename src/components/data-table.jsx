@@ -54,9 +54,19 @@ export const DataTable = memo(({
   // Reset filter loading state when external filterLoading changes
   useEffect(() => {
     if (!filterLoading) {
+      console.log('DataTable: filterLoading is false, resetting isApplyingFilters');
       setIsApplyingFilters(false);
     }
   }, [filterLoading]);
+
+  // Additional effect to ensure isApplyingFilters is reset when data changes (indicating successful filter)
+  useEffect(() => {
+    if (isApplyingFilters && data && data.length >= 0) {
+      // Data has been updated, reset the applying state
+      console.log('DataTable: Data updated, resetting isApplyingFilters');
+      setIsApplyingFilters(false);
+    }
+  }, [data, isApplyingFilters]);
 
   // Memoize computed values
   const pages = useMemo(() => Math.ceil(totalItems / itemsPerPage), [totalItems, itemsPerPage]);
@@ -89,6 +99,7 @@ export const DataTable = memo(({
   }, [onFilterChange]);
 
   const applyFilters = useCallback(() => {
+    console.log('DataTable: applyFilters called, setting isApplyingFilters to true');
     setIsApplyingFilters(true);
     setActiveFilters(filterInputs);
     if (onFilterChange) {

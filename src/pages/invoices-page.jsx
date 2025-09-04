@@ -1733,31 +1733,19 @@ export default function InvoicesPage() {
     };
   }, []);
 
-  // Reset filter loading state when filters are successfully applied
+  // Debug effect to monitor filter state changes
   useEffect(() => {
-    if (!filterLoading && Object.keys(currentFilters).length > 0) {
-      // Filters were successfully applied, ensure loading state is reset
-      console.log('Filters successfully applied, resetting loading state');
-    }
-  }, [filterLoading, currentFilters]);
+    console.log('Current filters updated:', currentFilters);
+    console.log('Filter loading state:', filterLoading);
+  }, [currentFilters, filterLoading]);
 
-  // Monitor filter loading state and reset if stuck
+  // Monitor filter loading state for debugging
   useEffect(() => {
-    let timeoutId;
-
     if (filterLoading) {
-      // Set a timeout to reset filterLoading if it gets stuck
-      timeoutId = setTimeout(() => {
-        console.log('Filter loading stuck, resetting state');
-        setFilterLoading(false);
-      }, 15000); // 15 second timeout
+      console.log('Filter loading state is true');
+    } else {
+      console.log('Filter loading state is false');
     }
-
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
   }, [filterLoading]);
 
   const handleViewDetail = useCallback((invoice) => {
@@ -1891,6 +1879,13 @@ export default function InvoicesPage() {
     config.getData(url)
       .then(data => {
         console.log('Invoices API response:', data);
+        
+        // Validate response structure before processing
+        if (!data || !data.data || !Array.isArray(data.data.data)) {
+          console.error('Invalid API response structure:', data);
+          throw new Error('Invalid response from server');
+        }
+
         let _data = data.data.data.map(item => ({
           ...item,
           active: item.active === 1 ? 'Active' : 'Inactive',
@@ -1937,12 +1932,14 @@ export default function InvoicesPage() {
           });
         }
 
+        // Update state with new data
         setDataList(_data);
         setTotalItems(data.data.meta?.total || 0);
         setCurrentPage(data.data.meta?.page || 1);
         setItemsPerPage(data.data.meta?.perpage || 5);
 
-        // Always reset loading states after successful data fetch
+        // Reset loading states after successful data processing
+        console.log('Data processed successfully, resetting loading states');
         if (isFiltering) {
           setFilterLoading(false);
         } else {
@@ -1951,15 +1948,19 @@ export default function InvoicesPage() {
       })
       .catch(error => {
         console.error('Error fetching invoices:', error);
+        
         // Always reset loading states on error
         if (isFiltering) {
           setFilterLoading(false);
         } else {
           setLoading(false);
         }
+        
         // Show error toast for filter failures
         if (isFiltering) {
           toast.error('Failed to apply filters. Please try again.');
+        } else {
+          toast.error('Failed to fetch invoices. Please try again.');
         }
       });
   }, [token]);
@@ -2038,15 +2039,7 @@ export default function InvoicesPage() {
       console.log('Applying filters directly to API:', apiFilters);
       getData(itemsPerPage, 1, apiFilters, true);
     }
-
-    // Add a safety timeout to ensure filter loading state doesn't get stuck
-    setTimeout(() => {
-      if (filterLoading) {
-        console.log('Filter loading safety timeout - resetting state');
-        setFilterLoading(false);
-      }
-    }, 15000); // 15 second safety timeout
-  }, [patients, doctors, itemsPerPage, getData, filterLoading]);
+  }, [patients, doctors, itemsPerPage, getData]);
 
   const handleCreateInvoice = () => {
     // Ensure we're in create mode and clear any previous data
