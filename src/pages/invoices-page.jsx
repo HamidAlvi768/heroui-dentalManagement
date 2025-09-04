@@ -27,20 +27,9 @@ const columns = [
     label: 'DOCTOR',
     render: (item) => item.doctor?.username || ''
   },
-  { key: 'procedure', label: 'Procedure' },
   { key: 'invoice_date', label: 'DATE' },
   { key: 'total_amount', label: 'TOTAL' },
-  { key: 'discount_amount', label: 'DISCOUNT' },
-  { key: 'net_amount', label: 'AFTER DISCOUNT' },
   { key: 'paid', label: 'PAID' },
-  { key: 'balance', label: 'BALANCE' },
-  { key: 'payment_method', label: 'PAYMENT METHOD',
-    render: (item) => {
-      return <div>
-        <div className="font-medium">{item.payment_method}</div>
-      </div>
-    }
-  },
   {
     key: 'status',
     label: 'STATUS',
