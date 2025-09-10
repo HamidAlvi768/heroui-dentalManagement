@@ -1,156 +1,190 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { DataTable } from '../components/data-table';
-import config from '../config/config';
-import { useAuth } from '../auth/AuthContext';
-import { toast } from 'react-toastify';
-import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Input, Select, SelectItem, Textarea } from '@heroui/react';
-import { PageTemplate } from '../components/page-template';
-import { DeleteDialog } from '../components/delete-dialog';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { DataTable } from "../components/data-table";
+import config from "../config/config";
+import { useAuth } from "../auth/AuthContext";
+import { toast } from "react-toastify";
+import {
+  Button,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+  Input,
+  Select,
+  SelectItem,
+  Textarea,
+} from "@heroui/react";
+import { PageTemplate } from "../components/page-template";
+import { DeleteDialog } from "../components/delete-dialog";
+import useFormData from "../hooks/useFormData";
+import { Activity, Building2 } from "lucide-react";
+
+// Dynamic clinic branding will be used from useFormData hook
 
 // Table columns
 const columns = [
   {
-    key: 'invoice_number', label: 'INVOICE NUMBER',
+    key: "invoice_number",
+    label: "INVOICE NUMBER",
     render: (item) => (
       <div>
         <div className="font-medium">{item.invoice_number}</div>
       </div>
-    )
+    ),
   },
   {
-    key: 'patient',
-    label: 'PATIENT',
-    render: (item) => item.patient?.full_name || ''
+    key: "patient",
+    label: "PATIENT",
+    render: (item) => item.patient?.full_name || "",
   },
   {
-    key: 'doctor',
-    label: 'DOCTOR',
-    render: (item) => item.doctor?.username || ''
+    key: "doctor",
+    label: "DOCTOR",
+    render: (item) => item.doctor?.username || "",
   },
-  { key: 'invoice_date', label: 'DATE' },
-  { key: 'total_amount', label: 'TOTAL' },
-  { key: 'paid', label: 'PAID' },
   {
-    key: 'status',
-    label: 'STATUS',
+    key: "invoice_date",
+    label: "DATE",
     render: (item) => {
-      const status = item.status || calculateInvoiceStatus(
+      if (!item.invoice_date) return "N/A";
+      try {
+        return new Date(item.invoice_date).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+      } catch (e) {
+        return item.invoice_date;
+      }
+    },
+  },
+  { key: "total_amount", label: "TOTAL" },
+  { key: "paid", label: "PAID" },
+  {
+    key: "status",
+    label: "STATUS",
+    render: (item) => {
+      const status =
+        item.status ||
+        calculateInvoiceStatus(
         Number(item.balance) || 0,
         Number(item.paid) || 0,
         Number(item.net_amount) || 0
       );
       const statusColors = {
-        paid: 'text-success-600 bg-success-100',
-        pending: 'text-warning-600 bg-warning-100',
-        overdue: 'text-danger-600 bg-danger-100'
+        paid: "text-success-600 bg-success-100",
+        pending: "text-warning-600 bg-warning-100",
+        overdue: "text-danger-600 bg-danger-100",
       };
       return (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status] || 'text-gray-600 bg-gray-100'}`}>
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${
+            statusColors[status] || "text-gray-600 bg-gray-100"
+          }`}
+        >
           {status.charAt(0).toUpperCase() + status.slice(1)}
         </span>
       );
-    }
   },
-  { key: 'actions', label: 'ACTIONS' },
+  },
+  { key: "actions", label: "ACTIONS" },
 ];
 
 // Base filter columns structure
 const baseFilterColumns = [
-  { key: 'invoiceNumber', label: 'INVOICE NUMBER' },
+  { key: "invoiceNumber", label: "INVOICE NUMBER" },
   {
-    key: 'patient',
-    label: 'PATIENT',
-    type: 'select',
-    options: [
-      { value: '', label: 'All Patients' }
-    ]
+    key: "patient",
+    label: "PATIENT",
+    type: "select",
+    options: [{ value: "", label: "All Patients" }],
   },
   {
-    key: 'doctor',
-    label: 'DOCTOR',
-    type: 'select',
-    options: [
-      { value: '', label: 'All Doctors' }
-    ]
+    key: "doctor",
+    label: "DOCTOR",
+    type: "select",
+    options: [{ value: "", label: "All Doctors" }],
   },
   {
-    key: 'payment_method',
-    label: 'PAYMENT METHOD',
-    type: 'select',
+    key: "payment_method",
+    label: "PAYMENT METHOD",
+    type: "select",
     options: [
-      { value: '', label: 'All Methods' },
-      { value: 'cash', label: 'Cash' },
-      { value: 'online', label: 'Online' },
-      { value: 'bank_transfer', label: 'Bank Transfer' },
-      { value: 'cheque', label: 'Cheque' },
-      { value: 'credit_card', label: 'Credit Card' },
-      { value: 'debit_card', label: 'Debit Card' },
-      { value: 'other', label: 'Other' }
-    ]
+      { value: "", label: "All Methods" },
+      { value: "cash", label: "Cash" },
+      { value: "online", label: "Online" },
+      { value: "bank_transfer", label: "Bank Transfer" },
+      { value: "cheque", label: "Cheque" },
+      { value: "credit_card", label: "Credit Card" },
+      { value: "debit_card", label: "Debit Card" },
+      { value: "other", label: "Other" },
+    ],
   },
   {
-    key: 'quick_date_range',
-    label: 'QUICK FILTERS',
-    type: 'select',
-    placeholder: 'Quick date filters',
+    key: "quick_date_range",
+    label: "QUICK FILTERS",
+    type: "select",
+    placeholder: "Quick date filters",
     options: [
-      { value: '', label: 'Custom Date Range' },
-      { value: 'today', label: 'Today' },
-      { value: 'tomorrow', label: 'Tomorrow' },
-      { value: 'this_week', label: 'This Week' },
-      { value: 'next_week', label: 'Next Week' },
-      { value: 'this_month', label: 'This Month' },
-      { value: 'this_year', label: 'This Year' }
-    ]
+      { value: "", label: "Custom Date Range" },
+      { value: "today", label: "Today" },
+      { value: "tomorrow", label: "Tomorrow" },
+      { value: "this_week", label: "This Week" },
+      { value: "next_week", label: "Next Week" },
+      { value: "this_month", label: "This Month" },
+      { value: "this_year", label: "This Year" },
+    ],
   },
 ];
 
 const initialFormData = {
-  patient_id: '',
-  doctor_id: '',
-  date: '',
+  patient_id: "",
+  doctor_id: "",
+  date: "",
   procedures: [
     {
-      category: '',
-      procedure: '',
-      description: '',
+      category: "",
+      procedure: "",
+      description: "",
       quantity: 1,
-      price: '',
-      subTotal: 0
-    }
+      price: "",
+      subTotal: 0,
+    },
   ],
-  discount: '0',
+  discount: "0",
   paid: 0,
   total_amount: 0,
   after_discount: 0,
   balance: 0,
-  payment_method: 'cash'
+  payment_method: "cash",
 };
 
 const generateInvoiceNumber = () => {
   const now = new Date();
-  const pad = (n) => n.toString().padStart(2, '0');
+  const pad = (n) => n.toString().padStart(2, "0");
   return (
-    'INV-' +
+    "INV-" +
     now.getFullYear() +
     pad(now.getMonth() + 1) +
     pad(now.getDate()) +
-    '-' +
+    "-" +
     pad(now.getHours()) +
     pad(now.getMinutes()) +
     pad(now.getSeconds()) +
-    '-' +
+    "-" +
     Math.floor(Math.random() * 1000)
   );
 };
 
 const transformFormData = (formData) => {
   // Calculate subtotals for each procedure
-  const proceduresWithSubtotals = (formData.procedures || []).map(proc => {
+  const proceduresWithSubtotals = (formData.procedures || []).map((proc) => {
     const qty = Number(proc.quantity) || 0;
     const price = Number(proc.price) || 0;
     // Round subtotal to 2 decimal places
-    const subTotal = Math.round((qty * price) * 100) / 100;
+    const subTotal = Math.round(qty * price * 100) / 100;
     return { ...proc, subTotal };
   });
 
@@ -174,19 +208,19 @@ const transformFormData = (formData) => {
     invoice_number: formData.invoice_number || generateInvoiceNumber(),
     patient_id: formData.patient_id,
     doctor_id: formData.doctor_id,
-    invoice_date: formData.date || formData.invoice_date || '',
+    invoice_date: formData.date || formData.invoice_date || "",
     total_amount: Math.round(total_amount * 100) / 100,
     discount_amount: Math.round(discount_amount * 100) / 100,
     net_amount: Math.round(net_amount * 100) / 100,
     paid: Math.round(paid * 100) / 100,
     balance: Math.round(balance * 100) / 100,
-    items: proceduresWithSubtotals.map(proc => ({
-      item_type: proc.procedure || '',
+    items: proceduresWithSubtotals.map((proc) => ({
+      item_type: proc.procedure || "",
       item_description: proc.description,
       quantity: Number(proc.quantity) || 0,
       unit_price: Math.round((Number(proc.price) || 0) * 100) / 100,
       discount: 0,
-      total_price: Math.round((Number(proc.subTotal) || 0) * 100) / 100
+      total_price: Math.round((Number(proc.subTotal) || 0) * 100) / 100,
     })),
     notes: formData.notes || null,
     payment_method: formData.payment_method || null,
@@ -199,45 +233,45 @@ const handleQuickDateRange = (quickRange, currentFilters) => {
   const newFilters = { ...currentFilters };
 
   switch (quickRange) {
-    case 'today':
-      const todayStr = today.toISOString().split('T')[0];
+    case "today":
+      const todayStr = today.toISOString().split("T")[0];
       newFilters.startDate = todayStr;
       newFilters.endDate = todayStr;
       break;
-    case 'tomorrow':
+    case "tomorrow":
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+      const tomorrowStr = tomorrow.toISOString().split("T")[0];
       newFilters.startDate = tomorrowStr;
       newFilters.endDate = tomorrowStr;
       break;
-    case 'this_week':
+    case "this_week":
       const startOfWeek = new Date(today);
       startOfWeek.setDate(today.getDate() - today.getDay());
       const endOfWeek = new Date(startOfWeek);
       endOfWeek.setDate(startOfWeek.getDate() + 6);
-      newFilters.startDate = startOfWeek.toISOString().split('T')[0];
-      newFilters.endDate = endOfWeek.toISOString().split('T')[0];
+      newFilters.startDate = startOfWeek.toISOString().split("T")[0];
+      newFilters.endDate = endOfWeek.toISOString().split("T")[0];
       break;
-    case 'next_week':
+    case "next_week":
       const nextWeekStart = new Date(today);
       nextWeekStart.setDate(today.getDate() + (7 - today.getDay()));
       const nextWeekEnd = new Date(nextWeekStart);
       nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
-      newFilters.startDate = nextWeekStart.toISOString().split('T')[0];
-      newFilters.endDate = nextWeekEnd.toISOString().split('T')[0];
+      newFilters.startDate = nextWeekStart.toISOString().split("T")[0];
+      newFilters.endDate = nextWeekEnd.toISOString().split("T")[0];
       break;
-    case 'this_month':
+    case "this_month":
       const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      newFilters.startDate = startOfMonth.toISOString().split('T')[0];
-      newFilters.endDate = endOfMonth.toISOString().split('T')[0];
+      newFilters.startDate = startOfMonth.toISOString().split("T")[0];
+      newFilters.endDate = endOfMonth.toISOString().split("T")[0];
       break;
-    case 'this_year':
+    case "this_year":
       const startOfYear = new Date(today.getFullYear(), 0, 1);
       const endOfYear = new Date(today.getFullYear(), 11, 31);
-      newFilters.startDate = startOfYear.toISOString().split('T')[0];
-      newFilters.endDate = endOfYear.toISOString().split('T')[0];
+      newFilters.startDate = startOfYear.toISOString().split("T")[0];
+      newFilters.endDate = endOfYear.toISOString().split("T")[0];
       break;
     default:
       // Custom date range - keep existing filters
@@ -245,7 +279,7 @@ const handleQuickDateRange = (quickRange, currentFilters) => {
   }
 
   // Clear quick range filter after applying
-  newFilters.quick_date_range = '';
+  newFilters.quick_date_range = "";
 
   return newFilters;
 };
@@ -253,11 +287,11 @@ const handleQuickDateRange = (quickRange, currentFilters) => {
 // Helper function to calculate invoice status
 const calculateInvoiceStatus = (balance, paid, netAmount) => {
   if (balance <= 0 || paid >= netAmount) {
-    return 'paid';
+    return "paid";
   } else if (balance > 0 && balance < netAmount) {
-    return 'pending';
+    return "pending";
   } else {
-    return 'overdue';
+    return "overdue";
   }
 };
 
@@ -267,15 +301,15 @@ const isAmountInRange = (amount, range) => {
 
   const numAmount = Number(amount);
   switch (range) {
-    case '0-100':
+    case "0-100":
       return numAmount >= 0 && numAmount <= 100;
-    case '100-500':
+    case "100-500":
       return numAmount > 100 && numAmount <= 500;
-    case '500-1000':
+    case "500-1000":
       return numAmount > 500 && numAmount <= 1000;
-    case '1000-5000':
+    case "1000-5000":
       return numAmount > 1000 && numAmount <= 5000;
-    case '5000+':
+    case "5000+":
       return numAmount > 5000;
     default:
       return true;
@@ -286,17 +320,30 @@ const mapInvoiceItemsToServices = (items) =>
   (items || []).map((item, idx) => {
     // For edit form, we need to determine both category and procedure from item_type
     // The item_type contains the procedure, so we need to find which category it belongs to
-    let category = '';
-    let procedure = '';
+    let category = "";
+    let procedure = "";
 
     if (item.item_type) {
       // Find the category that contains this procedure
       const allProcedures = {
-        consultation: ['initial_consultation', 'followup_visit', 'emergency_consultation'],
-        surgery: ['root_canal', 'tooth_extraction', 'dental_implant', 'wisdom_teeth_removal'],
-        lab: ['xray', 'blood_test', 'urine_test', 'biopsy'],
-        treatment: ['dental_cleaning', 'filling', 'whitening', 'braces'],
-        examination: ['oral_examination', 'periodontal_examination', 'orthodontic_evaluation']
+        consultation: [
+          "initial_consultation",
+          "followup_visit",
+          "emergency_consultation",
+        ],
+        surgery: [
+          "root_canal",
+          "tooth_extraction",
+          "dental_implant",
+          "wisdom_teeth_removal",
+        ],
+        lab: ["xray", "blood_test", "urine_test", "biopsy"],
+        treatment: ["dental_cleaning", "filling", "whitening", "braces"],
+        examination: [
+          "oral_examination",
+          "periodontal_examination",
+          "orthodontic_evaluation",
+        ],
       };
 
       // Find which category contains this procedure
@@ -313,9 +360,9 @@ const mapInvoiceItemsToServices = (items) =>
       index: idx + 1,
       id: item.id,
       invoiceId: item.invoice_id,
-      category: category || item.category || '',
-      procedure: procedure || item.procedure || '',
-      description: item.item_description || item.description || '',
+      category: category || item.category || "",
+      procedure: procedure || item.procedure || "",
+      description: item.item_description || item.description || "",
       quantity: Number(item.quantity) || 0,
       price: Number(item.unit_price) || Number(item.price) || 0,
       subTotal: Number(item.total_price) || Number(item.subTotal) || 0,
@@ -327,33 +374,45 @@ const mapInvoiceItemsToServices = (items) =>
       notes: item.notes || item.item_notes,
       // Timestamps
       createdAt: item.created_at,
-      updatedAt: item.updated_at
+      updatedAt: item.updated_at,
     };
   });
 
 // Invoice Form Component
-const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patients, doctors, categories, procedures, onCancelEdit, onSuccess }) => {
+const InvoiceForm = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  initialData,
+  isEditing,
+  patients,
+  doctors,
+  categories,
+  procedures,
+  onCancelEdit,
+  onSuccess,
+}) => {
   // Define initial form data structure
   const initialFormData = {
-    patient_id: '',
-    doctor_id: '',
-    date: '',
+    patient_id: "",
+    doctor_id: "",
+    date: "",
     procedures: [
       {
-        category: '',
-        procedure: '',
-        description: '',
+        category: "",
+        procedure: "",
+        description: "",
         quantity: 1,
-        price: '',
-        subTotal: 0
-      }
+        price: "",
+        subTotal: 0,
+      },
     ],
-    discount: '0',
+    discount: "0",
     paid: 0,
     total_amount: 0,
     after_discount: 0,
     balance: 0,
-    payment_method: 'cash'
+    payment_method: "cash",
   };
 
   const [formData, setFormData] = useState(initialData);
@@ -362,24 +421,44 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
 
   // Debug logging for props
   useEffect(() => {
-    console.log('InvoiceForm props - categories:', categories);
-    console.log('InvoiceForm props - procedures:', procedures);
-    console.log('InvoiceForm props - procedures type:', typeof procedures);
-    console.log('InvoiceForm props - procedures keys:', procedures ? Object.keys(procedures) : 'no procedures');
-    console.log('InvoiceForm props - patients:', patients);
-    console.log('InvoiceForm props - doctors:', doctors);
+    console.log("InvoiceForm props - categories:", categories);
+    console.log("InvoiceForm props - procedures:", procedures);
+    console.log("InvoiceForm props - procedures type:", typeof procedures);
+    console.log(
+      "InvoiceForm props - procedures keys:",
+      procedures ? Object.keys(procedures) : "no procedures"
+    );
+    console.log("InvoiceForm props - patients:", patients);
+    console.log("InvoiceForm props - doctors:", doctors);
   }, [categories, procedures, patients, doctors]);
 
   // Debug logging for form data changes
   useEffect(() => {
-    console.log('Form data updated:', formData);
-    console.log('Discount value:', formData.discount, 'Type:', typeof formData.discount);
-    console.log('Procedures in form data:', formData.procedures);
+    console.log("Form data updated:", formData);
+    console.log(
+      "Discount value:",
+      formData.discount,
+      "Type:",
+      typeof formData.discount
+    );
+    console.log("Procedures in form data:", formData.procedures);
     if (formData.procedures && formData.procedures.length > 0) {
-      console.log('First procedure category:', formData.procedures[0]?.category);
-      console.log('First procedure procedure:', formData.procedures[0]?.procedure);
-      console.log('First procedure category type:', typeof formData.procedures[0]?.category);
-      console.log('First procedure procedure type:', typeof formData.procedures[0]?.procedure);
+      console.log(
+        "First procedure category:",
+        formData.procedures[0]?.category
+      );
+      console.log(
+        "First procedure procedure:",
+        formData.procedures[0]?.procedure
+      );
+      console.log(
+        "First procedure category type:",
+        typeof formData.procedures[0]?.category
+      );
+      console.log(
+        "First procedure procedure type:",
+        typeof formData.procedures[0]?.procedure
+      );
     }
   }, [formData]);
 
@@ -391,7 +470,10 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
         // Ensure discount has a default value if not set
         const dataWithDefaults = {
           ...initialData,
-          discount: initialData.discount !== undefined && initialData.discount !== null ? String(initialData.discount) : '0'
+          discount:
+            initialData.discount !== undefined && initialData.discount !== null
+              ? String(initialData.discount)
+              : "0",
         };
         setFormData(dataWithDefaults);
         setErrors({});
@@ -401,7 +483,7 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
       // Ensure initial form data has proper defaults
       const defaultData = {
         ...initialData,
-        discount: '0'
+        discount: "0",
       };
       setFormData(defaultData);
       setErrors({});
@@ -418,7 +500,11 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
 
   // Reset form when modal opens for new invoice
   useEffect(() => {
-    if (isOpen && !isEditing && (!initialData || Object.keys(initialData).length === 0)) {
+    if (
+      isOpen &&
+      !isEditing &&
+      (!initialData || Object.keys(initialData).length === 0)
+    ) {
       // Reset form to initial state when opening for new invoice
       setFormData(initialFormData);
       setErrors({});
@@ -429,17 +515,17 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
     let processedValue = value;
 
     // Prevent negative values for numeric fields
-    if (key === 'paid') {
+    if (key === "paid") {
       // Ensure paid amount is at least 0 and not negative
       processedValue = Math.max(0, Math.abs(parseFloat(value) || 0));
     }
 
     // Ensure discount is stored as string for Select component consistency
-    if (key === 'discount') {
+    if (key === "discount") {
       processedValue = String(value);
     }
 
-    setFormData(prev => ({ ...prev, [key]: processedValue }));
+    setFormData((prev) => ({ ...prev, [key]: processedValue }));
 
     // Clear error for this field if it exists and the field is now valid
     if (errors[key]) {
@@ -447,16 +533,16 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
 
       // Check specific validation rules for each field
       switch (key) {
-        case 'patient_id':
-          isValid = value && value !== '';
+        case "patient_id":
+          isValid = value && value !== "";
           break;
-        case 'doctor_id':
-          isValid = value && value !== '';
+        case "doctor_id":
+          isValid = value && value !== "";
           break;
-        case 'date':
-          isValid = value && value !== '';
+        case "date":
+          isValid = value && value !== "";
           break;
-        case 'paid':
+        case "paid":
           isValid = value >= 0;
           break;
         default:
@@ -464,28 +550,32 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
       }
 
       if (isValid) {
-        setErrors(prev => ({ ...prev, [key]: '' }));
+        setErrors((prev) => ({ ...prev, [key]: "" }));
       }
     }
   };
 
   const handleProcedureChange = (index, key, value) => {
-    console.log('handleProcedureChange called:', { index, key, value });
+    console.log("handleProcedureChange called:", { index, key, value });
     const newProcedures = [...formData.procedures];
     newProcedures[index] = { ...newProcedures[index], [key]: value };
 
     // If category changes, clear the procedure selection
-    if (key === 'category') {
-      console.log('Category changed to:', value, 'clearing procedure');
-      newProcedures[index].procedure = '';
+    if (key === "category") {
+      console.log("Category changed to:", value, "clearing procedure");
+      newProcedures[index].procedure = "";
     }
 
     // Calculate subtotal
-    if (key === 'quantity' || key === 'price') {
-      const qty = key === 'quantity' ? Number(value) : Number(newProcedures[index].quantity);
-      const price = key === 'price' ? Number(value) : Number(newProcedures[index].price);
+    if (key === "quantity" || key === "price") {
+      const qty =
+        key === "quantity"
+          ? Number(value)
+          : Number(newProcedures[index].quantity);
+      const price =
+        key === "price" ? Number(value) : Number(newProcedures[index].price);
       // Round subtotal to 2 decimal places
-      newProcedures[index].subTotal = Math.round((qty * price) * 100) / 100;
+      newProcedures[index].subTotal = Math.round(qty * price * 100) / 100;
     }
 
     // Clear errors for this procedure field if it's now valid
@@ -495,16 +585,16 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
 
       // Check specific validation rules for procedure fields
       switch (key) {
-        case 'category':
-          isValid = value && value !== '';
+        case "category":
+          isValid = value && value !== "";
           break;
-        case 'procedure':
-          isValid = value && value !== '';
+        case "procedure":
+          isValid = value && value !== "";
           break;
-        case 'quantity':
+        case "quantity":
           isValid = value && Number(value) >= 1;
           break;
-        case 'price':
+        case "price":
           isValid = value && Number(value) >= 0;
           break;
         default:
@@ -512,33 +602,36 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
       }
 
       if (isValid) {
-        setErrors(prev => ({ ...prev, [errorKey]: '' }));
+        setErrors((prev) => ({ ...prev, [errorKey]: "" }));
       }
     }
 
-    console.log('Updated procedures:', newProcedures);
-    setFormData(prev => ({ ...prev, procedures: newProcedures }));
+    console.log("Updated procedures:", newProcedures);
+    setFormData((prev) => ({ ...prev, procedures: newProcedures }));
   };
 
   const addProcedure = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      procedures: [...prev.procedures, {
-        category: '',
-        procedure: '',
-        description: '',
+      procedures: [
+        ...prev.procedures,
+        {
+          category: "",
+          procedure: "",
+          description: "",
         quantity: 1,
-        price: '',
-        subTotal: 0
-      }]
+          price: "",
+          subTotal: 0,
+        },
+      ],
     }));
   };
 
   const removeProcedure = (index) => {
     if (formData.procedures.length > 1) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        procedures: prev.procedures.filter((_, i) => i !== index)
+        procedures: prev.procedures.filter((_, i) => i !== index),
       }));
     }
   };
@@ -547,11 +640,11 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
     const total = formData.procedures.reduce((sum, proc) => {
       const qty = Number(proc.quantity) || 0;
       const price = Number(proc.price) || 0;
-      return sum + (qty * price);
+      return sum + qty * price;
     }, 0);
 
     const discount = Number(formData.discount) || 0;
-    const afterDiscount = total - (total * (discount / 100));
+    const afterDiscount = total - total * (discount / 100);
     const paid = Number(formData.paid) || 0;
     const balance = afterDiscount - paid;
 
@@ -559,35 +652,38 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
     return {
       total: Math.round(total * 100) / 100,
       afterDiscount: Math.round(afterDiscount * 100) / 100,
-      balance: Math.round(balance * 100) / 100
+      balance: Math.round(balance * 100) / 100,
     };
   };
 
   const handleSubmit = () => {
     const newErrors = {};
 
-    if (!formData.patient_id) newErrors.patient_id = 'Patient is required';
-    if (!formData.doctor_id) newErrors.doctor_id = 'Doctor is required';
-    if (!formData.date) newErrors.date = 'Date is required';
+    if (!formData.patient_id) newErrors.patient_id = "Patient is required";
+    if (!formData.doctor_id) newErrors.doctor_id = "Doctor is required";
+    if (!formData.date) newErrors.date = "Date is required";
 
     if (formData.procedures.length === 0) {
-      newErrors.procedures = 'At least one procedure is required';
+      newErrors.procedures = "At least one procedure is required";
     } else {
       formData.procedures.forEach((proc, index) => {
-        if (!proc.category) newErrors[`procedure_${index}_category`] = 'Category is required';
-        if (!proc.procedure) newErrors[`procedure_${index}_procedure`] = 'Procedure is required';
+        if (!proc.category)
+          newErrors[`procedure_${index}_category`] = "Category is required";
+        if (!proc.procedure)
+          newErrors[`procedure_${index}_procedure`] = "Procedure is required";
         if (!proc.quantity || proc.quantity < 1) {
-          newErrors[`procedure_${index}_quantity`] = 'Quantity must be at least 1';
+          newErrors[`procedure_${index}_quantity`] =
+            "Quantity must be at least 1";
         }
         if (!proc.price || proc.price < 0) {
-          newErrors[`procedure_${index}_price`] = 'Price must be at least 0';
+          newErrors[`procedure_${index}_price`] = "Price must be at least 0";
         }
       });
     }
 
     // Validate paid amount
     if (formData.paid < 0) {
-      newErrors.paid = 'Paid amount cannot be negative';
+      newErrors.paid = "Paid amount cannot be negative";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -616,43 +712,77 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
 
   // Helper function to get procedures for a specific category
   const getProceduresForCategory = (categoryKey) => {
-    console.log('getProceduresForCategory called with:', categoryKey);
-    console.log('procedures prop:', procedures);
-    console.log('procedures type:', typeof procedures);
-    console.log('procedures keys:', procedures ? Object.keys(procedures) : 'no procedures');
-    console.log('availableProcedures:', availableProcedures);
+    console.log("getProceduresForCategory called with:", categoryKey);
+    console.log("procedures prop:", procedures);
+    console.log("procedures type:", typeof procedures);
+    console.log(
+      "procedures keys:",
+      procedures ? Object.keys(procedures) : "no procedures"
+    );
+    console.log("availableProcedures:", availableProcedures);
 
-    if (!categoryKey || !availableProcedures || typeof availableProcedures !== 'object') {
-      console.log('Early return - invalid inputs');
+    if (
+      !categoryKey ||
+      !availableProcedures ||
+      typeof availableProcedures !== "object"
+    ) {
+      console.log("Early return - invalid inputs");
       return [];
     }
 
     const categoryProcedures = availableProcedures[categoryKey] || [];
-    console.log('Found procedures for category', categoryKey, ':', categoryProcedures);
+    console.log(
+      "Found procedures for category",
+      categoryKey,
+      ":",
+      categoryProcedures
+    );
     return categoryProcedures;
   };
 
   // Fallback procedures if the main procedures are not loaded yet
   const fallbackProcedures = {
     consultation: [
-      { key: 'initial_consultation', value: 'initial_consultation', label: 'Initial Consultation', category: 'consultation' },
-      { key: 'followup_visit', value: 'followup_visit', label: 'Follow-up Visit', category: 'consultation' }
+      {
+        key: "initial_consultation",
+        value: "initial_consultation",
+        label: "Initial Consultation",
+        category: "consultation",
+      },
+      {
+        key: "followup_visit",
+        value: "followup_visit",
+        label: "Follow-up Visit",
+        category: "consultation",
+      },
     ],
     surgery: [
-      { key: 'root_canal', value: 'root_canal', label: 'Root Canal', category: 'surgery' },
-      { key: 'tooth_extraction', value: 'tooth_extraction', label: 'Tooth Extraction', category: 'surgery' }
-    ]
+      {
+        key: "root_canal",
+        value: "root_canal",
+        label: "Root Canal",
+        category: "surgery",
+      },
+      {
+        key: "tooth_extraction",
+        value: "tooth_extraction",
+        label: "Tooth Extraction",
+        category: "surgery",
+      },
+    ],
   };
 
   // Use fallback procedures if main procedures are not loaded
-  const availableProcedures = (procedures && Object.keys(procedures).length > 0) ? procedures : fallbackProcedures;
-
+  const availableProcedures =
+    procedures && Object.keys(procedures).length > 0
+      ? procedures
+      : fallbackProcedures;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="4xl" scrollBehavior="inside">
       <ModalContent>
         <ModalHeader>
-          {isEditing ? 'Edit Invoice' : 'Create New Invoice'}
+          {isEditing ? "Edit Invoice" : "Create New Invoice"}
         </ModalHeader>
         <ModalBody>
           {isLoading && (
@@ -671,7 +801,7 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
                   Invoice Number
                 </label>
                 <Input
-                  value={formData.invoice_number || ''}
+                  value={formData.invoice_number || ""}
                   disabled
                   className="w-full bg-gray-50"
                 />
@@ -685,19 +815,21 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
                   Choose Patient <span class="text-danger">*</span>
                 </label>
                 <Select
-                  selectedKeys={formData.patient_id ? [String(formData.patient_id)] : []}
+                  selectedKeys={
+                    formData.patient_id ? [String(formData.patient_id)] : []
+                  }
                   onSelectionChange={(keys) => {
                     const value = Array.from(keys)[0];
-                    handleInputChange('patient_id', value);
+                    handleInputChange("patient_id", value);
 
                     // Clear patient error if it exists and value is valid
-                    if (errors.patient_id && value && value !== '') {
-                      setErrors(prev => ({ ...prev, patient_id: '' }));
+                    if (errors.patient_id && value && value !== "") {
+                      setErrors((prev) => ({ ...prev, patient_id: "" }));
                     }
                   }}
                   className="w-full"
                 >
-                  {console.log('Rendering patient options:', patients)}
+                  {console.log("Rendering patient options:", patients)}
                   {patients && patients.length > 0 ? (
                     patients.map((patient) => (
                       <SelectItem key={patient.value} value={patient.value}>
@@ -710,7 +842,11 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
                     </SelectItem>
                   )}
                 </Select>
-                {errors.patient_id && <p className="text-red-500 text-xs mt-1">{errors.patient_id}</p>}
+                {errors.patient_id && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.patient_id}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -718,19 +854,21 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
                   Choose Doctor <span class="text-danger">*</span>
                 </label>
                 <Select
-                  selectedKeys={formData.doctor_id ? [String(formData.doctor_id)] : []}
+                  selectedKeys={
+                    formData.doctor_id ? [String(formData.doctor_id)] : []
+                  }
                   onSelectionChange={(keys) => {
                     const value = Array.from(keys)[0];
-                    handleInputChange('doctor_id', value);
+                    handleInputChange("doctor_id", value);
 
                     // Clear doctor error if it exists and value is valid
-                    if (errors.doctor_id && value && value !== '') {
-                      setErrors(prev => ({ ...prev, doctor_id: '' }));
+                    if (errors.doctor_id && value && value !== "") {
+                      setErrors((prev) => ({ ...prev, doctor_id: "" }));
                     }
                   }}
                   className="w-full"
                 >
-                  {console.log('Rendering doctor options:', doctors)}
+                  {console.log("Rendering doctor options:", doctors)}
                   {doctors && doctors.length > 0 ? (
                     doctors.map((doctor) => (
                       <SelectItem key={doctor.value} value={doctor.value}>
@@ -743,7 +881,11 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
                     </SelectItem>
                   )}
                 </Select>
-                {errors.doctor_id && <p className="text-red-500 text-xs mt-1">{errors.doctor_id}</p>}
+                {errors.doctor_id && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.doctor_id}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -755,16 +897,18 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
                   value={formData.date}
                   onChange={(e) => {
                     const value = e.target.value;
-                    handleInputChange('date', value);
+                    handleInputChange("date", value);
 
                     // Clear date error if it exists and value is valid
-                    if (errors.date && value && value !== '') {
-                      setErrors(prev => ({ ...prev, date: '' }));
+                    if (errors.date && value && value !== "") {
+                      setErrors((prev) => ({ ...prev, date: "" }));
                     }
                   }}
                   className="w-full"
                 />
-                {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date}</p>}
+                {errors.date && (
+                  <p className="text-red-500 text-xs mt-1">{errors.date}</p>
+                )}
               </div>
             </div>
 
@@ -772,7 +916,6 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
             <div>
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium">Procedures & Services</h3>
-
               </div>
 
               <div className="space-y-4">
@@ -804,10 +947,20 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Category <span class="text-danger">*</span></label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Category <span class="text-danger">*</span>
+                        </label>
                         <Select
-                          selectedKeys={proc.category ? [String(proc.category)] : []}
-                          onSelectionChange={(keys) => handleProcedureChange(index, 'category', Array.from(keys)[0])}
+                          selectedKeys={
+                            proc.category ? [String(proc.category)] : []
+                          }
+                          onSelectionChange={(keys) =>
+                            handleProcedureChange(
+                              index,
+                              "category",
+                              Array.from(keys)[0]
+                            )
+                          }
                           className="w-full"
                           placeholder="Select category first"
                         >
@@ -824,25 +977,54 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
                           )}
                         </Select>
                         {errors[`procedure_${index}_category`] && (
-                          <p className="text-red-500 text-xs mt-1">{errors[`procedure_${index}_category`]}</p>
+                          <p className="text-red-500 text-xs mt-1">
+                            {errors[`procedure_${index}_category`]}
+                          </p>
                         )}
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Procedure <span class="text-danger">*</span></label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Procedure <span class="text-danger">*</span>
+                        </label>
                         <Select
-                          selectedKeys={proc.procedure ? [String(proc.procedure)] : []}
-                          onSelectionChange={(keys) => handleProcedureChange(index, 'procedure', Array.from(keys)[0])}
+                          selectedKeys={
+                            proc.procedure ? [String(proc.procedure)] : []
+                          }
+                          onSelectionChange={(keys) =>
+                            handleProcedureChange(
+                              index,
+                              "procedure",
+                              Array.from(keys)[0]
+                            )
+                          }
                           className="w-full"
                           isDisabled={!proc.category}
-                          placeholder={proc.category ? "Select procedure" : "Select category first"}
+                          placeholder={
+                            proc.category
+                              ? "Select procedure"
+                              : "Select category first"
+                          }
                         >
                           {(() => {
                             // Get procedures for the selected category
-                            const categoryProcedures = getProceduresForCategory(proc.category);
-                            console.log('Category procedures for', proc.category, ':', categoryProcedures);
-                            console.log('Current proc.category:', proc.category);
-                            console.log('Procedures prop in render:', procedures);
+                            const categoryProcedures = getProceduresForCategory(
+                              proc.category
+                            );
+                            console.log(
+                              "Category procedures for",
+                              proc.category,
+                              ":",
+                              categoryProcedures
+                            );
+                            console.log(
+                              "Current proc.category:",
+                              proc.category
+                            );
+                            console.log(
+                              "Procedures prop in render:",
+                              procedures
+                            );
 
                             if (!proc.category) {
                               return (
@@ -861,19 +1043,26 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
                             }
 
                             return categoryProcedures.map((procItem) => (
-                              <SelectItem key={procItem.value} value={procItem.value}>
+                              <SelectItem
+                                key={procItem.value}
+                                value={procItem.value}
+                              >
                                 {procItem.label}
                               </SelectItem>
                             ));
                           })()}
                         </Select>
                         {errors[`procedure_${index}_procedure`] && (
-                          <p className="text-red-500 text-xs mt-1">{errors[`procedure_${index}_procedure`]}</p>
+                          <p className="text-red-500 text-xs mt-1">
+                            {errors[`procedure_${index}_procedure`]}
+                          </p>
                         )}
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Quantity <span className="text-danger">*</span></label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Quantity <span className="text-danger">*</span>
+                        </label>
                         <Input
                           type="number"
                           min="1"
@@ -883,17 +1072,25 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
                             const value = parseInt(e.target.value) || 1;
                             // Ensure quantity is at least 1 and not negative
                             const validValue = Math.max(1, Math.abs(value));
-                            handleProcedureChange(index, 'quantity', validValue);
+                            handleProcedureChange(
+                              index,
+                              "quantity",
+                              validValue
+                            );
                           }}
                           className="w-full"
                         />
                         {errors[`procedure_${index}_quantity`] && (
-                          <p className="text-red-500 text-xs mt-1">{errors[`procedure_${index}_quantity`]}</p>
+                          <p className="text-red-500 text-xs mt-1">
+                            {errors[`procedure_${index}_quantity`]}
+                          </p>
                         )}
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Price <span className="text-danger">*</span></label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Price <span className="text-danger">*</span>
+                        </label>
                         <Input
                           type="number"
                           min="0"
@@ -903,21 +1100,31 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
                             const value = parseFloat(e.target.value) || 0;
                             // Ensure price is at least 0 and not negative
                             const validValue = Math.max(0, Math.abs(value));
-                            handleProcedureChange(index, 'price', validValue);
+                            handleProcedureChange(index, "price", validValue);
                           }}
                           className="w-full"
                         />
                         {errors[`procedure_${index}_price`] && (
-                          <p className="text-red-500 text-xs mt-1">{errors[`procedure_${index}_price`]}</p>
+                          <p className="text-red-500 text-xs mt-1">
+                            {errors[`procedure_${index}_price`]}
+                          </p>
                         )}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Description
+                      </label>
                       <Textarea
                         value={proc.description}
-                        onChange={(e) => handleProcedureChange(index, 'description', e.target.value)}
+                        onChange={(e) =>
+                          handleProcedureChange(
+                            index,
+                            "description",
+                            e.target.value
+                          )
+                        }
                         placeholder="Enter procedure description"
                         className="w-full"
                       />
@@ -925,7 +1132,10 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
 
                     <div className="text-right">
                       <span className="text-lg font-medium">
-                        Subtotal: ${(Math.round((proc.subTotal || 0) * 100) / 100).toFixed(2)}
+                        Subtotal: $
+                        {(Math.round((proc.subTotal || 0) * 100) / 100).toFixed(
+                          2
+                        )}
                       </span>
                     </div>
                   </div>
@@ -939,32 +1149,51 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Payment Method
+                  </label>
                   <Select
                     selectedKeys={[formData.payment_method]}
                     onSelectionChange={(keys) => {
                       const value = Array.from(keys)[0];
-                      handleInputChange('payment_method', value);
+                      handleInputChange("payment_method", value);
 
                       // Clear payment method error if it exists
                       if (errors.payment_method) {
-                        setErrors(prev => ({ ...prev, payment_method: '' }));
+                        setErrors((prev) => ({ ...prev, payment_method: "" }));
                       }
                     }}
                     className="w-full"
                   >
-                    <SelectItem key="cash" value="cash">Cash</SelectItem>
-                    <SelectItem key="online" value="online">Online</SelectItem>
-                    <SelectItem key="bank_transfer" value="bank_transfer">Bank Transfer</SelectItem>
-                    <SelectItem key="cheque" value="cheque">Cheque</SelectItem>
-                    <SelectItem key="credit_card" value="credit_card">Credit Card</SelectItem>
-                    <SelectItem key="debit_card" value="debit_card">Debit Card</SelectItem>
-                    <SelectItem key="other" value="other">Other</SelectItem>
+                    <SelectItem key="cash" value="cash">
+                      Cash
+                    </SelectItem>
+                    <SelectItem key="online" value="online">
+                      Online
+                    </SelectItem>
+                    <SelectItem key="bank_transfer" value="bank_transfer">
+                      Bank Transfer
+                    </SelectItem>
+                    <SelectItem key="cheque" value="cheque">
+                      Cheque
+                    </SelectItem>
+                    <SelectItem key="credit_card" value="credit_card">
+                      Credit Card
+                    </SelectItem>
+                    <SelectItem key="debit_card" value="debit_card">
+                      Debit Card
+                    </SelectItem>
+                    <SelectItem key="other" value="other">
+                      Other
+                    </SelectItem>
                   </Select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="discount-select">
+                  <label
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                    htmlFor="discount-select"
+                  >
                     Discount (%)
                   </label>
                   <select
@@ -972,27 +1201,41 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
                     className="w-full border rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition"
                     style={{
                       background: "#f4f4f5",
-                      border: "1px solid #f4f4f5"
+                      border: "1px solid #f4f4f5",
                     }}
-                    value={formData.discount !== undefined && formData.discount !== null ? String(formData.discount) : '0'}
-                    onChange={e => {
+                    value={
+                      formData.discount !== undefined &&
+                      formData.discount !== null
+                        ? String(formData.discount)
+                        : "0"
+                    }
+                    onChange={(e) => {
                       const value = e.target.value;
-                      handleInputChange('discount', value);
+                      handleInputChange("discount", value);
 
                       // Clear discount error if it exists and value is valid
-                      if (errors.discount && value !== undefined && value !== null && value !== '') {
-                        setErrors(prev => ({ ...prev, discount: '' }));
+                      if (
+                        errors.discount &&
+                        value !== undefined &&
+                        value !== null &&
+                        value !== ""
+                      ) {
+                        setErrors((prev) => ({ ...prev, discount: "" }));
                       }
                     }}
                   >
                     {Array.from({ length: 101 }, (_, i) => (
-                      <option key={i} value={i}>{i}%</option>
+                      <option key={i} value={i}>
+                        {i}%
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Amount Paid</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Amount Paid
+                  </label>
                   <Input
                     type="number"
                     min="0"
@@ -1002,26 +1245,30 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
                       const value = parseFloat(e.target.value) || 0;
                       // Ensure paid amount is at least 0 and not negative
                       const validValue = Math.max(0, Math.abs(value));
-                      handleInputChange('paid', validValue);
+                      handleInputChange("paid", validValue);
                     }}
                     className="w-full"
                   />
-                  {errors.paid && <p className="text-red-500 text-xs mt-1">{errors.paid}</p>}
+                  {errors.paid && (
+                    <p className="text-red-500 text-xs mt-1">{errors.paid}</p>
+                  )}
                 </div>
               </div>
 
               {/* Notes Section */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Notes
+                </label>
                 <Textarea
-                  value={formData.notes || ''}
+                  value={formData.notes || ""}
                   onChange={(e) => {
                     const value = e.target.value;
-                    handleInputChange('notes', value);
+                    handleInputChange("notes", value);
 
                     // Clear notes error if it exists (notes is optional)
                     if (errors.notes) {
-                      setErrors(prev => ({ ...prev, notes: '' }));
+                      setErrors((prev) => ({ ...prev, notes: "" }));
                     }
                   }}
                   placeholder="Enter any additional notes or comments"
@@ -1034,31 +1281,45 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
               <div className="bg-gray-50 rounded-lg p-4 space-y-2">
                 <div className="flex justify-between">
                   <span className="font-medium">Total Amount:</span>
-                  <span className="font-bold text-lg">PKR {total.toFixed(2)}</span> 
+                  <span className="font-bold text-lg">PKR {total}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">After Discount:</span>
-                  <span className="font-bold text-lg">PKR {afterDiscount.toFixed(2)}</span>
+                  <span className="font-bold text-lg">PKR {afterDiscount}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Balance:</span>
-                  <span className="font-bold text-lg">PKR {balance.toFixed(2)}</span>
+                  <span className="font-bold text-lg">PKR {balance}</span>
                 </div>
               </div>
             </div>
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button color="danger" variant="light" onPress={isEditing ? onCancelEdit : onClose}>
+          <Button
+            color="danger"
+            variant="light"
+            onPress={isEditing ? onCancelEdit : onClose}
+          >
             Cancel
           </Button>
           <Button
             color="primary"
             onPress={handleSubmit}
             disabled={isLoading}
-            startContent={isLoading ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : null}
+            startContent={
+              isLoading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : null
+            }
           >
-            {isLoading ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Invoice' : 'Create Invoice')}
+            {isLoading
+              ? isEditing
+                ? "Updating..."
+                : "Creating..."
+              : isEditing
+              ? "Update Invoice"
+              : "Create Invoice"}
           </Button>
         </ModalFooter>
       </ModalContent>
@@ -1066,197 +1327,141 @@ const InvoiceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, patien
   );
 };
 
-// Invoice Detail Modal Component
+// Invoice Detail Modal Component - Unified with Print Preview
 const InvoiceDetailModal = ({ isOpen, onClose, invoice, loading }) => {
+  const dynamicFormData = useFormData();
+
   if (!invoice) return null;
 
   const handlePrint = () => {
-    const printContent = document.getElementById('invoice-print-content');
-    const printWindow = window.open('', '_blank');
+    const printContent = document.getElementById("invoice-unified-content");
+    const printWindow = window.open("", "_blank");
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Invoice - ${invoice.invoiceNumber || invoice.invoice_number}</title>
+          <title>Invoice - ${
+            invoice.invoiceNumber || invoice.invoice_number
+          }</title>
           <style>
-            @media print {
-              body { margin: 0; padding: 12px; font-family: 'Arial', sans-serif; }
-              .no-print { display: none; }
+            @page { 
+              margin: 0; 
+              size: A4;
             }
-            body { font-family: 'Arial', sans-serif; margin: 0; padding: 12px; background: white; }
-            .invoice-container { max-width: 650px; margin: 0 auto; }
             
-            /* Type Scale - Base: 12px */
-            .text-h1 { font-size: 20px; font-weight: bold; } /* 1.67x base */
-            .text-h2 { font-size: 16px; font-weight: bold; } /* 1.33x base */
-            .text-h3 { font-size: 14px; font-weight: bold; } /* 1.17x base */
-            .text-body { font-size: 12px; } /* base */
-            .text-small { font-size: 10px; } /* 0.83x base */
-            /* Spacing Scale - Base: 4px (use 4, 8, 12, 16, 20) */
+            @media print {
+              body { 
+                margin: 0 !important; 
+                padding: 12px !important; 
+                font-family: 'Arial', sans-serif !important;
+                color: black !important;
+                background: white !important;
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+              }
+              .no-print { display: none !important; }
+              
+              /* Remove grayscale filter for print */
+              #invoice-print-content {
+                filter: none !important;
+                -webkit-filter: none !important;
+              }
+  
+              /* Force table header styles in print */
+              table thead {
+                background: #000000 !important;
+                color: white !important;
+              }
+              
+              table thead tr {
+                background: #000000 !important;
+                color: white !important;
+              }
+              
+              table thead th {
+                background: #000000 !important;
+                color: white !important;
+                border: 1px solid #000000 !important;
+                font-weight: 600 !important;
+              }
+              
+              /* Ensure table borders are visible */
+              table, table tr, table td, table th {
+                border-collapse: collapse !important;
+              }
+              
+              /* Force body text to stay black */
+              table tbody td {
+                color: #000000 !important;
+                border: 1px solid #cccccc !important;
+              }
+              
+              /* Keep borders black */
+              * {
+                border-color: #000000 !important;
+              }
+              
+              /* Preserve header colors specifically */
+              table thead * {
+                color: white !important;
+                background: #000000 !important;
+              }
+            }
             
-            .invoice-header { text-align: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #00a59e; }
-            .invoice-title { font-size: 20px; font-weight: bold; color: #00a59e; margin-bottom: 4px; }
-            .invoice-number { font-size: 14px; color: #69717D; font-weight: 500; }
-            .invoice-date { font-size: 10px; color: #69717D; margin-top: 4px; }
-            .info-section { margin-bottom: 20px; }
-            .info-card { background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #00a59e; }
-            .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-            .info-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
-            .info-label { color: #69717D; font-weight: 500; font-size: 12px; }
-            .info-value { color: #11181C; font-weight: 600; font-size: 12px; }
-            .items-section { margin-bottom: 20px; }
-            .items-title { font-size: 16px; font-weight: bold; color: #00a59e; margin-bottom: 8px; }
-            .items-table { width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-            .items-table th { background: #00a59e; color: white; padding: 8px 8px; text-align: left; font-weight: 600; font-size: 10px; }
-            .items-table td { padding: 8px; border-bottom: 1px solid #E4E7EB; font-size: 10px; }
-            .items-table tr:nth-child(even) { background: #F4F4F5; }
-            .items-table tr:hover { background: #E4E7EB; }
-            .total-column { font-weight: bold; color: #00a59e; }
-            .financial-summary { background: #F4F4F5; padding: 16px; border-radius: 8px; border: 2px solid #00a59e; }
-            .financial-title { font-size: 16px; font-weight: bold; color: #00a59e; margin-bottom: 12px; text-align: center; }
-            .financial-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-            .financial-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; }
-            .financial-label { color: #11181C; font-weight: 600; }
-            .financial-value { font-weight: bold; }
-            .subtotal { color: #11181C; }
-            .discount { color: #F31260; }
-            .net-amount { color: #00a59e; }
-            .paid { color: #17C964; }
-            .balance { color: #F5A524; }
-            .status-badge { text-align: center; margin-top: 12px; padding: 8px; border-radius: 16px; font-weight: bold; font-size: 10px; }
-            .status-paid { background: #F0FDF4; color: #166534; border: 2px solid #22C55E; }
-            .status-pending { background: #FFFBEB; color: #92400E; border: 2px solid #F59E0B; }
-            .notes-section { background: #F4F4F5; padding: 12px; border-radius: 6px; border-left: 3px solid #00a59e; margin-top: 12px; }
-            .notes-title { font-size: 14px; font-weight: bold; color: #00a59e; margin-bottom: 8px; }
-            .notes-content { color: #11181C; line-height: 1.4; font-size: 12px; }
+            @media screen {
+              body { 
+                font-family: 'Arial', sans-serif; 
+                margin: 0; 
+                padding: 12px; 
+                background: white; 
+              }
+            }
+            
+            /* Universal styles that apply to both screen and print */
+            body { 
+              font-family: 'Arial', sans-serif !important; 
+              margin: 0 !important; 
+              padding: 12px !important; 
+              background: white !important;
+              -webkit-print-color-adjust: exact !important;
+              color-adjust: exact !important;
+            }
+            
+            .invoice-container { 
+              max-width: 650px !important; 
+              margin: 0 auto !important; 
+            }
+            
+            table thead {
+              background: #000000 !important;
+              color: white !important;
+            }
+            
+            table thead tr {
+              background: #000000 !important;
+              color: white !important;
+            }
+            
+            table thead th {
+              background: #000000 !important;
+              color: white !important;
+              border: 1px solid #000000 !important;
+              font-weight: 600 !important;
+            }
+            
+            table tbody td {
+              color: #000000 !important;
+              border: 1px solid #cccccc !important;
+            }
+            
+            table {
+              border-collapse: collapse !important;
+            }
           </style>
         </head>
         <body>
-          <div class="invoice-container">
-            <div style="background: white; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px;">
-              <!-- Invoice Header -->
-              <div style="text-align: center; border-bottom: 2px solid #00a59e; padding-bottom: 16px; margin-bottom: 20px;">
-                <h2 style="font-size: 20px; font-weight: bold; color: #00a59e; margin: 0 0 6px 0;">INVOICE</h2>
-                <p style="font-size: 14px; color: #69717D; font-weight: 500; margin: 0;">
-                  ${invoice.invoiceNumber || invoice.invoice_number}
-                </p>
-                <p style="font-size: 10px; color: #69717D; margin: 4px 0 0 0;">
-                  Date: ${invoice.invoiceDate || invoice.invoice_date}
-                </p>
-              </div>
-
-              <!-- Invoice Information -->
-              <div style="margin-bottom: 20px;">
-                <div style="background: #F4F4F5; padding: 16px; border-radius: 6px; border-left: 3px solid #00a59e;">
-                  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
-                    <div style="display: flex; justify-content: space-between; margin: 0;">
-                      <span style="color: #69717D; font-weight: 500; font-size: 12px;">Name:</span>
-                      <span style="color: #11181C; font-weight: 600; font-size: 12px;">${invoice.patient?.fullName || 'N/A'}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin: 0;">
-                      <span style="color: #69717D; font-weight: 500; font-size: 12px;">MRN:</span>
-                      <span style="color: #11181C; font-weight: 600; font-size: 12px;">${invoice.patient?.mrnNumber || 'N/A'}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin: 0;">
-                      <span style="color: #69717D; font-weight: 500; font-size: 12px;">Contact:</span>
-                      <span style="color: #11181C; font-weight: 600; font-size: 12px;">${invoice.patient?.contactNumber || 'N/A'}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin: 0;">
-                      <span style="color: #69717D; font-weight: 500; font-size: 12px;">Email:</span>
-                      <span style="color: #11181C; font-weight: 600; font-size: 12px;">${invoice.patient?.email || 'N/A'}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin: 0;">
-                      <span style="color: #69717D; font-weight: 500; font-size: 12px;">Doctor:</span>
-                      <span style="color: #11181C; font-weight: 600; font-size: 12px;">${invoice.doctor?.username || 'N/A'}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin: 0;">
-                      <span style="color: #69717D; font-weight: 500; font-size: 12px;">Payment Method:</span>
-                      <span style="color: #11181C; font-weight: 600; font-size: 12px; text-transform: capitalize;">${invoice.paymentMethod || 'Not specified'}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Invoice Items -->
-              <div style="margin-bottom: 20px;">
-                <h3 style="font-size: 16px; font-weight: bold; color: #11181C; margin: 0 0 16px 0;">Invoice Items</h3>
-                <div style="background: white; border: 1px solid #E4E7EB; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-                  <table style="width: 100%; border-collapse: collapse;">
-                    <thead style="background: #00a59e; color: white;">
-                      <tr>
-                        <th style="padding: 8px 8px; text-align: left; font-weight: 600; font-size: 10px;">#</th>
-                        <th style="padding: 8px 8px; text-align: left; font-weight: 600; font-size: 10px;">Description</th>
-                        <th style="padding: 8px 8px; text-align: left; font-weight: 600; font-size: 10px;">Qty</th>
-                        <th style="padding: 8px 8px; text-align: left; font-weight: 600; font-size: 10px;">Price</th>
-                        <th style="padding: 8px 8px; text-align: left; font-weight: 600; font-size: 10px;">Disc.</th>
-                        <th style="padding: 8px 8px; text-align: left; font-weight: 600; font-size: 10px;">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody style="border-top: 1px solid #E4E7EB;">
-                      ${invoice.services && invoice.services.length > 0 ?
-        invoice.services.map((item, index) => `
-                          <tr style="background: ${index % 2 === 0 ? 'white' : '#F4F4F5'};">
-                            <td style="padding: 8px; border-bottom: 1px solid #E4E7EB; font-size: 10px; color: #11181C; font-weight: 500;">${item.index}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #E4E7EB; font-size: 10px; color: #11181C;">${item.description || 'No description'}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #E4E7EB; font-size: 10px; color: #11181C;">${item.quantity}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #E4E7EB; font-size: 10px; color: #11181C;">PKR ${parseFloat(item.unit_price).toFixed(2)}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #E4E7EB; font-size: 10px; color: #11181C;">PKR ${parseFloat(item.discount).toFixed(2)}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #E4E7EB; font-size: 10px; color: #00a59e; font-weight: bold;">PKR ${parseFloat(item.total_price).toFixed(2)}</td>
-                          </tr>
-                        `).join('') :
-        `<tr><td colspan="6" style="padding: 20px; text-align: center; color: #69717D; font-size: 10px;">No items found</td></tr>`
-      }
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <!-- Financial Summary -->
-              <div style="background: #F4F4F5; padding: 16px; border-radius: 8px; border: 2px solid #00a59e; margin-bottom: 20px;">
-                <h3 style="font-size: 16px; font-weight: bold; color: #00a59e; margin: 0 0 16px 0; text-align: center;">Financial Summary</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                  <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 12px;">
-                      <span style="color: #11181C; font-weight: 600;">Subtotal:</span>
-                      <span style="color: #11181C; font-weight: bold; font-size: 12px;">PKR ${parseFloat(invoice.totalAmount || 0).toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 12px;">
-                      <span style="color: #11181C; font-weight: 600;">Discount:</span>
-                      <span style="color: #F31260; font-weight: bold; font-size: 12px;">-PKR ${parseFloat(invoice.discountAmount || 0).toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 12px;">
-                      <span style="color: #11181C; font-weight: 600;">Net Amount:</span>
-                      <span style="color: #00a59e; font-weight: bold; font-size: 12px;">PKR ${parseFloat(invoice.netAmount || 0).toFixed(2)}</span>
-                    </div>
-                  </div>
-                  <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 12px;">
-                      <span style="color: #11181C; font-weight: 600;">Amount Paid:</span>
-                      <span style="color: #17C964; font-weight: bold; font-size: 12px;">PKR ${parseFloat(invoice.paid || 0).toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 12px;">
-                      <span style="color: #11181C; font-weight: 600;">Balance:</span>
-                      <span style="color: #F5A524; font-weight: bold; font-size: 12px;">PKR ${parseFloat(invoice.balance || 0).toFixed(2)}</span>
-                    </div>
-                    <div style="padding-top: 12px; border-top: 1px solid #E4E7EB;">
-                        <div style="text-align: right; margin-top: 8px;">
-                          <div style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; border: 2px dashed; ${(invoice.balance || 0) === 0 ? 'color: #166534; border-color: #22C55E;' : 'color: #92400E; border-color: #F59E0B;'}">
-                          ${(invoice.balance || 0) === 0 ? '✅ PAID' : '⏳ PENDING'}
-                          </div>
-                        </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Notes Section -->
-              ${invoice.notes ? `
-                <div style="background: #F4F4F5; padding: 16px; border-radius: 6px; border-left: 3px solid #00a59e;">
-                  <h3 style="font-size: 14px; font-weight: bold; color: #00a59e; margin: 0 0 8px 0;">Notes</h3>
-                  <p style="color: #11181C; line-height: 1.4; font-size: 12px; margin: 0;">${invoice.notes}</p>
-                </div>
-              ` : ''}
-            </div>
+          <div id="invoice-print-content" class="invoice-container" style="max-width: 650px; margin: 0 auto; padding: 20px; background: white; font-family: Arial, sans-serif;">
+            ${printContent.innerHTML}
           </div>
         </body>
       </html>
@@ -1269,103 +1474,508 @@ const InvoiceDetailModal = ({ isOpen, onClose, invoice, loading }) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="4xl" scrollBehavior="inside">
-      <ModalContent className="bg-gray-50">
+      <ModalContent className="">
         <ModalHeader className="bg-white border-b border-gray-200">
           <div className="w-full flex justify-between items-center">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Invoice Details</h1>
-              <p className="text-base text-primary font-medium mt-1">
-                {invoice.invoiceNumber || invoice.invoice_number}
-              </p>
+            <div className="flex items-center">
+              <div className="w-8 h-8 mr-3 rounded-lg shadow-sm bg-primary/10 flex items-center justify-center">
+                <i className="text-primary text-lg font-bold">i</i>
             </div>
-            <div className="flex gap-3">
+              <h1 className="text-xl font-bold text-black">Invoice Detail</h1>
             </div>
           </div>
         </ModalHeader>
-        <ModalBody className="p-5">
+        <ModalBody className="p-0">
           {loading ? (
             <div className="flex justify-center items-center py-16">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-gray-600 text-lg">Loading invoice details...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto mb-4"></div>
+                <p className="text-black text-lg">Loading invoice details...</p>
               </div>
             </div>
           ) : (
-            <div id="invoice-print-content" className="bg-white rounded-lg shadow-sm p-6 space-y-6">
-              {/* Invoice Header */}
-              <div className="text-center border-b-2 border-primary pb-4">
-                <h2 className="text-3xl font-bold text-primary mb-1">INVOICE</h2>
-                <p className="text-lg text-gray-600 font-medium">
-                  {invoice.invoiceNumber || invoice.invoice_number}
-                </p>
-                <p className="text-base text-gray-500 mt-1">
-                  Date: {invoice.invoiceDate || invoice.invoice_date}
-                </p>
+            <div
+              id="invoice-unified-content"
+              className="invoice-container"
+              style={{
+                maxWidth: "650px",
+                margin: "0 auto",
+                padding: "20px",
+                background: "white",
+                fontFamily: "Arial, sans-serif",
+              }}
+            >
+              <div
+                style={{
+                  background: "white",
+                  borderRadius: "6px",
+                  padding: "20px",
+                  marginBottom: "20px",
+                }}
+              >
+                {/* Clinic Branding & Invoice Header */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    borderBottom: "2px solid #000000",
+                    paddingBottom: "16px",
+                    marginBottom: "20px",
+                    position: "relative",
+                  }}
+                >
+                  {/* Branding Section */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      flexDirection: "column",
+                      gap: "4px",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <div
+                        style={{
+                          width: "38px",
+                          height: "38px",
+                          marginRight: "16px",
+                          background: "transparent",
+                          borderRadius: "8px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                          marginTop: "0px",
+                        }}
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#000000"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                        </svg>
               </div>
 
-              {/* Invoice Information */}
-              <div className="grid grid-cols-1 gap-6">
-                {/* Patient Information */}
-                <div className="bg-gray-100 p-4 rounded-lg border-l-4 border-primary">
-                  <div className="space-y-2 grid grid-cols-3 gap-6">
-                    <div className="flex align-center gap-2" style={{ margin: "0px" }}>
-                      <span className="text-gray-600 font-medium">Name:</span>
-                      <span className="text-gray-900 font-semibold">{invoice.patient?.fullName || 'N/A'}</span>
+                      <div>
+                        <h1
+                          style={{
+                            fontSize: "20px",
+                            fontWeight: "bold",
+                            color: "#000000",
+                            margin: "0 0 4px 0",
+                          }}
+                        >
+                          {dynamicFormData.websiteName}
+                        </h1>
                     </div>
-                    <div className="flex align-center gap-2" style={{ margin: "0px" }}>
-                      <span className="text-gray-600 font-medium">MRN:</span>
-                      <span className="text-gray-900 font-semibold">{invoice.patient?.mrnNumber || 'N/A'}</span>
                     </div>
-                    <div className="flex align-center gap-2" style={{ margin: "0px" }}>
-                      <span className="text-gray-600 font-medium">Contact:</span>
-                      <span className="text-gray-900 font-semibold">{invoice.patient?.contactNumber || 'N/A'}</span>
+                    <div
+                      style={{
+                        fontSize: "10px",
+                        color: "#333333",
+                        lineHeight: "1.4",
+                      }}
+                    >
+                      <div style={{ marginBottom: "2px" }}>
+                        Office#1, City Plaza, F-10 Markaz, Islamabad
                     </div>
-                    <div className="flex align-center gap-2" style={{ margin: "0px" }}>
-                      <span className="text-gray-600 font-medium">Email:</span>
-                      <span className="text-gray-900 font-semibold">{invoice.patient?.email || 'N/A'}</span>
+                      <div>Clinic Contact: 0516131786</div>
                     </div>
-                    <div className="flex align-center gap-2" style={{ margin: "0px" }}>
-                      <span className="text-gray-600 font-medium">Doctor:</span>
-                      <span className="text-gray-900 font-semibold">{invoice.doctor?.username || 'N/A'}</span>
                     </div>
-                    <div className="flex align-center gap-2" style={{ margin: "0px" }}>
-                      <span className="text-gray-600 font-medium">Payment Method:</span>
-                      <span className="text-gray-900 font-semibold capitalize">{invoice.paymentMethod || 'Not specified'}</span>
+
+                  {/* INVOICE Title - absolutely centered */}
+                  <h2
+                    style={{
+                      fontSize: "20px",
+                      fontWeight: "bold",
+                      color: "#000000",
+                      margin: "0",
+                      textTransform: "uppercase",
+                      position: "absolute",
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      top: "0px",
+                    }}
+                  >
+                    INVOICE
+                  </h2>
                     </div>
+
+                {/* Invoice Information Grid */}
+                <div
+                  style={{
+                    background: "#ffff",
+                    padding: "8px",
+                    borderRadius: "6px",
+                    borderLeft: "3px solid #000000",
+                    border: "1px solid #cccccc",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr 1fr",
+                      gap: "8px",
+                    }}
+                  >
+                    {/* Name */}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "3px",
+                        justifyContent: "start",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#555555",
+                          fontWeight: "500",
+                          fontSize: "12px",
+                        }}
+                      >
+                        Name:
+                      </span>
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "600",
+                          fontSize: "12px",
+                        }}
+                      >
+                        {invoice.patient?.fullName || "N/A"}
+                      </span>
                   </div>
+
+                    {/* MRN */}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "3px",
+                        justifyContent: "start",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#555555",
+                          fontWeight: "500",
+                          fontSize: "12px",
+                        }}
+                      >
+                        MRN:
+                      </span>
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "600",
+                          fontSize: "12px",
+                        }}
+                      >
+                        {invoice.patient?.mrnNumber || "N/A"}
+                      </span>
+                    </div>
+
+                    {/* Contact */}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "3px",
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#555555",
+                          fontWeight: "500",
+                          fontSize: "12px",
+                        }}
+                      >
+                        Contact:
+                      </span>
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "600",
+                          fontSize: "12px",
+                        }}
+                      >
+                        {invoice.patient?.contactNumber || "N/A"}
+                      </span>
+                    </div>
+
+                    {/* Doctor */}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "3px",
+                        justifyContent: "start",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#555555",
+                          fontWeight: "500",
+                          fontSize: "12px",
+                        }}
+                      >
+                        Doctor:
+                      </span>
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "600",
+                          fontSize: "12px",
+                        }}
+                      >
+                        {invoice.doctor?.username || "N/A"}
+                      </span>
+                    </div>
+
+                    {/* Invoice Number */}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "3px",
+                        justifyContent: "start",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#555555",
+                          fontWeight: "500",
+                          fontSize: "12px",
+                        }}
+                      >
+                        Invoice #:
+                      </span>
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "600",
+                          fontSize: "12px",
+                        }}
+                      >
+                        {invoice.invoiceNumber ||
+                          invoice.invoice_number ||
+                          "N/A"}
+                      </span>
+                    </div>
+
+                    {/* Invoice Date */}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "3px",
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#555555",
+                          fontWeight: "500",
+                          fontSize: "12px",
+                        }}
+                      >
+                        Date:
+                      </span>
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "600",
+                          fontSize: "12px",
+                        }}
+                      >
+                        {invoice.invoiceDate || invoice.invoice_date || "N/A"}
+                      </span>
+                    </div>
                 </div>
               </div>
 
               {/* Invoice Items */}
-              <div>
-                <h3 className="text-xl font-bold text-gray-800 mb-4">Invoice Items</h3>
-                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                  <table className="w-full">
-                    <thead className="bg-primary text-white">
-                      <tr>
-                        <th className="px-4 py-3 text-left font-semibold">#</th>
-                        <th className="px-4 py-3 text-left font-semibold">Description</th>
-                        <th className="px-4 py-3 text-left font-semibold">Quantity</th>
-                        <th className="px-4 py-3 text-left font-semibold">Unit Price</th>
-                        <th className="px-4 py-3 text-left font-semibold">Discount</th>
-                        <th className="px-4 py-3 text-left font-semibold">Total</th>
+                <div style={{ marginBottom: "20px" }}>
+                  <h3
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: "bold",
+                      color: "#000000",
+                      margin: "8px 0",
+                    }}
+                  >
+                    Invoice Items
+                  </h3>
+                  <div
+                    style={{
+                      background: "white",
+                      border: "2px solid #000000",
+                      borderRadius: "6px",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <table
+                      style={{ width: "100%", borderCollapse: "collapse" }}
+                    >
+                      <thead style={{ background: "#000000", color: "white" }}>
+                        <tr>
+                          <th
+                            style={{
+                              padding: "8px 8px",
+                              textAlign: "left",
+                              fontWeight: "600",
+                              fontSize: "10px",
+                              border: "1px solid #000000",
+                            }}
+                          >
+                            #
+                          </th>
+                          <th
+                            style={{
+                              padding: "8px 8px",
+                              textAlign: "left",
+                              fontWeight: "600",
+                              fontSize: "10px",
+                              border: "1px solid #000000",
+                            }}
+                          >
+                            Description
+                          </th>
+                          <th
+                            style={{
+                              padding: "8px 8px",
+                              textAlign: "left",
+                              fontWeight: "600",
+                              fontSize: "10px",
+                              border: "1px solid #000000",
+                            }}
+                          >
+                            Qty
+                          </th>
+                          <th
+                            style={{
+                              padding: "8px 8px",
+                              textAlign: "left",
+                              fontWeight: "600",
+                              fontSize: "10px",
+                              border: "1px solid #000000",
+                            }}
+                          >
+                            Price
+                          </th>
+                          <th
+                            style={{
+                              padding: "8px 8px",
+                              textAlign: "left",
+                              fontWeight: "600",
+                              fontSize: "10px",
+                              border: "1px solid #000000",
+                            }}
+                          >
+                            Disc.
+                          </th>
+                          <th
+                            style={{
+                              padding: "8px 8px",
+                              textAlign: "left",
+                              fontWeight: "600",
+                              fontSize: "10px",
+                              border: "1px solid #000000",
+                            }}
+                          >
+                            Total
+                          </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                      <tbody>
                       {invoice.services && invoice.services.length > 0 ? (
                         invoice.services.map((item, index) => (
-                          <tr key={index} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-4 py-3 text-gray-900 font-medium">{item.index}</td>
-                            <td className="px-4 py-3 text-gray-900">{item.description || 'No description'}</td>
-                            <td className="px-4 py-3 text-gray-900">{item.quantity}</td>
-                            <td className="px-4 py-3 text-gray-900">PKR {parseFloat(item.unit_price).toFixed(2)}</td>
-                            <td className="px-4 py-3 text-gray-900">PKR {parseFloat(item.discount).toFixed(2)}</td>
-                            <td className="px-4 py-3 font-bold text-primary">PKR {parseFloat(item.total_price).toFixed(2)}</td>
+                            <tr
+                              key={index}
+                              style={{
+                                background:
+                                  index % 2 === 0 ? "white" : "#f8f8f8",
+                              }}
+                            >
+                              <td
+                                style={{
+                                  padding: "8px",
+                                  border: "1px solid #cccccc",
+                                  fontSize: "10px",
+                                  color: "#000000",
+                                  fontWeight: "500",
+                                }}
+                              >
+                                {item.index}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "8px",
+                                  border: "1px solid #cccccc",
+                                  fontSize: "10px",
+                                  color: "#000000",
+                                }}
+                              >
+                                {item.description || "No description"}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "8px",
+                                  border: "1px solid #cccccc",
+                                  fontSize: "10px",
+                                  color: "#000000",
+                                }}
+                              >
+                                {item.quantity}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "8px",
+                                  border: "1px solid #cccccc",
+                                  fontSize: "10px",
+                                  color: "#000000",
+                                }}
+                              >
+                                PKR {parseFloat(item.unit_price)}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "8px",
+                                  border: "1px solid #cccccc",
+                                  fontSize: "10px",
+                                  color: "#000000",
+                                }}
+                              >
+                                PKR {parseFloat(item.discount)}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "8px",
+                                  border: "1px solid #cccccc",
+                                  fontSize: "10px",
+                                  color: "#000000",
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                PKR {parseFloat(item.total_price)}
+                              </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="6" className="px-4 py-6 text-center text-gray-500 text-sm">
+                            <td
+                              colSpan="6"
+                              style={{
+                                padding: "20px",
+                                textAlign: "center",
+                                color: "#000000",
+                                fontSize: "10px",
+                                border: "1px solid #000000",
+                              }}
+                            >
                             No items found
                           </td>
                         </tr>
@@ -1376,53 +1986,202 @@ const InvoiceDetailModal = ({ isOpen, onClose, invoice, loading }) => {
               </div>
 
               {/* Financial Summary */}
-              <div className="bg-gray-100 p-6 rounded-xl border-2 border-primary">
-                <h3 className="text-xl font-bold text-primary mb-4 text-center">Financial Summary</h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-base">
-                      <span className="text-gray-700 font-semibold">Subtotal:</span>
-                      <span className="text-gray-900 font-bold text-lg">PKR {parseFloat(invoice.totalAmount || 0).toFixed(2)}</span>
+                <div
+                  style={{
+                    background: "#ffff",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    border: "2px solid #000000",
+                    marginBottom: "20px",
+                  }}
+                >
+                  {/* First Row: Subtotal, Amount Paid, Discount */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr 1fr",
+                      gap: "12px",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "start",
+                        fontSize: "12px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "600",
+                          marginRight: "8px",
+                        }}
+                      >
+                        Subtotal:
+                      </span>
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "bold",
+                          fontSize: "12px",
+                        }}
+                      >
+                        PKR {Math.round(invoice.totalAmount || 0)}
+                      </span>
                     </div>
-                    <div className="flex justify-between text-base">
-                      <span className="text-gray-700 font-semibold">Discount:</span>
-                      <span className="text-danger font-bold text-lg">-${parseFloat(invoice.discountAmount || 0).toFixed(2)}</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        fontSize: "12px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "600",
+                          marginRight: "8px",
+                        }}
+                      >
+                        Amount Paid:
+                      </span>
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "bold",
+                          fontSize: "12px",
+                        }}
+                      >
+                        PKR {Math.round(invoice.paid || 0)}
+                      </span>
                     </div>
-                    <div className="flex justify-between text-base">
-                      <span className="text-gray-700 font-semibold">Net Amount:</span>
-                      <span className="text-primary font-bold text-lg">PKR {parseFloat(invoice.netAmount || 0).toFixed(2)}</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "end",
+                        fontSize: "12px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "600",
+                          marginRight: "8px",
+                        }}
+                      >
+                        Discount:
+                      </span>
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "bold",
+                          fontSize: "12px",
+                        }}
+                      >
+                        -PKR {Math.round(invoice.discountAmount || 0)}
+                      </span>
                     </div>
                   </div>
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-base">
-                      <span className="text-gray-700 font-semibold">Amount Paid:</span>
-                      <span className="text-success font-bold text-lg">PKR {parseFloat(invoice.paid || 0).toFixed(2)}</span>
+
+                  {/* Second Row: Balance and Net Amount */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr 1fr",
+                      gap: "12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "start",
+                        fontSize: "12px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "600",
+                          marginRight: "8px",
+                        }}
+                      >
+                        Balance:
+                      </span>
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "bold",
+                          fontSize: "12px",
+                        }}
+                      >
+                        PKR {Math.round(invoice.balance || 0)}
+                      </span>
                     </div>
-                    <div className="flex justify-between text-base">
-                      <span className="text-gray-700 font-semibold">Balance:</span>
-                      <span className="text-warning font-bold text-lg">PKR {parseFloat(invoice.balance || 0).toFixed(2)}</span>
-                    </div>
-                    <div className="pt-3 border-t-2 border-gray-300">
-                      <div className="flex justify-end">
-                        <div className={`mt-1 px-3 py-1.5 rounded text-xs font-bold inline-flex items-center whitespace-nowrap uppercase tracking-wider border-2 border-dashed ${(invoice.balance || 0) === 0
-                          ? 'text-success-700 border-success-600'
-                          : 'text-warning-700 border-warning-600'
-                          }`}>
-                          {(invoice.balance || 0) === 0 ? '✅ PAID' : '⏳ PENDING'}
-                        </div>
-                      </div>
-                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        fontSize: "12px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "600",
+                          marginRight: "8px",
+                        }}
+                      >
+                        Net Amount:
+                      </span>
+                      <span
+                        style={{
+                          color: "#000000",
+                          fontWeight: "bold",
+                          fontSize: "12px",
+                          textDecoration: "underline",
+                        }}
+                      >
+                        PKR {Math.round(invoice.netAmount || 0)}
+                      </span>
                   </div>
                 </div>
               </div>
 
               {/* Notes Section */}
               {invoice.notes && (
-                <div className="bg-gray-100 p-4 rounded-lg border-l-4 border-primary">
-                  <h3 className="text-lg font-bold text-primary mb-2">Notes</h3>
-                  <p className="text-gray-700 text-base leading-relaxed">{invoice.notes}</p>
+                  <div
+                    style={{
+                      background: "#ffff",
+                      padding: "16px",
+                      borderRadius: "6px",
+                      borderLeft: "3px solid #000000",
+                      border: "1px solid #cccccc",
+                    }}
+                  >
+                    <h3
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                        color: "#000000",
+                        margin: "0 0 8px 0",
+                      }}
+                    >
+                      Notes
+                    </h3>
+                    <p
+                      style={{
+                        color: "#000000",
+                        lineHeight: "1.4",
+                        fontSize: "12px",
+                        margin: "0",
+                      }}
+                    >
+                      {invoice.notes}
+                    </p>
                 </div>
               )}
+              </div>
             </div>
           )}
         </ModalBody>
@@ -1475,7 +2234,11 @@ export default function InvoicesPage() {
   const { token } = useAuth();
 
   // Modal states
-  const { isOpen: isFormOpen, onOpen: onFormOpen, onClose: onFormClose } = useDisclosure();
+  const {
+    isOpen: isFormOpen,
+    onOpen: onFormOpen,
+    onClose: onFormClose,
+  } = useDisclosure();
   const [isEditing, setIsEditing] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
 
@@ -1503,66 +2266,69 @@ export default function InvoicesPage() {
 
   // Memoized filter columns
   const memoizedFilterColumns = useMemo(() => {
-    console.log('Building memoized filter columns with:', { patients: patients.length, doctors: doctors.length });
+    console.log("Building memoized filter columns with:", {
+      patients: patients.length,
+      doctors: doctors.length,
+    });
 
     if (patients.length === 0 && doctors.length === 0) {
-      console.log('No patients or doctors, returning base filter columns');
-      return baseFilterColumns.map(filter => {
-        if (filter.key === 'patient') {
+      console.log("No patients or doctors, returning base filter columns");
+      return baseFilterColumns.map((filter) => {
+        if (filter.key === "patient") {
           return {
             ...filter,
-            options: [{ value: '', label: 'Loading patients...' }],
-            disabled: true
+            options: [{ value: "", label: "Loading patients..." }],
+            disabled: true,
           };
         }
-        if (filter.key === 'doctor') {
+        if (filter.key === "doctor") {
           return {
             ...filter,
-            options: [{ value: '', label: 'Loading doctors...' }],
-            disabled: true
+            options: [{ value: "", label: "Loading doctors..." }],
+            disabled: true,
           };
         }
         return filter;
       });
     }
 
-    const result = baseFilterColumns.map(filter => {
-      if (filter.key === 'patient') {
+    const result = baseFilterColumns.map((filter) => {
+      if (filter.key === "patient") {
         const patientOptions = [
-          { value: '', label: 'All Patients' },
-          ...patients.map(patient => ({
+          { value: "", label: "All Patients" },
+          ...patients.map((patient) => ({
             key: patient.key,
             value: patient.value,
-            label: patient.label
-          }))
+            label: patient.label,
+          })),
         ];
-        console.log('Patient filter options:', patientOptions);
+        console.log("Patient filter options:", patientOptions);
         return {
           ...filter,
           options: patientOptions,
-          disabled: false
+          disabled: false,
         };
       }
-      if (filter.key === 'doctor') {
+      if (filter.key === "doctor") {
         const doctorOptions = [
-          { value: '', label: 'All Doctors' },
-          ...doctors.map(doctor => ({
+          { value: "", label: "All Doctors" },
+          ...doctors.map((doctor) => ({
             key: doctor.key,
             value: doctor.value,
-            label: doctor.label
-          }))
+            label: doctor.label,
+          })),
         ];
-        console.log('Doctor filter options:', doctorOptions);
+        console.log("Doctor filter options:", doctorOptions);
         return {
           ...filter,
           options: doctorOptions,
-          disabled: false
+          disabled: false,
         };
       }
       return filter;
     });
 
-    console.log('Final memoized filter columns:', result);
+    console.log("Final memoized filter columns:", result);
     return result;
   }, [patients, doctors]);
 
@@ -1577,152 +2343,241 @@ export default function InvoicesPage() {
 
     // Fetch patients
     config.initAPI(token);
-    config.getData('/patients/list')
-      .then(response => {
-        console.log('Patients API response:', response);
+    config
+      .getData("/patients/list")
+      .then((response) => {
+        console.log("Patients API response:", response);
         if (response.data && response.data.data) {
-          const patientOptions = response.data.data.map(patient => ({
+          const patientOptions = response.data.data.map((patient) => ({
             key: patient.id,
             value: patient.id,
-            label: patient.full_name
+            label: patient.full_name,
           }));
-          console.log('Setting patients:', patientOptions);
+          console.log("Setting patients:", patientOptions);
           setPatients(patientOptions);
         } else if (response.data && Array.isArray(response.data)) {
           // Handle case where response.data is directly an array
-          const patientOptions = response.data.map(patient => ({
+          const patientOptions = response.data.map((patient) => ({
             key: patient.id,
             value: patient.id,
-            label: patient.full_name
+            label: patient.full_name,
           }));
-          console.log('Setting patients (direct array):', patientOptions);
+          console.log("Setting patients (direct array):", patientOptions);
           setPatients(patientOptions);
         } else {
           // Fallback to hardcoded patients if API doesn't return data
           const fallbackPatients = [
-            { key: '1', value: '1', label: 'Sample Patient 1' },
-            { key: '2', value: '2', label: 'Sample Patient 2' },
-            { key: '3', value: '3', label: 'Sample Patient 3' }
+            { key: "1", value: "1", label: "Sample Patient 1" },
+            { key: "2", value: "2", label: "Sample Patient 2" },
+            { key: "3", value: "3", label: "Sample Patient 3" },
           ];
-          console.log('Setting fallback patients:', fallbackPatients);
+          console.log("Setting fallback patients:", fallbackPatients);
           setPatients(fallbackPatients);
         }
       })
-      .catch(error => {
-        console.error('Error fetching patients:', error);
+      .catch((error) => {
+        console.error("Error fetching patients:", error);
         // Set fallback patients on error
         const fallbackPatients = [
-          { key: '1', value: '1', label: 'Sample Patient 1' },
-          { key: '2', value: '2', label: 'Sample Patient 2' },
-          { key: '3', value: '3', label: 'Sample Patient 3' }
+          { key: "1", value: "1", label: "Sample Patient 1" },
+          { key: "2", value: "2", label: "Sample Patient 2" },
+          { key: "3", value: "3", label: "Sample Patient 3" },
         ];
-        console.log('Setting fallback patients on error:', fallbackPatients);
+        console.log("Setting fallback patients on error:", fallbackPatients);
         setPatients(fallbackPatients);
       });
 
     // Fetch doctors
-    config.getData(`/users/list?role=doctor`)
-      .then(response => {
-        console.log('Doctors API response:', response);
+    config
+      .getData(`/users/list?role=doctor`)
+      .then((response) => {
+        console.log("Doctors API response:", response);
         if (response.data && response.data.data) {
-          const doctorOptions = response.data.data.map(doctor => ({
+          const doctorOptions = response.data.data.map((doctor) => ({
             key: doctor.id,
             value: doctor.id,
-            label: doctor.username
+            label: doctor.username,
           }));
-          console.log('Setting doctors:', doctorOptions);
+          console.log("Setting doctors:", doctorOptions);
           setDoctors(doctorOptions);
         } else if (response.data && Array.isArray(response.data)) {
           // Handle case where response.data is directly an array
-          const doctorOptions = response.data.map(doctor => ({
+          const doctorOptions = response.data.map((doctor) => ({
             key: doctor.id,
             value: doctor.id,
-            label: doctor.username
+            label: doctor.username,
           }));
-          console.log('Setting doctors (direct array):', doctorOptions);
+          console.log("Setting doctors (direct array):", doctorOptions);
           setDoctors(doctorOptions);
         } else {
           // Fallback to hardcoded doctors if API doesn't return data
           const fallbackDoctors = [
-            { key: '1', value: '1', label: 'Dr. Smith' },
-            { key: '2', value: '2', label: 'Dr. Johnson' },
-            { key: '3', value: '3', label: 'Dr. Williams' }
+            { key: "1", value: "1", label: "Dr. Smith" },
+            { key: "2", value: "2", label: "Dr. Johnson" },
+            { key: "3", value: "3", label: "Dr. Williams" },
           ];
-          console.log('Setting fallback doctors:', fallbackDoctors);
+          console.log("Setting fallback doctors:", fallbackDoctors);
           setDoctors(fallbackDoctors);
         }
       })
-      .catch(error => {
-        console.error('Error fetching doctors:', error);
+      .catch((error) => {
+        console.error("Error fetching doctors:", error);
         // Set fallback doctors on error
         const fallbackDoctors = [
-          { key: '1', value: '1', label: 'Dr. Smith' },
-          { key: '2', value: '2', label: 'Dr. Johnson' },
-          { key: '3', value: '3', label: 'Dr. Williams' }
+          { key: "1", value: "1", label: "Dr. Smith" },
+          { key: "2", value: "2", label: "Dr. Johnson" },
+          { key: "3", value: "3", label: "Dr. Williams" },
         ];
-        console.log('Setting fallback doctors on error:', fallbackDoctors);
+        console.log("Setting fallback doctors on error:", fallbackDoctors);
         setDoctors(fallbackDoctors);
       });
 
     // Set default categories and procedures with parent-child relationship
     const defaultCategories = [
-      { key: 'consultation', value: 'consultation', label: 'Consultation' },
-      { key: 'surgery', value: 'surgery', label: 'Surgery' },
-      { key: 'lab', value: 'lab', label: 'Lab' },
-      { key: 'treatment', value: 'treatment', label: 'Treatment' },
-      { key: 'examination', value: 'examination', label: 'Examination' }
+      { key: "consultation", value: "consultation", label: "Consultation" },
+      { key: "surgery", value: "surgery", label: "Surgery" },
+      { key: "lab", value: "lab", label: "Lab" },
+      { key: "treatment", value: "treatment", label: "Treatment" },
+      { key: "examination", value: "examination", label: "Examination" },
     ];
-    console.log('Setting default categories:', defaultCategories);
-    console.log('Category values:', defaultCategories.map(cat => cat.value));
+    console.log("Setting default categories:", defaultCategories);
+    console.log(
+      "Category values:",
+      defaultCategories.map((cat) => cat.value)
+    );
     setCategories(defaultCategories);
 
     // Procedures organized by category
     const defaultProceduresByCategory = {
       consultation: [
-        { key: 'initial_consultation', value: 'initial_consultation', label: 'Initial Consultation', category: 'consultation' },
-        { key: 'followup_visit', value: 'followup_visit', label: 'Follow-up Visit', category: 'consultation' },
-        { key: 'emergency_consultation', value: 'emergency_consultation', label: 'Emergency Consultation', category: 'consultation' }
+        {
+          key: "initial_consultation",
+          value: "initial_consultation",
+          label: "Initial Consultation",
+          category: "consultation",
+        },
+        {
+          key: "followup_visit",
+          value: "followup_visit",
+          label: "Follow-up Visit",
+          category: "consultation",
+        },
+        {
+          key: "emergency_consultation",
+          value: "emergency_consultation",
+          label: "Emergency Consultation",
+          category: "consultation",
+        },
       ],
       surgery: [
-        { key: 'root_canal', value: 'root_canal', label: 'Root Canal', category: 'surgery' },
-        { key: 'tooth_extraction', value: 'tooth_extraction', label: 'Tooth Extraction', category: 'surgery' },
-        { key: 'dental_implant', value: 'dental_implant', label: 'Dental Implant', category: 'surgery' },
-        { key: 'wisdom_teeth_removal', value: 'wisdom_teeth_removal', label: 'Wisdom Teeth Removal', category: 'surgery' }
+        {
+          key: "root_canal",
+          value: "root_canal",
+          label: "Root Canal",
+          category: "surgery",
+        },
+        {
+          key: "tooth_extraction",
+          value: "tooth_extraction",
+          label: "Tooth Extraction",
+          category: "surgery",
+        },
+        {
+          key: "dental_implant",
+          value: "dental_implant",
+          label: "Dental Implant",
+          category: "surgery",
+        },
+        {
+          key: "wisdom_teeth_removal",
+          value: "wisdom_teeth_removal",
+          label: "Wisdom Teeth Removal",
+          category: "surgery",
+        },
       ],
       lab: [
-        { key: 'xray', value: 'xray', label: 'X-Ray', category: 'lab' },
-        { key: 'blood_test', value: 'blood_test', label: 'Blood Test', category: 'lab' },
-        { key: 'urine_test', value: 'urine_test', label: 'Urine Test', category: 'lab' },
-        { key: 'biopsy', value: 'biopsy', label: 'Biopsy', category: 'lab' }
+        { key: "xray", value: "xray", label: "X-Ray", category: "lab" },
+        {
+          key: "blood_test",
+          value: "blood_test",
+          label: "Blood Test",
+          category: "lab",
+        },
+        {
+          key: "urine_test",
+          value: "urine_test",
+          label: "Urine Test",
+          category: "lab",
+        },
+        { key: "biopsy", value: "biopsy", label: "Biopsy", category: "lab" },
       ],
       treatment: [
-        { key: 'dental_cleaning', value: 'dental_cleaning', label: 'Dental Cleaning', category: 'treatment' },
-        { key: 'filling', value: 'filling', label: 'Dental Filling', category: 'treatment' },
-        { key: 'whitening', value: 'whitening', label: 'Teeth Whitening', category: 'treatment' },
-        { key: 'braces', value: 'braces', label: 'Braces Installation', category: 'treatment' }
+        {
+          key: "dental_cleaning",
+          value: "dental_cleaning",
+          label: "Dental Cleaning",
+          category: "treatment",
+        },
+        {
+          key: "filling",
+          value: "filling",
+          label: "Dental Filling",
+          category: "treatment",
+        },
+        {
+          key: "whitening",
+          value: "whitening",
+          label: "Teeth Whitening",
+          category: "treatment",
+        },
+        {
+          key: "braces",
+          value: "braces",
+          label: "Braces Installation",
+          category: "treatment",
+        },
       ],
       examination: [
-        { key: 'oral_examination', value: 'oral_examination', label: 'Oral Examination', category: 'examination' },
-        { key: 'periodontal_examination', value: 'periodontal_examination', label: 'Periodontal Examination', category: 'examination' },
-        { key: 'orthodontic_evaluation', value: 'orthodontic_evaluation', label: 'Orthodontic Evaluation', category: 'examination' }
-      ]
+        {
+          key: "oral_examination",
+          value: "oral_examination",
+          label: "Oral Examination",
+          category: "examination",
+        },
+        {
+          key: "periodontal_examination",
+          value: "periodontal_examination",
+          label: "Periodontal Examination",
+          category: "examination",
+        },
+        {
+          key: "orthodontic_evaluation",
+          value: "orthodontic_evaluation",
+          label: "Orthodontic Evaluation",
+          category: "examination",
+        },
+      ],
     };
-    console.log('Setting default procedures by category:', defaultProceduresByCategory);
+    console.log(
+      "Setting default procedures by category:",
+      defaultProceduresByCategory
+    );
     setProcedures(defaultProceduresByCategory);
   }, [token]);
 
-
-
   // Debug useEffect to log when currentFilters change
   useEffect(() => {
-    console.log('Current filters updated:', currentFilters);
+    console.log("Current filters updated:", currentFilters);
   }, [currentFilters]);
 
   // Debug useEffect to log when procedures state changes
   useEffect(() => {
-    console.log('Procedures state updated:', procedures);
-    console.log('Procedures type:', typeof procedures);
-    console.log('Procedures keys:', procedures ? Object.keys(procedures) : 'no procedures');
+    console.log("Procedures state updated:", procedures);
+    console.log("Procedures type:", typeof procedures);
+    console.log(
+      "Procedures keys:",
+      procedures ? Object.keys(procedures) : "no procedures"
+    );
   }, [procedures]);
 
   // Cleanup effect to reset loading states when component unmounts
@@ -1735,26 +2590,28 @@ export default function InvoicesPage() {
 
   // Debug effect to monitor filter state changes
   useEffect(() => {
-    console.log('Current filters updated:', currentFilters);
-    console.log('Filter loading state:', filterLoading);
+    console.log("Current filters updated:", currentFilters);
+    console.log("Filter loading state:", filterLoading);
   }, [currentFilters, filterLoading]);
 
   // Monitor filter loading state for debugging
   useEffect(() => {
     if (filterLoading) {
-      console.log('Filter loading state is true');
+      console.log("Filter loading state is true");
     } else {
-      console.log('Filter loading state is false');
+      console.log("Filter loading state is false");
     }
   }, [filterLoading]);
 
-  const handleViewDetail = useCallback((invoice) => {
+  const handleViewDetail = useCallback(
+    (invoice) => {
     // Call the invoice view API to get complete details
     setViewLoading(true);
     config.initAPI(token);
-    config.getData(`/invoices/view?id=${invoice.id}`)
-      .then(response => {
-        console.log('Invoice view API response:', response);
+      config
+        .getData(`/invoices/view?id=${invoice.id}`)
+        .then((response) => {
+          console.log("Invoice view API response:", response);
         setViewLoading(false);
         if (response.data && response.data.success) {
           const invoiceData = response.data.data;
@@ -1785,13 +2642,13 @@ export default function InvoicesPage() {
               dob: invoiceData.patient?.dob,
               address: invoiceData.patient?.address,
               medicalHistory: invoiceData.patient?.medical_history,
-              allergies: invoiceData.patient?.allergies
+                allergies: invoiceData.patient?.allergies,
             },
 
             // Doctor information
             doctor: {
               id: invoiceData.doctor?.id,
-              username: invoiceData.doctor?.username
+                username: invoiceData.doctor?.username,
             },
 
             // Invoice items/services
@@ -1802,19 +2659,21 @@ export default function InvoicesPage() {
             updatedAt: invoiceData.updated_at,
 
             // Raw data for detailed display
-            rawData: invoiceData
+              rawData: invoiceData,
           };
 
           setSelectedInvoice(mappedInvoice);
           setIsDetailOpen(true);
         } else {
-          toast.error(response.data?.message || 'Failed to fetch invoice details');
+            toast.error(
+              response.data?.message || "Failed to fetch invoice details"
+            );
         }
       })
-      .catch(error => {
-        console.error('Error fetching invoice details:', error);
+        .catch((error) => {
+          console.error("Error fetching invoice details:", error);
         setViewLoading(false);
-        toast.error('Failed to fetch invoice details');
+          toast.error("Failed to fetch invoice details");
 
         // Fallback to basic invoice data if API fails
         const mappedInvoice = {
@@ -1832,14 +2691,17 @@ export default function InvoicesPage() {
           date: invoice.invoice_date,
           paymentMethod: invoice.payment_method,
           notes: invoice.notes,
-          rawData: invoice
+            rawData: invoice,
         };
         setSelectedInvoice(mappedInvoice);
         setIsDetailOpen(true);
       });
-  }, [token]);
+    },
+    [token]
+  );
 
-  const getData = useCallback((perpage = 5, page = 1, filters = {}, isFiltering = false) => {
+  const getData = useCallback(
+    (perpage = 5, page = 1, filters = {}, isFiltering = false) => {
     if (!token) return;
 
     if (isFiltering) {
@@ -1855,72 +2717,106 @@ export default function InvoicesPage() {
       page: page.toString(),
       ...(filters.invoiceNumber && { invoice_number: filters.invoiceNumber }),
       ...(filters.patient && { patient_id: filters.patient }),
-      ...(filters.doctor && { doctor_id: filters.doctor })
+        ...(filters.doctor && { doctor_id: filters.doctor }),
     });
 
     // Add date range parameters if they exist (these might be supported by backend)
-    if (filters.startDate) queryParams.append('start_date', filters.startDate);
-    if (filters.endDate) queryParams.append('end_date', filters.endDate);
+      if (filters.startDate)
+        queryParams.append("start_date", filters.startDate);
+      if (filters.endDate) queryParams.append("end_date", filters.endDate);
 
     // Log the filters being applied
-    console.log('=== FILTER DEBUG START ===');
-    console.log('Filters being applied to API:', filters);
-    console.log('Query parameters built:', queryParams.toString());
-    console.log('Query params object:', Object.fromEntries(queryParams.entries()));
-    console.log('Final API URL will be:', `/invoices/list${queryParams.toString() ? `?${queryParams.toString()}` : ''}`);
+      console.log("=== FILTER DEBUG START ===");
+      console.log("Filters being applied to API:", filters);
+      console.log("Query parameters built:", queryParams.toString());
+      console.log(
+        "Query params object:",
+        Object.fromEntries(queryParams.entries())
+      );
+      console.log(
+        "Final API URL will be:",
+        `/invoices/list${
+          queryParams.toString() ? `?${queryParams.toString()}` : ""
+        }`
+      );
 
     config.initAPI(token);
-    const url = `/invoices/list${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-    console.log('Calling invoices API with URL:', url);
-    console.log('Filters applied:', filters);
-    console.log('=== FILTER DEBUG END ===');
+      const url = `/invoices/list${
+        queryParams.toString() ? `?${queryParams.toString()}` : ""
+      }`;
+      console.log("Calling invoices API with URL:", url);
+      console.log("Filters applied:", filters);
+      console.log("=== FILTER DEBUG END ===");
 
-    config.getData(url)
-      .then(data => {
-        console.log('Invoices API response:', data);
+      config
+        .getData(url)
+        .then((data) => {
+          console.log("Invoices API response:", data);
         
         // Validate response structure before processing
         if (!data || !data.data || !Array.isArray(data.data.data)) {
-          console.error('Invalid API response structure:', data);
-          throw new Error('Invalid response from server');
+            console.error("Invalid API response structure:", data);
+            throw new Error("Invalid response from server");
         }
 
-        let _data = data.data.data.map(item => ({
+          let _data = data.data.data.map((item) => ({
           ...item,
-          active: item.active === 1 ? 'Active' : 'Inactive',
+            active: item.active === 1 ? "Active" : "Inactive",
           status: calculateInvoiceStatus(
             Number(item.balance) || 0,
             Number(item.paid) || 0,
             Number(item.net_amount) || 0
-          )
+            ),
         }));
 
         // Apply client-side filtering for filters not supported by backend
         // Note: status, payment_method, and amount_range are always client-side filtered
         // Date range might be handled by backend, but we'll also apply it client-side for consistency
-        if (filters.status || filters.payment_method || filters.amount_range || filters.startDate || filters.endDate) {
-          console.log('Applying client-side filters:', { status: filters.status, payment_method: filters.payment_method, amount_range: filters.amount_range, startDate: filters.startDate, endDate: filters.endDate });
-          _data = _data.filter(item => {
+          if (
+            filters.status ||
+            filters.payment_method ||
+            filters.amount_range ||
+            filters.startDate ||
+            filters.endDate
+          ) {
+            console.log("Applying client-side filters:", {
+              status: filters.status,
+              payment_method: filters.payment_method,
+              amount_range: filters.amount_range,
+              startDate: filters.startDate,
+              endDate: filters.endDate,
+            });
+            _data = _data.filter((item) => {
             // Status filter
             if (filters.status && item.status !== filters.status) {
               return false;
             }
 
             // Payment method filter
-            if (filters.payment_method && item.payment_method !== filters.payment_method) {
+              if (
+                filters.payment_method &&
+                item.payment_method !== filters.payment_method
+              ) {
               return false;
             }
 
             // Amount range filter
-            if (filters.amount_range && !isAmountInRange(item.net_amount, filters.amount_range)) {
+              if (
+                filters.amount_range &&
+                !isAmountInRange(item.net_amount, filters.amount_range)
+              ) {
               return false;
             }
 
             // Date range filter (applied client-side for consistency)
             if (filters.startDate || filters.endDate) {
               const invoiceDate = new Date(item.invoice_date);
-              const startDate = filters.startDate ? new Date(filters.startDate) : null;
-              const endDate = filters.endDate ? new Date(filters.endDate) : null;
+                const startDate = filters.startDate
+                  ? new Date(filters.startDate)
+                  : null;
+                const endDate = filters.endDate
+                  ? new Date(filters.endDate)
+                  : null;
 
               if (startDate && invoiceDate < startDate) {
                 return false;
@@ -1932,7 +2828,10 @@ export default function InvoicesPage() {
 
             return true;
           });
-          console.log('Client-side filtering applied. Filtered data count:', _data.length);
+            console.log(
+              "Client-side filtering applied. Filtered data count:",
+              _data.length
+            );
         }
 
         // Update state with new data
@@ -1942,15 +2841,15 @@ export default function InvoicesPage() {
         setItemsPerPage(data.data.meta?.perpage || 5);
 
         // Reset loading states after successful data processing
-        console.log('Data processed successfully, resetting loading states');
+          console.log("Data processed successfully, resetting loading states");
         if (isFiltering) {
           setFilterLoading(false);
         } else {
           setLoading(false);
         }
       })
-      .catch(error => {
-        console.error('Error fetching invoices:', error);
+        .catch((error) => {
+          console.error("Error fetching invoices:", error);
         
         // Always reset loading states on error
         if (isFiltering) {
@@ -1961,12 +2860,14 @@ export default function InvoicesPage() {
         
         // Show error toast for filter failures
         if (isFiltering) {
-          toast.error('Failed to apply filters. Please try again.');
+            toast.error("Failed to apply filters. Please try again.");
         } else {
-          toast.error('Failed to fetch invoices. Please try again.');
+            toast.error("Failed to fetch invoices. Please try again.");
         }
       });
-  }, [token]);
+    },
+    [token]
+  );
 
   // Initial data fetch
   useEffect(() => {
@@ -1975,7 +2876,7 @@ export default function InvoicesPage() {
 
   // Function to clear all filters and refresh data
   const clearFilters = () => {
-    console.log('Clearing all filters');
+    console.log("Clearing all filters");
 
     // Reset filter loading state immediately
     setFilterLoading(false);
@@ -1990,64 +2891,86 @@ export default function InvoicesPage() {
     getData(itemsPerPage, 1, {}, false);
 
     // Show success message
-    toast.success('Filters cleared successfully');
+    toast.success("Filters cleared successfully");
   };
 
   // Function to export filtered data
   const exportFilteredData = () => {
     const csvContent = [
       // CSV header
-      ['Invoice Number', 'Patient', 'Doctor', 'Date', 'Total Amount', 'Discount', 'Net Amount', 'Paid', 'Status', 'Payment Method'].join(','),
+      [
+        "Invoice Number",
+        "Patient",
+        "Doctor",
+        "Date",
+        "Total Amount",
+        "Discount",
+        "Net Amount",
+        "Paid",
+        "Status",
+        "Payment Method",
+      ].join(","),
       // CSV data rows
-      ...dataList.map(item => [
-        item.invoice_number || '',
-        item.patient?.full_name || '',
-        item.doctor?.username || '',
-        item.invoice_date || '',
+      ...dataList.map((item) =>
+        [
+          item.invoice_number || "",
+          item.patient?.full_name || "",
+          item.doctor?.username || "",
+          item.invoice_date || "",
         item.total_amount || 0,
         item.discount_amount || 0,
         item.net_amount || 0,
         item.paid || 0,
-        item.status || '',
-        item.payment_method || ''
-      ].join(','))
-    ].join('\n');
+          item.status || "",
+          item.payment_method || "",
+        ].join(",")
+      ),
+    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `invoices_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `invoices_${new Date().toISOString().split("T")[0]}.csv`
+    );
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const handleFilterChange = useCallback((filters) => {
-    console.log('=== HANDLE FILTER CHANGE DEBUG START ===');
-    console.log('handleFilterChange called with filters:', filters);
-    console.log('Filter keys:', Object.keys(filters));
-    console.log('Filter values:', Object.values(filters));
+  const handleFilterChange = useCallback(
+    (filters) => {
+      console.log("=== HANDLE FILTER CHANGE DEBUG START ===");
+      console.log("handleFilterChange called with filters:", filters);
+      console.log("Filter keys:", Object.keys(filters));
+      console.log("Filter values:", Object.values(filters));
 
     // Store the current filters for pagination
     setCurrentFilters(filters);
 
     // Use filters directly without transformation - send IDs to API
     const apiFilters = { ...filters };
-    console.log('API filters prepared:', apiFilters);
+      console.log("API filters prepared:", apiFilters);
 
     // Handle quick date range filters
-    if (filters.quick_date_range && filters.quick_date_range !== '') {
-      const processedFilters = handleQuickDateRange(filters.quick_date_range, apiFilters);
-      console.log('Quick date range processed:', processedFilters);
+      if (filters.quick_date_range && filters.quick_date_range !== "") {
+        const processedFilters = handleQuickDateRange(
+          filters.quick_date_range,
+          apiFilters
+        );
+        console.log("Quick date range processed:", processedFilters);
       getData(itemsPerPage, 1, processedFilters, true);
     } else {
-      console.log('Applying filters directly to API:', apiFilters);
+        console.log("Applying filters directly to API:", apiFilters);
       getData(itemsPerPage, 1, apiFilters, true);
     }
-    console.log('=== HANDLE FILTER CHANGE DEBUG END ===');
-  }, [patients, doctors, itemsPerPage, getData]);
+      console.log("=== HANDLE FILTER CHANGE DEBUG END ===");
+    },
+    [patients, doctors, itemsPerPage, getData]
+  );
 
   const handleCreateInvoice = () => {
     // Ensure we're in create mode and clear any previous data
@@ -2061,7 +2984,7 @@ export default function InvoicesPage() {
   };
 
   const handleEditInvoice = async (invoice) => {
-    console.log('Edit invoice clicked for:', invoice);
+    console.log("Edit invoice clicked for:", invoice);
     try {
       setIsEditing(true);
       setEditingInvoice(null); // Clear previous data
@@ -2069,23 +2992,59 @@ export default function InvoicesPage() {
 
       // Call the invoice view API to get complete details
       const response = await config.getData(`/invoices/view?id=${invoice.id}`);
-      console.log('Edit invoice view API response:', response);
-      console.log('Raw invoice data:', response.data?.data);
-      console.log('Raw items data:', response.data?.data?.items);
+      console.log("Edit invoice view API response:", response);
+      console.log("Raw invoice data:", response.data?.data);
+      console.log("Raw items data:", response.data?.data?.items);
       if (response.data?.data?.items && response.data.data.items.length > 0) {
-        console.log('First item raw data:', response.data.data.items[0]);
-        console.log('First item keys:', Object.keys(response.data.data.items[0]));
-        console.log('First item category field:', response.data.data.items[0].category);
-        console.log('First item procedure field:', response.data.data.items[0].procedure);
-        console.log('First item item_type field:', response.data.data.items[0].item_type);
-        console.log('First item item_description field:', response.data.data.items[0].item_description);
-        console.log('First item quantity field:', response.data.data.items[0].quantity);
-        console.log('First item unit_price field:', response.data.data.items[0].unit_price);
-        console.log('First item total_price field:', response.data.data.items[0].total_price);
-        console.log('First item discount field:', response.data.data.items[0].discount);
-        console.log('First item notes field:', response.data.data.items[0].notes);
-        console.log('First item created_at field:', response.data.data.items[0].created_at);
-        console.log('First item updated_at field:', response.data.data.items[0].updated_at);
+        console.log("First item raw data:", response.data.data.items[0]);
+        console.log(
+          "First item keys:",
+          Object.keys(response.data.data.items[0])
+        );
+        console.log(
+          "First item category field:",
+          response.data.data.items[0].category
+        );
+        console.log(
+          "First item procedure field:",
+          response.data.data.items[0].procedure
+        );
+        console.log(
+          "First item item_type field:",
+          response.data.data.items[0].item_type
+        );
+        console.log(
+          "First item item_description field:",
+          response.data.data.items[0].item_description
+        );
+        console.log(
+          "First item quantity field:",
+          response.data.data.items[0].quantity
+        );
+        console.log(
+          "First item unit_price field:",
+          response.data.data.items[0].unit_price
+        );
+        console.log(
+          "First item total_price field:",
+          response.data.data.items[0].total_price
+        );
+        console.log(
+          "First item discount field:",
+          response.data.data.items[0].discount
+        );
+        console.log(
+          "First item notes field:",
+          response.data.data.items[0].notes
+        );
+        console.log(
+          "First item created_at field:",
+          response.data.data.items[0].created_at
+        );
+        console.log(
+          "First item updated_at field:",
+          response.data.data.items[0].updated_at
+        );
       }
 
       if (response.data && response.data.success) {
@@ -2097,19 +3056,25 @@ export default function InvoicesPage() {
           patient_id: invoiceData.patient_id || invoiceData.patient?.id,
           doctor_id: invoiceData.doctor_id || invoiceData.doctor?.id,
           date: invoiceData.invoice_date || invoiceData.date,
-          procedures: mapInvoiceItemsToServices(invoiceData.items || invoiceData.procedures || []),
+          procedures: mapInvoiceItemsToServices(
+            invoiceData.items || invoiceData.procedures || []
+          ),
           discount: Number(invoiceData.discount) || 0,
           paid: Number(invoiceData.paid) || 0,
           total_amount: Number(invoiceData.total_amount) || 0,
           after_discount: Number(invoiceData.net_amount) || 0,
           balance: Number(invoiceData.balance) || 0,
-          payment_method: invoiceData.payment_method || 'cash',
-          notes: invoiceData.notes || '',
-          invoice_number: invoiceData.invoice_number || invoiceData.invoice_number
+          payment_method: invoiceData.payment_method || "cash",
+          notes: invoiceData.notes || "",
+          invoice_number:
+            invoiceData.invoice_number || invoiceData.invoice_number,
         };
 
         // Debug the mapped procedures
-        console.log('Mapped procedures before setting:', mappedInvoice.procedures);
+        console.log(
+          "Mapped procedures before setting:",
+          mappedInvoice.procedures
+        );
         if (mappedInvoice.procedures && mappedInvoice.procedures.length > 0) {
           mappedInvoice.procedures.forEach((proc, idx) => {
             console.log(`Procedure ${idx + 1}:`, {
@@ -2118,21 +3083,30 @@ export default function InvoicesPage() {
               categoryType: typeof proc.category,
               procedureType: typeof proc.procedure,
               originalItem: invoiceData.items?.[idx],
-              originalItemKeys: invoiceData.items?.[idx] ? Object.keys(invoiceData.items[idx]) : [],
+              originalItemKeys: invoiceData.items?.[idx]
+                ? Object.keys(invoiceData.items[idx])
+                : [],
               originalItemItemType: invoiceData.items?.[idx]?.item_type,
-              originalItemDescription: invoiceData.items?.[idx]?.item_description
+              originalItemDescription:
+                invoiceData.items?.[idx]?.item_description,
             });
           });
         }
 
-        console.log('Mapped invoice data for editing:', mappedInvoice);
-        console.log('Mapped procedures:', mappedInvoice.procedures);
-        console.log('First procedure category:', mappedInvoice.procedures[0]?.category);
-        console.log('First procedure procedure:', mappedInvoice.procedures[0]?.procedure);
+        console.log("Mapped invoice data for editing:", mappedInvoice);
+        console.log("Mapped procedures:", mappedInvoice.procedures);
+        console.log(
+          "First procedure category:",
+          mappedInvoice.procedures[0]?.category
+        );
+        console.log(
+          "First procedure procedure:",
+          mappedInvoice.procedures[0]?.procedure
+        );
         setEditingInvoice(mappedInvoice);
       } else {
         // Fallback to basic invoice data if API fails
-        console.warn('View API failed, using fallback data for editing');
+        console.warn("View API failed, using fallback data for editing");
         const fallbackInvoice = {
           ...invoice,
           date: invoice.invoice_date,
@@ -2142,15 +3116,17 @@ export default function InvoicesPage() {
           total_amount: Number(invoice.total_amount) || 0,
           after_discount: Number(invoice.net_amount) || 0,
           balance: Number(invoice.balance) || 0,
-          payment_method: invoice.payment_method || 'cash',
-          notes: invoice.notes || ''
+          payment_method: invoice.payment_method || "cash",
+          notes: invoice.notes || "",
         };
         setEditingInvoice(fallbackInvoice);
-        toast.warning('Using limited data for editing. Some fields may not be available.');
+        toast.warning(
+          "Using limited data for editing. Some fields may not be available."
+        );
       }
     } catch (error) {
-      console.error('Error fetching invoice details for editing:', error);
-      toast.error('Failed to fetch invoice details for editing');
+      console.error("Error fetching invoice details for editing:", error);
+      toast.error("Failed to fetch invoice details for editing");
 
       // Fallback to basic invoice data on error
       const fallbackInvoice = {
@@ -2162,8 +3138,8 @@ export default function InvoicesPage() {
         total_amount: Number(invoice.total_amount) || 0,
         after_discount: Number(invoice.net_amount) || 0,
         balance: Number(invoice.balance) || 0,
-        payment_method: invoice.payment_method || 'cash',
-        notes: invoice.notes || ''
+        payment_method: invoice.payment_method || "cash",
+        notes: invoice.notes || "",
       };
       setEditingInvoice(fallbackInvoice);
     }
@@ -2173,39 +3149,47 @@ export default function InvoicesPage() {
     const transformedData = transformFormData(formData);
 
     if (isEditing) {
-      config.postData(`/invoices/edit?id=${editingInvoice.id}`, transformedData)
-        .then(response => {
+      config
+        .postData(`/invoices/edit?id=${editingInvoice.id}`, transformedData)
+        .then((response) => {
           if (response.data.success) {
-            setDataList(prevList =>
-              prevList.map(invoice =>
-                invoice.id === editingInvoice.id ? { ...invoice, ...response.data.invoice } : invoice
+            setDataList((prevList) =>
+              prevList.map((invoice) =>
+                invoice.id === editingInvoice.id
+                  ? { ...invoice, ...response.data.invoice }
+                  : invoice
               )
             );
-            toast.success(response.data.message || 'Invoice updated successfully!');
+            toast.success(
+              response.data.message || "Invoice updated successfully!"
+            );
             getData(itemsPerPage, currentPage);
             if (onSuccess) onSuccess();
           } else {
-            toast.error(response.data.message || 'Failed to update invoice');
+            toast.error(response.data.message || "Failed to update invoice");
           }
         })
-        .catch(error => {
-          console.error('Error updating invoice:', error);
-          toast.error('Failed to update invoice');
+        .catch((error) => {
+          console.error("Error updating invoice:", error);
+          toast.error("Failed to update invoice");
         });
     } else {
-      config.postData('/invoices/create', transformedData)
-        .then(response => {
+      config
+        .postData("/invoices/create", transformedData)
+        .then((response) => {
           if (response.data.success) {
-            toast.success(response.data.message || 'Invoice created successfully!');
+            toast.success(
+              response.data.message || "Invoice created successfully!"
+            );
             getData(itemsPerPage, 1);
             if (onSuccess) onSuccess();
           } else {
-            toast.error(response.data.message || 'Failed to create invoice');
+            toast.error(response.data.message || "Failed to create invoice");
           }
         })
-        .catch(error => {
-          console.error('Error creating invoice:', error);
-          toast.error('Failed to create invoice');
+        .catch((error) => {
+          console.error("Error creating invoice:", error);
+          toast.error("Failed to create invoice");
         });
     }
   };
@@ -2219,20 +3203,23 @@ export default function InvoicesPage() {
     if (!invoiceToDelete) return;
 
     setDeleteLoading(true);
-    config.postData('/invoices/delete', { id: invoiceToDelete.id })
-      .then(response => {
+    config
+      .postData("/invoices/delete", { id: invoiceToDelete.id })
+      .then((response) => {
         if (response.data.success) {
-          setDataList(prevList => prevList.filter(inv => inv.id !== invoiceToDelete.id));
-          toast.success('Invoice deleted successfully!');
+          setDataList((prevList) =>
+            prevList.filter((inv) => inv.id !== invoiceToDelete.id)
+          );
+          toast.success("Invoice deleted successfully!");
           setIsDeleteModalOpen(false);
           setInvoiceToDelete(null);
         } else {
-          toast.error(response.data.message || 'Failed to delete invoice');
+          toast.error(response.data.message || "Failed to delete invoice");
         }
       })
-      .catch(error => {
-        console.error('Error deleting invoice:', error);
-        toast.error('Failed to delete invoice');
+      .catch((error) => {
+        console.error("Error deleting invoice:", error);
+        toast.error("Failed to delete invoice");
       })
       .finally(() => {
         setDeleteLoading(false);
@@ -2248,25 +3235,24 @@ export default function InvoicesPage() {
       label: "View",
       icon: "lucide:eye",
       onClick: handleViewDetail,
-      color: "primary",
-      isDanger: false
+      color: "black",
+      isDanger: false,
     },
     {
       label: "Edit",
       icon: "lucide:edit",
       onClick: handleEditInvoice,
       color: "black",
-      isDanger: false
+      isDanger: false,
     },
     {
       label: "Delete",
       icon: "lucide:trash",
       onClick: handleDeleteInvoice,
       color: "danger",
-      isDanger: true
-    }
+      isDanger: true,
+    },
   ];
-
 
   return (
     <PageTemplate>
@@ -2278,7 +3264,6 @@ export default function InvoicesPage() {
             <p className="text-gray-600">Manage patient invoices and billing</p>
           </div>
           <div className="flex gap-3">
-
             <Button
               color="primary"
               onPress={handleCreateInvoice}
@@ -2288,7 +3273,6 @@ export default function InvoicesPage() {
             </Button>
           </div>
         </div>
-
 
         {/* Data Table */}
         <DataTable
@@ -2304,11 +3288,14 @@ export default function InvoicesPage() {
             perPage: itemsPerPage,
             disabled: filterLoading, // Disable pagination when filters are loading
             onPageChange: (page) => {
-              console.log('Page changed to:', page);
+              console.log("Page changed to:", page);
               setCurrentPage(page);
               // Apply current filters to new page
               if (Object.keys(currentFilters).length > 0) {
-                console.log('Applying current filters to new page:', currentFilters);
+                console.log(
+                  "Applying current filters to new page:",
+                  currentFilters
+                );
                 // Use filters directly without transformation - send IDs to API
                 getData(itemsPerPage, page, currentFilters, true);
               } else {
@@ -2316,11 +3303,11 @@ export default function InvoicesPage() {
               }
             },
             onPerPageChange: (perPage) => {
-              console.log('Per page changed to:', perPage);
+              console.log("Per page changed to:", perPage);
               setItemsPerPage(perPage);
               setCurrentPage(1); // Reset to first page when changing items per page
               getData(perPage, 1, {}, false);
-            }
+            },
           }}
         />
 

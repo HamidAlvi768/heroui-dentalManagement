@@ -22,7 +22,22 @@ const columns = [
   { key: 'cost_price', label: 'COST PRICE' },
   { key: 'selling_price', label: 'SELLING PRICE' },
   { key: 'quantity', label: 'QUANTITY' },
-  { key: 'expiry_date', label: 'EXPIRY DATE' },
+  {
+    key: 'expiry_date',
+    label: 'EXPIRY DATE',
+    render: (item) => {
+      if (!item.expiry_date) return "N/A";
+      try {
+        return new Date(item.expiry_date).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+      } catch (e) {
+        return item.expiry_date;
+      }
+    },
+  },
   { key: 'is_expired', label: 'Expired' },
   { key: 'active', label: 'ACTIVE',
     render: (item) => (

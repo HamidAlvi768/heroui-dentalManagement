@@ -78,3 +78,25 @@
 div[data-slot="content"] {
   width: fit-content !important;
 }
+
+/* Print-specific styles for invoice content */
+@media print {
+  /* Force everything into grayscale for print */
+  #invoice-print-content {
+    filter: grayscale(100%) !important;
+    -webkit-filter: grayscale(100%) !important;
+  }
+
+  /* Remove box-shadows for clean print */
+  #invoice-print-content * {
+    box-shadow: none !important;
+  }
+
+  /* Force text to black and backgrounds to white for clean invoice look */
+  #invoice-print-content,
+  #invoice-print-content * {
+    color: black !important;
+    background: white !important;
+    border-color: black !important;
+  }
+}

@@ -170,7 +170,7 @@ const renderList = (section, entity) => (
   <Card className="w-full">
     <CardBody className="p-4">
       <div className="font-medium mb-4 text-default-700">{section.title}</div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
         {section.fields.map((field, index) => {
           let value = getNestedValue(entity, field.key);
           

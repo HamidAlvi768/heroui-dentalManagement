@@ -4,7 +4,16 @@ import config from "../config/config";
 import { useAuth } from "../auth/AuthContext";
 import { CrudDialog } from "../components/crud-dialog";
 import { toast } from "react-toastify";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button } from "@heroui/react";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+} from "@heroui/react";
+import useFormData from "../hooks/useFormData";
+import { Activity } from "lucide-react";
 
 function AppointmentsPage() {
   const { token } = useAuth();
@@ -26,7 +35,6 @@ function AppointmentsPage() {
 
   // Define formFields for Appointments
   const formFields = useMemo(() => {
-
     // Don't create form fields until we have patient and doctor data
     if (!patientsList.length || !doctorsList.length) {
       return [];
@@ -36,7 +44,11 @@ function AppointmentsPage() {
       { value: "", label: "Select Patient" },
       ...patientsList.map((patient) => ({
         value: patient.id.toString(), // Ensure consistent string value
-        label: patient.username || patient.name || patient.patient_name || `Patient ${patient.id}`,
+        label:
+          patient.username ||
+          patient.name ||
+          patient.patient_name ||
+          `Patient ${patient.id}`,
       })),
     ];
 
@@ -44,10 +56,13 @@ function AppointmentsPage() {
       { value: "", label: "Select Doctor" },
       ...doctorsList.map((doctor) => ({
         value: doctor.id.toString(), // Ensure consistent string value
-        label: doctor.username || doctor.name || doctor.doctor_name || `Doctor ${doctor.id}`,
+        label:
+          doctor.username ||
+          doctor.name ||
+          doctor.doctor_name ||
+          `Doctor ${doctor.id}`,
       })),
     ];
-
 
     const fields = [
       {
@@ -72,7 +87,7 @@ function AppointmentsPage() {
         type: "date",
         required: true,
         placeholder: "Select appointment date",
-        min: new Date().toISOString().split('T')[0],
+        min: new Date().toISOString().split("T")[0],
       },
       {
         key: "appointment_time",
@@ -80,7 +95,7 @@ function AppointmentsPage() {
         type: "time",
         required: true,
         placeholder: "Select appointment time",
-        min: new Date().toISOString().split('T')[0],
+        min: new Date().toISOString().split("T")[0],
       },
       {
         key: "status",
@@ -110,101 +125,109 @@ function AppointmentsPage() {
     // Always include the actions column, even when data is loading
     const baseColumns = [
       {
-        key: 'patient_name',
-        label: 'PATIENT',
+        key: "patient_name",
+        label: "PATIENT",
         render: (item) => {
           return (
             <div>
               <div className="font-medium">{item.patient_name}</div>
             </div>
           );
-        }
+        },
       },
       {
-        key: 'doctor_name',
-        label: 'DOCTOR',
+        key: "doctor_name",
+        label: "DOCTOR",
         render: (item) => {
           // First try to use doctor_name from appointment data
           if (item.doctor_name) {
             return item.doctor_name;
           }
           // Fallback to doctor_id if no name found
-          return item.doctor_id || 'N/A';
-        }
+          return item.doctor_id || "N/A";
+        },
       },
       {
-        key: 'appointment_date',
-        label: 'DATE',
+        key: "appointment_date",
+        label: "DATE",
         render: (item) => {
-          if (!item.appointment_date) return 'N/A';
+          if (!item.appointment_date) return "N/A";
           try {
-            return new Date(item.appointment_date).toLocaleDateString();
+            return new Date(item.appointment_date).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            });
           } catch (e) {
             return item.appointment_date;
-          }
         }
+        },
       },
       {
-        key: 'appointment_time',
-        label: 'TIME',
+        key: "appointment_time",
+        label: "TIME",
         render: (item) => {
-          if (!item.appointment_time) return 'N/A';
+          if (!item.appointment_time) return "N/A";
           try {
             // Handle time string properly
             const timeStr = item.appointment_time;
-            if (timeStr.includes(':')) {
+            if (timeStr.includes(":")) {
               return timeStr; // Return as is if it's already formatted
             }
             // If it's a timestamp, convert to readable time
             const date = new Date(timeStr);
             if (!isNaN(date.getTime())) {
-              return date.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
+              return date.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
               });
             }
             return timeStr;
           } catch (e) {
             return item.appointment_time;
-          }
         }
+        },
       },
       {
-        key: 'appointment_reason',
-        label: 'REASON',
+        key: "appointment_reason",
+        label: "REASON",
         render: (item) => {
           const reason = item.appointment_reason;
-          if (!reason) return 'N/A';
+          if (!reason) return "N/A";
           const maxLength = 30;
-          return reason.length > maxLength ? `${reason.substring(0, maxLength - 3)}...` : reason;
-        }
+          return reason.length > maxLength
+            ? `${reason.substring(0, maxLength - 3)}...`
+            : reason;
+        },
       },
       {
-        key: 'status',
-        label: 'STATUS',
+        key: "status",
+        label: "STATUS",
         render: (item) => {
-          const status = item.status || 'N/A';
+          const status = item.status || "N/A";
           return (
             <div>
-              <div className="font-medium">{status.charAt(0).toUpperCase() + status.slice(1)}</div>
+              <div className="font-medium">
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </div>
             </div>
           );
         },
       },
       {
-        key: 'actions',
+        key: "actions",
         label: "ACTIONS",
-      }
+      },
     ];
 
     // If we don't have patient/doctor data yet, return columns with loading placeholders
     if (!patientsList.length || !doctorsList.length) {
-      return baseColumns.map(col => {
-        if (col.key === 'patient_id' || col.key === 'doctor_id') {
+      return baseColumns.map((col) => {
+        if (col.key === "patient_id" || col.key === "doctor_id") {
           return {
             ...col,
-            render: () => 'Loading...'
+            render: () => "Loading...",
           };
         }
         return col;
@@ -215,25 +238,25 @@ function AppointmentsPage() {
   }, [patientsList, doctorsList, dataList]);
 
   const initialAppointmentFormData = {
-    patient_id: '',
-    doctor_id: '',
-    appointment_date: '',
-    appointment_time: '',
-    appointment_reason: '',
-    status: 'scheduled',
-    notes: ''
+    patient_id: "",
+    doctor_id: "",
+    appointment_date: "",
+    appointment_time: "",
+    appointment_reason: "",
+    status: "scheduled",
+    notes: "",
   };
 
   // Function to reset form data
   const resetFormData = () => {
     return {
-      patient_id: '',
-      doctor_id: '',
-      appointment_date: new Date().toISOString().split('T')[0], // Set today as default date
-      appointment_time: '09:00', // Set 9 AM as default time
-      appointment_reason: '',
-      status: 'scheduled',
-      notes: ''
+      patient_id: "",
+      doctor_id: "",
+      appointment_date: new Date().toISOString().split("T")[0], // Set today as default date
+      appointment_time: "09:00", // Set 9 AM as default time
+      appointment_reason: "",
+      status: "scheduled",
+      notes: "",
     };
   };
 
@@ -241,7 +264,7 @@ function AppointmentsPage() {
   const getCleanFormData = (item) => {
     if (!item) {
       const resetData = resetFormData();
-      console.log('Reset form data:', resetData);
+      console.log("Reset form data:", resetData);
       return resetData;
     }
 
@@ -249,32 +272,34 @@ function AppointmentsPage() {
     if (item.patient_id !== undefined && item.doctor_id !== undefined) {
       const cleanData = {
         id: item.id,
-        patient_id: item.patient_id ? item.patient_id.toString() : '',
-        doctor_id: item.doctor_id ? item.doctor_id.toString() : '',
-        appointment_date: item.appointment_date || new Date().toISOString().split('T')[0],
-        appointment_time: item.appointment_time || '09:00',
-        appointment_reason: item.appointment_reason || '',
-        status: item.status || 'scheduled',
-        notes: item.notes || ''
+        patient_id: item.patient_id ? item.patient_id.toString() : "",
+        doctor_id: item.doctor_id ? item.doctor_id.toString() : "",
+        appointment_date:
+          item.appointment_date || new Date().toISOString().split("T")[0],
+        appointment_time: item.appointment_time || "09:00",
+        appointment_reason: item.appointment_reason || "",
+        status: item.status || "scheduled",
+        notes: item.notes || "",
       };
 
-      console.log('Clean form data for editing (from API):', cleanData);
+      console.log("Clean form data for editing (from API):", cleanData);
       return cleanData;
     }
 
     // Fallback for basic item data
     const cleanData = {
       id: item.id,
-      patient_id: item.patient_id ? item.patient_id.toString() : '',
-      doctor_id: item.doctor_id ? item.doctor_id.toString() : '',
-      appointment_date: item.appointment_date || new Date().toISOString().split('T')[0],
-      appointment_time: item.appointment_time || '09:00',
-      appointment_reason: item.appointment_reason || '',
-      status: item.status || 'scheduled',
-      notes: item.notes || ''
+      patient_id: item.patient_id ? item.patient_id.toString() : "",
+      doctor_id: item.doctor_id ? item.doctor_id.toString() : "",
+      appointment_date:
+        item.appointment_date || new Date().toISOString().split("T")[0],
+      appointment_time: item.appointment_time || "09:00",
+      appointment_reason: item.appointment_reason || "",
+      status: item.status || "scheduled",
+      notes: item.notes || "",
     };
 
-    console.log('Clean form data for editing (fallback):', cleanData);
+    console.log("Clean form data for editing (fallback):", cleanData);
     return cleanData;
   };
 
@@ -287,62 +312,76 @@ function AppointmentsPage() {
   };
 
   // Define filter columns relevant to Appointments
-  const appointmentFilterColumns = useMemo(() => [
-    {
-      key: 'patient_id', // Changed from 'patient_name' to 'patient_id' for consistency
-      label: 'PATIENT',
-      type: 'select',
-      placeholder: 'Filter by patient',
+  const appointmentFilterColumns = useMemo(
+    () => [
+      {
+        key: "patient_id", // Changed from 'patient_name' to 'patient_id' for consistency
+        label: "PATIENT",
+        type: "select",
+        placeholder: "Filter by patient",
       options: [
         { value: "", label: "All Patients" },
-        ...(patientsList.length > 0 ? patientsList.map((patient) => ({
+          ...(patientsList.length > 0
+            ? patientsList.map((patient) => ({
           value: patient.id.toString(), // Ensure consistent string value
-          label: patient.username || patient.name || patient.patient_name || `Patient ${patient.id}`,
-        })) : [])
-      ]
-    },
-    {
-      key: 'doctor_id', // Changed from 'doctor_name' to 'doctor_id' for consistency
-      label: 'DOCTOR',
-      type: 'select',
-      placeholder: 'Filter by doctor',
+                label:
+                  patient.username ||
+                  patient.name ||
+                  patient.patient_name ||
+                  `Patient ${patient.id}`,
+              }))
+            : []),
+        ],
+      },
+      {
+        key: "doctor_id", // Changed from 'doctor_name' to 'doctor_id' for consistency
+        label: "DOCTOR",
+        type: "select",
+        placeholder: "Filter by doctor",
       options: [
         { value: "", label: "All Doctors" },
-        ...(doctorsList.length > 0 ? doctorsList.map((doctor) => ({
+          ...(doctorsList.length > 0
+            ? doctorsList.map((doctor) => ({
           value: doctor.id.toString(), // Ensure consistent string value
-          label: doctor.username || doctor.name || doctor.doctor_name || `Doctor ${doctor.id}`,
-        })) : [])
-      ]
-    },
+                label:
+                  doctor.username ||
+                  doctor.name ||
+                  doctor.doctor_name ||
+                  `Doctor ${doctor.id}`,
+              }))
+            : []),
+        ],
+      },
 
-    {
-      key: 'status',
-      label: 'STATUS',
-      type: 'select',
-      placeholder: 'Filter by status',
+      {
+        key: "status",
+        label: "STATUS",
+        type: "select",
+        placeholder: "Filter by status",
       options: [
-        { value: '', label: 'All Statuses' },
-        { value: 'scheduled', label: 'Scheduled' },
-        { value: 'completed', label: 'Completed' },
-        { value: 'cancelled', label: 'Cancelled' }
-      ]
-    },
-    {
-      key: 'quick_date_range',
-      label: 'QUICK FILTERS',
-      type: 'select',
-      placeholder: 'Quick date filters',
+          { value: "", label: "All Statuses" },
+          { value: "scheduled", label: "Scheduled" },
+          { value: "completed", label: "Completed" },
+          { value: "cancelled", label: "Cancelled" },
+        ],
+      },
+      {
+        key: "quick_date_range",
+        label: "QUICK FILTERS",
+        type: "select",
+        placeholder: "Quick date filters",
       options: [
-        { value: '', label: 'Custom Date Range' },
-        { value: 'today', label: 'Today' },
-        { value: 'tomorrow', label: 'Tomorrow' },
-        { value: 'this_week', label: 'This Week' },
-        { value: 'next_week', label: 'Next Week' },
-        { value: 'this_month', label: 'This Month' }
-      ]
-    },
-
-  ], [patientsList, doctorsList]);
+          { value: "", label: "Custom Date Range" },
+          { value: "today", label: "Today" },
+          { value: "tomorrow", label: "Tomorrow" },
+          { value: "this_week", label: "This Week" },
+          { value: "next_week", label: "Next Week" },
+          { value: "this_month", label: "This Month" },
+        ],
+      },
+    ],
+    [patientsList, doctorsList]
+  );
 
   // API Service for appointments
   const appointmentApiService = {
@@ -352,11 +391,13 @@ function AppointmentsPage() {
       const queryParams = new URLSearchParams({
         perpage: perpage.toString(),
         page: page.toString(),
-        ...(filters.patient_id && { patient_id: filters.patient_id.toString() }),
+        ...(filters.patient_id && {
+          patient_id: filters.patient_id.toString(),
+        }),
         ...(filters.doctor_id && { doctor_id: filters.doctor_id.toString() }),
         ...(filters.status && { status: filters.status }),
         ...(filters.date_from && { date_from: filters.date_from }),
-        ...(filters.date_to && { date_to: filters.date_to })
+        ...(filters.date_to && { date_to: filters.date_to }),
       });
 
       return config.getData(`/appointments/list?${queryParams.toString()}`);
@@ -369,7 +410,7 @@ function AppointmentsPage() {
 
     // Create new appointment
     createAppointment: async (token, data) => {
-      return config.postData('/appointments/create', data);
+      return config.postData("/appointments/create", data);
     },
 
     // Update existing appointment
@@ -390,7 +431,9 @@ function AppointmentsPage() {
     }
 
     if (response.data.success === false) {
-      throw new Error(response.data.message || `Operation failed: ${operation}`);
+      throw new Error(
+        response.data.message || `Operation failed: ${operation}`
+      );
     }
 
     return response;
@@ -398,39 +441,56 @@ function AppointmentsPage() {
 
   // Helper function to enhance appointment data with patient and doctor names
   const enhanceAppointmentData = (appointments, patients, doctors) => {
-    return appointments.map(appointment => {
+    return appointments.map((appointment) => {
       // Find patient and doctor data
-      const patient = patients.find(p => p.id === appointment.patient_id);
-      const doctor = doctors.find(d => d.id === appointment.scheduled_by);
+      const patient = patients.find((p) => p.id === appointment.patient_id);
+      const doctor = doctors.find((d) => d.id === appointment.scheduled_by);
 
       return {
         ...appointment,
         // Map scheduled_by to doctor_id for consistency
         doctor_id: appointment.scheduled_by,
         // Add patient name if not present
-        patient_name: appointment.patient_name || (patient ? (patient.username || patient.name || patient.patient_name) : null),
+        patient_name:
+          appointment.patient_name ||
+          (patient
+            ? patient.username || patient.name || patient.patient_name
+            : null),
         // Add doctor name if not present
-        doctor_name: appointment.doctor_name || (doctor ? (doctor.username || doctor.name || doctor.doctor_name) : null),
+        doctor_name:
+          appointment.doctor_name ||
+          (doctor
+            ? doctor.username || doctor.name || doctor.doctor_name
+            : null),
         // Add additional patient/doctor info for display
-        patient_info: patient ? {
+        patient_info: patient
+          ? {
           id: patient.id,
           name: patient.username || patient.name || patient.patient_name,
           email: patient.email,
-          phone: patient.phone
-        } : null,
-        doctor_info: doctor ? {
+              phone: patient.phone,
+            }
+          : null,
+        doctor_info: doctor
+          ? {
           id: doctor.id,
           name: doctor.username || doctor.name || doctor.doctor_name,
           email: doctor.email,
           phone: doctor.phone,
-          specialization: doctor.specialization
-        } : null
+              specialization: doctor.specialization,
+            }
+          : null,
       };
     });
   };
 
   // Centralized function to fetch appointments with patients and doctors
-  const fetchAppointments = async (perpage = itemsPerPage, page = 1, filters = {}, isInitialFetch = false) => {
+  const fetchAppointments = async (
+    perpage = itemsPerPage,
+    page = 1,
+    filters = {},
+    isInitialFetch = false
+  ) => {
     try {
       if (isInitialFetch) {
         setLoading(true);
@@ -438,26 +498,37 @@ function AppointmentsPage() {
         setIsTableLoading(true);
       }
 
-      const response = await appointmentApiService.getAppointments(token, { perpage, page, filters });
+      const response = await appointmentApiService.getAppointments(token, {
+        perpage,
+        page,
+        filters,
+      });
 
       // Validate response
-      const validatedResponse = validateApiResponse(response, 'fetch appointments');
+      const validatedResponse = validateApiResponse(
+        response,
+        "fetch appointments"
+      );
 
       const appointments = validatedResponse.data.data || [];
       const patients = validatedResponse.data.patients || [];
       const doctors = validatedResponse.data.doctors || [];
 
       // Debug logging to see what data we're getting
-      console.log('Appointments API Response:', {
+      console.log("Appointments API Response:", {
         appointments: appointments.length,
         patients: patients.length,
         doctors: doctors.length,
         sampleAppointment: appointments[0],
         samplePatient: patients[0],
-        sampleDoctor: doctors[0]
+        sampleDoctor: doctors[0],
       });
 
-      const enhancedAppointments = enhanceAppointmentData(appointments, patients, doctors);
+      const enhancedAppointments = enhanceAppointmentData(
+        appointments,
+        patients,
+        doctors
+      );
 
       setDataList(enhancedAppointments);
       setPatientsList(patients);
@@ -470,10 +541,9 @@ function AppointmentsPage() {
       if (!isInitialized) {
         setIsInitialized(true);
       }
-
     } catch (error) {
-      console.error('Error in fetchAppointments:', error);
-      toast.error(error.message || 'Error fetching appointments');
+      console.error("Error in fetchAppointments:", error);
+      toast.error(error.message || "Error fetching appointments");
     } finally {
       if (isInitialFetch) {
         setLoading(false);
@@ -489,7 +559,7 @@ function AppointmentsPage() {
       // Refresh appointments which will also refresh patients and doctors lists
       await fetchAppointments(itemsPerPage, currentPage, {}, false);
     } catch (error) {
-      console.error('Error in refreshDropdownLists:', error);
+      console.error("Error in refreshDropdownLists:", error);
       // Silently handle refresh errors
     }
   };
@@ -501,12 +571,10 @@ function AppointmentsPage() {
       // For now, we'll refresh the full appointments list
       await fetchAppointments(itemsPerPage, currentPage, {}, false);
     } catch (error) {
-      console.error('Error refreshing patient/doctor lists:', error);
-      toast.error('Failed to refresh patient and doctor lists');
+      console.error("Error refreshing patient/doctor lists:", error);
+      toast.error("Failed to refresh patient and doctor lists");
     }
   };
-
-
 
   // Function to handle quick date range filters
   const handleQuickDateRange = (quickRange, currentFilters) => {
@@ -514,39 +582,43 @@ function AppointmentsPage() {
     const newFilters = { ...currentFilters };
 
     switch (quickRange) {
-      case 'today':
-        const todayStr = today.toISOString().split('T')[0];
+      case "today":
+        const todayStr = today.toISOString().split("T")[0];
         newFilters.date_from = todayStr;
         newFilters.date_to = todayStr;
         break;
-      case 'tomorrow':
+      case "tomorrow":
         const tomorrow = new Date(today);
         tomorrow.setDate(today.getDate() + 1);
-        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+        const tomorrowStr = tomorrow.toISOString().split("T")[0];
         newFilters.date_from = tomorrowStr;
         newFilters.date_to = tomorrowStr;
         break;
-      case 'this_week':
+      case "this_week":
         const startOfWeek = new Date(today);
         startOfWeek.setDate(today.getDate() - today.getDay());
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 6);
-        newFilters.date_from = startOfWeek.toISOString().split('T')[0];
-        newFilters.date_to = endOfWeek.toISOString().split('T')[0];
+        newFilters.date_from = startOfWeek.toISOString().split("T")[0];
+        newFilters.date_to = endOfWeek.toISOString().split("T")[0];
         break;
-      case 'next_week':
+      case "next_week":
         const nextWeekStart = new Date(today);
         nextWeekStart.setDate(today.getDate() + (7 - today.getDay()));
         const nextWeekEnd = new Date(nextWeekStart);
         nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
-        newFilters.date_from = nextWeekStart.toISOString().split('T')[0];
-        newFilters.date_to = nextWeekEnd.toISOString().split('T')[0];
+        newFilters.date_from = nextWeekStart.toISOString().split("T")[0];
+        newFilters.date_to = nextWeekEnd.toISOString().split("T")[0];
         break;
-      case 'this_month':
+      case "this_month":
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        newFilters.date_from = startOfMonth.toISOString().split('T')[0];
-        newFilters.date_to = endOfMonth.toISOString().split('T')[0];
+        const endOfMonth = new Date(
+          today.getFullYear(),
+          today.getMonth() + 1,
+          0
+        );
+        newFilters.date_from = startOfMonth.toISOString().split("T")[0];
+        newFilters.date_to = endOfMonth.toISOString().split("T")[0];
         break;
       default:
         // Custom date range - keep existing filters
@@ -554,7 +626,7 @@ function AppointmentsPage() {
     }
 
     // Clear quick range filter after applying
-    newFilters.quick_date_range = '';
+    newFilters.quick_date_range = "";
 
     return newFilters;
   };
@@ -562,12 +634,15 @@ function AppointmentsPage() {
   // Function to test the view API (can be called from browser console)
   const testViewAPI = async (appointmentId) => {
     try {
-      console.log('Testing appointment view API for ID:', appointmentId);
-      const response = await appointmentApiService.getAppointmentById(token, appointmentId);
-      console.log('View API Response:', response);
-      console.log('Response Status:', response.data?.status);
-      console.log('Response Message:', response.data?.message);
-      console.log('Appointment Details:', response.data?.data);
+      console.log("Testing appointment view API for ID:", appointmentId);
+      const response = await appointmentApiService.getAppointmentById(
+        token,
+        appointmentId
+      );
+      console.log("View API Response:", response);
+      console.log("Response Status:", response.data?.status);
+      console.log("Response Message:", response.data?.message);
+      console.log("Appointment Details:", response.data?.data);
 
       if (response.data?.status === true) {
         // console.log('✅ API call successful');
@@ -595,21 +670,23 @@ function AppointmentsPage() {
           // console.log('   - Full Name:', response.data.data.doctor.full_name);
         }
       } else {
-        console.log('❌ API call failed:', response.data?.message);
+        console.log("❌ API call failed:", response.data?.message);
       }
 
       return response;
     } catch (error) {
-      console.error('View API Test Error:', error);
+      console.error("View API Test Error:", error);
       return null;
     }
   };
 
   // Expose test function to window for console testing
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.testAppointmentViewAPI = testViewAPI;
-      console.log('Test function available: window.testAppointmentViewAPI(appointmentId)');
+      console.log(
+        "Test function available: window.testAppointmentViewAPI(appointmentId)"
+      );
     }
   }, [token]);
 
@@ -631,7 +708,8 @@ function AppointmentsPage() {
   }, [isEditOpen]);
 
   // Determine if we should show loading state
-  const isLoading = loading || !isInitialized || !patientsList.length || !doctorsList.length;
+  const isLoading =
+    loading || !isInitialized || !patientsList.length || !doctorsList.length;
 
   // Determine if table should show loading (for filters, pagination, etc.)
   const isTableLoadingState = isTableLoading || !isInitialized;
@@ -640,17 +718,22 @@ function AppointmentsPage() {
   const isFormLoading = !patientsList.length || !doctorsList.length;
 
   // Determine if form is ready for operations
-  const isFormReady = patientsList.length > 0 && doctorsList.length > 0 && formFields.length > 0;
+  const isFormReady =
+    patientsList.length > 0 && doctorsList.length > 0 && formFields.length > 0;
 
   // Debug: Log when form fields are ready
   useEffect(() => {
     if (formFields.length > 0) {
-      console.log('Form fields are ready:', {
+      console.log("Form fields are ready:", {
         patientCount: patientsList.length,
         doctorCount: doctorsList.length,
         formFieldsCount: formFields.length,
-        samplePatientOptions: formFields.find(f => f.key === 'patient_id')?.options?.slice(0, 3),
-        sampleDoctorOptions: formFields.find(f => f.key === 'doctor_id')?.options?.slice(0, 3)
+        samplePatientOptions: formFields
+          .find((f) => f.key === "patient_id")
+          ?.options?.slice(0, 3),
+        sampleDoctorOptions: formFields
+          .find((f) => f.key === "doctor_id")
+          ?.options?.slice(0, 3),
       });
     }
   }, [formFields, patientsList.length, doctorsList.length]);
@@ -658,18 +741,21 @@ function AppointmentsPage() {
   // Debug: Log when selectedItem changes
   useEffect(() => {
     if (selectedItem) {
-      console.log('Selected item changed:', selectedItem);
-      console.log('Clean form data:', getCleanFormData(selectedItem));
+      console.log("Selected item changed:", selectedItem);
+      console.log("Clean form data:", getCleanFormData(selectedItem));
     }
   }, [selectedItem]);
 
   const handleViewDetail = async (item) => {
     try {
       setViewDetailLoading(true); // Start loading
-      console.log('Fetching appointment details for ID:', item.id);
+      console.log("Fetching appointment details for ID:", item.id);
 
-      const response = await appointmentApiService.getAppointmentById(token, item.id);
-      console.log('Appointment view API response:', response);
+      const response = await appointmentApiService.getAppointmentById(
+        token,
+        item.id
+      );
+      console.log("Appointment view API response:", response);
 
       if (response.data && response.data.status === true) {
         const detailedItem = response.data.data;
@@ -678,38 +764,50 @@ function AppointmentsPage() {
         const mappedItem = {
           ...detailedItem,
           // Extract patient information from nested object
-          patient_name: detailedItem.patient?.full_name || detailedItem.patient?.username || `Patient ID: ${detailedItem.patient_id}`,
-          patient_father_name: detailedItem.patient?.father_name || 'Not specified',
-          patient_email: detailedItem.patient?.email || 'Not specified',
-          patient_phone: detailedItem.patient?.contact_number || 'Not specified',
-          patient_gender: detailedItem.patient?.gender || 'Not specified',
-          patient_dob: detailedItem.patient?.dob || 'Not specified',
-          patient_address: detailedItem.patient?.address || 'Not specified',
-          patient_medical_history: detailedItem.patient?.medical_history || 'Not specified',
-          patient_allergies: detailedItem.patient?.allergies || 'Not specified',
+          patient_name:
+            detailedItem.patient?.full_name ||
+            detailedItem.patient?.username ||
+            `Patient ID: ${detailedItem.patient_id}`,
+          patient_father_name:
+            detailedItem.patient?.father_name || "Not specified",
+          patient_email: detailedItem.patient?.email || "Not specified",
+          patient_phone:
+            detailedItem.patient?.contact_number || "Not specified",
+          patient_gender: detailedItem.patient?.gender || "Not specified",
+          patient_dob: detailedItem.patient?.dob || "Not specified",
+          patient_address: detailedItem.patient?.address || "Not specified",
+          patient_medical_history:
+            detailedItem.patient?.medical_history || "Not specified",
+          patient_allergies: detailedItem.patient?.allergies || "Not specified",
 
           // Extract doctor information from nested object
-          doctor_name: detailedItem.doctor?.username || detailedItem.doctor?.full_name || `Scheduled by: ${detailedItem.scheduled_by}`,
+          doctor_name:
+            detailedItem.doctor?.username ||
+            detailedItem.doctor?.full_name ||
+            `Scheduled by: ${detailedItem.scheduled_by}`,
 
           // Keep other appointment fields
           appointment_date: detailedItem.appointment_date,
-          appointment_time: detailedItem.appointment_time || 'Not specified',
-          appointment_reason: detailedItem.appointment_reason || 'Not specified',
-          status: detailedItem.status || 'Not specified',
-          notes: detailedItem.notes || 'Not specified',
+          appointment_time: detailedItem.appointment_time || "Not specified",
+          appointment_reason:
+            detailedItem.appointment_reason || "Not specified",
+          status: detailedItem.status || "Not specified",
+          notes: detailedItem.notes || "Not specified",
           created_at: detailedItem.created_at,
-          updated_at: detailedItem.updated_at
+          updated_at: detailedItem.updated_at,
         };
 
         setSelectedItem(mappedItem);
         setIsDetailOpen(true);
       } else {
-        console.error('❌ API response indicates failure:', response.data);
-        toast.error(response.data?.message || 'Failed to load appointment details');
+        console.error("❌ API response indicates failure:", response.data);
+        toast.error(
+          response.data?.message || "Failed to load appointment details"
+        );
       }
     } catch (error) {
-      console.error('Error fetching appointment details:', error);
-      toast.error(error.message || 'Failed to load appointment details');
+      console.error("Error fetching appointment details:", error);
+      toast.error(error.message || "Failed to load appointment details");
     } finally {
       setViewDetailLoading(false); // End loading
     }
@@ -718,13 +816,13 @@ function AppointmentsPage() {
   const handleEdit = async (itemToEdit) => {
     // Check if formFields are properly loaded
     if (!isFormReady) {
-      toast.warning('Please wait for patient and doctor data to load...');
+      toast.warning("Please wait for patient and doctor data to load...");
       return;
     }
 
-    console.log('Editing item:', itemToEdit);
-    console.log('Available patients:', patientsList.length);
-    console.log('Available doctors:', doctorsList.length);
+    console.log("Editing item:", itemToEdit);
+    console.log("Available patients:", patientsList.length);
+    console.log("Available doctors:", doctorsList.length);
 
     // Open modal immediately with current data
     setSelectedItem({ ...itemToEdit });
@@ -734,7 +832,10 @@ function AppointmentsPage() {
     try {
       setEditLoading(true); // Start loading
       // Fetch detailed appointment data in background
-      const response = await appointmentApiService.getAppointmentById(token, itemToEdit.id);
+      const response = await appointmentApiService.getAppointmentById(
+        token,
+        itemToEdit.id
+      );
 
       if (response.data && response.data.status === true) {
         const detailedItem = response.data.data;
@@ -742,41 +843,53 @@ function AppointmentsPage() {
         // Map the API response to form data
         const mappedItem = {
           id: detailedItem.id,
-          patient_id: detailedItem.patient_id ? detailedItem.patient_id.toString() : '',
-          doctor_id: detailedItem.scheduled_by ? detailedItem.scheduled_by.toString() : '', // Use scheduled_by as doctor_id
+          patient_id: detailedItem.patient_id
+            ? detailedItem.patient_id.toString()
+            : "",
+          doctor_id: detailedItem.scheduled_by
+            ? detailedItem.scheduled_by.toString()
+            : "", // Use scheduled_by as doctor_id
           appointment_date: (() => {
             // Try to extract a valid date from either appointment_date or appointment_time
-            let dateStr = '';
+            let dateStr = "";
             if (detailedItem.appointment_date) {
               // Handles both "YYYY-MM-DD" and "YYYY-MM-DD HH:mm:ss"
-              dateStr = detailedItem.appointment_date.split(' ')[0];
-            } else if (detailedItem.appointment_time && detailedItem.appointment_time.includes('T')) {
+              dateStr = detailedItem.appointment_date.split(" ")[0];
+            } else if (
+              detailedItem.appointment_time &&
+              detailedItem.appointment_time.includes("T")
+            ) {
               // Sometimes appointment_time may contain a full ISO string
-              dateStr = detailedItem.appointment_time.split('T')[0];
+              dateStr = detailedItem.appointment_time.split("T")[0];
             }
             // Validate format (should be YYYY-MM-DD)
             if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
               return dateStr;
             }
             // Fallback to today if not valid
-            return new Date().toISOString().split('T')[0];
+            return new Date().toISOString().split("T")[0];
           })(),
-          appointment_time: detailedItem.appointment_time || (detailedItem.appointment_date && detailedItem.appointment_date.includes(' ') ? detailedItem.appointment_date.split(' ')[1].substring(0, 5) : '09:00'),
-          appointment_reason: detailedItem.appointment_reason || '',
-          status: detailedItem.status || 'scheduled',
-          notes: detailedItem.notes || ''
+          appointment_time:
+            detailedItem.appointment_time ||
+            (detailedItem.appointment_date &&
+            detailedItem.appointment_date.includes(" ")
+              ? detailedItem.appointment_date.split(" ")[1].substring(0, 5)
+              : "09:00"),
+          appointment_reason: detailedItem.appointment_reason || "",
+          status: detailedItem.status || "scheduled",
+          notes: detailedItem.notes || "",
         };
 
-        console.log('Mapped item for editing:', mappedItem);
+        console.log("Mapped item for editing:", mappedItem);
 
         // Update the selected item with fresh data
         setSelectedItem(mappedItem);
       } else {
-        toast.error('Failed to load appointment details for editing');
+        toast.error("Failed to load appointment details for editing");
       }
     } catch (error) {
-      console.error('Error loading appointment details for editing:', error);
-      toast.error('Failed to load appointment details for editing');
+      console.error("Error loading appointment details for editing:", error);
+      toast.error("Failed to load appointment details for editing");
     } finally {
       setEditLoading(false); // End loading
     }
@@ -790,13 +903,13 @@ function AppointmentsPage() {
   const handleAddNew = async () => {
     // Check if formFields are properly loaded
     if (!isFormReady) {
-      toast.warning('Please wait for patient and doctor data to load...');
+      toast.warning("Please wait for patient and doctor data to load...");
       return;
     }
 
-    console.log('Adding new appointment');
-    console.log('Available patients:', patientsList.length);
-    console.log('Available doctors:', doctorsList.length);
+    console.log("Adding new appointment");
+    console.log("Available patients:", patientsList.length);
+    console.log("Available doctors:", doctorsList.length);
 
     // Clear selected item and ensure form is reset
     setSelectedItem(null);
@@ -807,18 +920,18 @@ function AppointmentsPage() {
     try {
       // Check if form is ready
       if (!isFormReady) {
-        toast.error('Form is not ready. Please wait for data to load.');
+        toast.error("Form is not ready. Please wait for data to load.");
         return;
       }
 
       setOperationLoading(true); // Start loading
 
       // Debug: Log the form data received
-      console.log('Form data received:', dataFromForm);
+      console.log("Form data received:", dataFromForm);
 
       // Validate required fields before proceeding
       if (!dataFromForm.patient_id || !dataFromForm.doctor_id) {
-        toast.error('Patient and Doctor are required fields');
+        toast.error("Patient and Doctor are required fields");
         return;
       }
 
@@ -830,19 +943,26 @@ function AppointmentsPage() {
         // Ensure other fields are properly formatted
         appointment_date: dataFromForm.appointment_date,
         appointment_time: dataFromForm.appointment_time,
-        appointment_reason: dataFromForm.appointment_reason || '',
-        status: dataFromForm.status || 'scheduled',
-        notes: dataFromForm.notes || ''
+        appointment_reason: dataFromForm.appointment_reason || "",
+        status: dataFromForm.status || "scheduled",
+        notes: dataFromForm.notes || "",
       };
 
       // Debug: Log the payload being sent
-      console.log('Payload being sent:', payload);
+      console.log("Payload being sent:", payload);
 
       let response;
       if (isEditing) {
-        response = await appointmentApiService.updateAppointment(token, dataFromForm.id, payload);
+        response = await appointmentApiService.updateAppointment(
+          token,
+          dataFromForm.id,
+          payload
+        );
       } else {
-        response = await appointmentApiService.createAppointment(token, payload);
+        response = await appointmentApiService.createAppointment(
+          token,
+          payload
+        );
       }
 
       if (response.data && response.data.success) {
@@ -853,17 +973,29 @@ function AppointmentsPage() {
         // Close the modal and reset state
         handleCloseModal();
         // Refresh the appointments list
-        await fetchAppointments(itemsPerPage, isEditing ? currentPage : 1, {}, false);
+        await fetchAppointments(
+          itemsPerPage,
+          isEditing ? currentPage : 1,
+          {},
+          false
+        );
       } else {
-        toast.error(response.data?.message || 'Operation failed');
+        toast.error(response.data?.message || "Operation failed");
       }
     } catch (error) {
-      console.error('Error in handleSave:', error);
+      console.error("Error in handleSave:", error);
       // Show error message from API response if available
-      if (error.response && error.response.data && error.response.data.message) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
         toast.error(error.response.data.message);
       } else {
-        toast.error(error.message || `Failed to ${isEditing ? 'update' : 'create'} appointment`);
+        toast.error(
+          error.message ||
+            `Failed to ${isEditing ? "update" : "create"} appointment`
+        );
       }
     } finally {
       setOperationLoading(false); // End loading
@@ -872,7 +1004,10 @@ function AppointmentsPage() {
 
   const handleDelete = async (itemToDelete) => {
     try {
-      const response = await appointmentApiService.deleteAppointment(token, itemToDelete.id);
+      const response = await appointmentApiService.deleteAppointment(
+        token,
+        itemToDelete.id
+      );
 
       if (response.data && response.data.success) {
         // Show toast message from API response
@@ -886,7 +1021,11 @@ function AppointmentsPage() {
       }
     } catch (error) {
       // Show error message from API response if available
-      if (error.response && error.response.data && error.response.data.message) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
         toast.error(error.response.data.message);
       } else {
         toast.error(error.message || "Failed to delete appointment");
@@ -920,7 +1059,9 @@ function AppointmentsPage() {
         description={
           isLoading
             ? "Loading patient and doctor data..."
-            : `Manage ${dataList.length} appointment${dataList.length !== 1 ? 's' : ''}`
+            : `Manage ${dataList.length} appointment${
+                dataList.length !== 1 ? "s" : ""
+              }`
         }
         icon="lucide:calendar-days"
         loading={isTableLoadingState}
@@ -938,8 +1079,11 @@ function AppointmentsPage() {
         customEditHandler={handleEdit}
         onFilterChange={(filters) => {
           // Handle quick date range filters
-          if (filters.quick_date_range && filters.quick_date_range !== '') {
-            const processedFilters = handleQuickDateRange(filters.quick_date_range, filters);
+          if (filters.quick_date_range && filters.quick_date_range !== "") {
+            const processedFilters = handleQuickDateRange(
+              filters.quick_date_range,
+              filters
+            );
             fetchAppointments(itemsPerPage, 1, processedFilters, false);
           } else {
             fetchAppointments(itemsPerPage, 1, filters, false);
@@ -957,7 +1101,12 @@ function AppointmentsPage() {
         disableBuiltInModal={true}
       />
       {selectedItem && (
-        <Modal isOpen={isDetailOpen} onOpenChange={setIsDetailOpen} size="3xl" scrollBehavior="inside">
+        <Modal
+          isOpen={isDetailOpen}
+          onOpenChange={setIsDetailOpen}
+          size="3xl"
+          scrollBehavior="inside"
+        >
           <ModalContent>
             {(onClose) => (
               <>
@@ -969,119 +1118,451 @@ function AppointmentsPage() {
                       </span>
                     </div>
                     <div>
-                      <h2 className="text-xl font-semibold">Appointment Details</h2>
-                      <p className="text-sm text-gray-500">ID: {selectedItem.id}</p>
+                      <h2 className="text-xl font-semibold">
+                        Appointment Details
+                      </h2>
                     </div>
                   </div>
                 </ModalHeader>
                 <ModalBody>
-                  <div className="space-y-6">
-                    {/* Appointment Information */}
-                    <div>
-                      <h3 className="text-lg font-semibold mb-3 text-primary-600">Appointment Information</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">Appointment Date</label>
-                          <p className="text-gray-900">
-                            {selectedItem.appointment_date ? new Date(selectedItem.appointment_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not specified'}
-                          </p>
+                  <div
+                    id="appointment-unified-content"
+                    style={{
+                      fontFamily: "Arial, sans-serif",
+                      lineHeight: "1.6",
+                      color: "#333",
+                      maxWidth: "100%",
+                    }}
+                  >
+                    {/* Clinic Branding & Appointment Header */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        borderBottom: "2px solid black",
+                        paddingBottom: "16px",
+                        marginBottom: "20px",
+                        position: "relative",
+                      }}
+                    >
+                      {/* Branding Section */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          flexDirection: "column",
+                          gap: "4px",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                          <div
+                            style={{
+                              width: "38px",
+                              height: "38px",
+                              marginRight: "16px",
+                              background: "transparent",
+                              borderRadius: "8px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                              marginTop: "0px",
+                            }}
+                          >
+                            <Activity
+                              size={20}
+                              color="black"
+                            />
                         </div>
+
                         <div>
-                          <label className="text-sm font-medium text-gray-600">Status</label>
-                          <p className="text-gray-900 capitalize">
-                            {selectedItem.status || 'Not specified'}
-                          </p>
+                            <h1
+                              style={{
+                                fontSize: "20px",
+                                fontWeight: "bold",
+                                color: "black",
+                                margin: "0 0 4px 0",
+                              }}
+                            >
+                              {useFormData().websiteName}
+                            </h1>
                         </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">Reason for Appointment</label>
-                          <p className="text-gray-900">
-                            {selectedItem.appointment_reason || 'Not specified'}
-                          </p>
                         </div>
+                        <div
+                          style={{
+                            fontSize: "10px",
+                            color: "black",
+                            lineHeight: "1.4",
+                          }}
+                        >
+                          <div style={{ marginBottom: "2px" }}>
+                            Office#1, City Plaza, F-10 Markaz, Islamabad
+                          </div>
+                          <div>Clinic Contact: 0516131786</div>
                       </div>
                     </div>
+
+                      {/* APPOINTMENT Title - absolutely centered */}
+                      <h2
+                        style={{
+                          fontSize: "20px",
+                          fontWeight: "bold",
+                          color: "black",
+                          margin: "0",
+                          textTransform: "uppercase",
+                          position: "absolute",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          top: "0px",
+                        }}
+                      >
+                        PATIENT APPOINTMENT
+                      </h2>
+                        </div>
+
+                    {/* Appointment Information */}
+                    <div style={{ marginBottom: "10px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: "5px",
+                          alignItems: "flex-start",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        {/* Appointment Date & Time */}
+                        <div style={{ minWidth: "150px" }}>
+                          <label
+                            style={{
+                              display: "block",
+                              fontSize: "14px",
+                              fontWeight: "500",
+                              color: "black",
+                              marginBottom: "4px",
+                            }}
+                          >
+                            Appointment Date & Time
+                          </label>
+                          <p
+                            style={{
+                              margin: "0",
+                              fontSize: "16px",
+                              color: "black",
+                              padding: "4px 0",
+                            }}
+                          >
+                            {selectedItem.appointment_date
+                              ? new Date(
+                                  selectedItem.appointment_date
+                                ).toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : "Not specified"}{" "}
+                            {selectedItem.appointment_time || "Not specified"}
+                          </p>
+                        </div>
+
+                        {/* Status */}
+                        <div style={{ minWidth: "160px" }}>
+                          <label
+                            style={{
+                              display: "block",
+                              fontSize: "14px",
+                              fontWeight: "500",
+                              color: "black",
+                              marginBottom: "4px",
+                            }}
+                          >
+                            Status
+                          </label>
+                          <p
+                            style={{
+                              margin: "0",
+                              fontSize: "16px",
+                              color: "black",
+                              padding: "4px 0",
+                              textTransform: "capitalize",
+                            }}
+                          >
+                            {selectedItem.status || "Not specified"}
+                          </p>
+                        </div>
+
+                        {/* Doctor Name */}
+                        <div style={{ minWidth: "150px" }}>
+                          <label
+                            style={{
+                              display: "block",
+                              fontSize: "14px",
+                              fontWeight: "500",
+                              color: "black",
+                              marginBottom: "4px",
+                            }}
+                          >
+                            Doctor Name
+                          </label>
+                          <p
+                            style={{
+                              margin: "0",
+                              fontSize: "16px",
+                              color: "black",
+                              padding: "4px 0",
+                            }}
+                          >
+                            {selectedItem.doctor_name || "Not specified"}
+                          </p>
+                        </div>
+
+                            {/* Apt ID */}
+                            <div style={{ minWidth: "150px", textAlign: "end" }}>
+                          <label
+                            style={{
+                              display: "block",
+                              fontSize: "14px",
+                              fontWeight: "500",
+                              color: "black",
+                              marginBottom: "4px",
+                            }}
+                          >
+                            Appointment #
+                          </label>
+                          <p
+                            style={{
+                              margin: "0",
+                              fontSize: "16px",
+                              color: "black",
+                              padding: "4px 0",
+                            }}
+                          >
+                            {selectedItem.id || "Not specified"}
+                          </p>
+                        </div>
+                        </div>
+                        </div>
 
                     {/* Patient Information */}
+                    <div style={{ marginBottom: "16px" }}>
+                      <h3
+                        style={{
+                          fontSize: "18px",
+                          fontWeight: "600",
+                          marginBottom: "16px",
+                          borderBottom: "2px solid #e5e7eb",
+                          paddingBottom: "8px",
+                        }}
+                      >
+                        Patient Information
+                      </h3>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(4, 1fr)",
+                          gap: "6px",
+                        }}
+                      >
+                        <div>
+                          <label
+                            style={{
+                              display: "block",
+                              fontSize: "14px",
+                              fontWeight: "500",
+                              color: "#6b7280",
+                              marginBottom: "4px",
+                            }}
+                          >
+                            Patient Name
+                          </label>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: "16px",
+                              color: "#111827",
+                              padding: "4px 0",
+                            }}
+                          >
+                            {selectedItem.patient_name || "Not specified"}
+                          </p>
+                        </div>
+
+                        <div>
+                          <label
+                            style={{
+                              display: "block",
+                              fontSize: "14px",
+                              fontWeight: "500",
+                              color: "#6b7280",
+                              marginBottom: "4px",
+                            }}
+                          >
+                            Email
+                          </label>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: "16px",
+                              color: "#111827",
+                              padding: "4px 0",
+                            }}
+                          >
+                            {selectedItem.patient_email || "Not specified"}
+                          </p>
+                    </div>
+
                     <div>
-                      <h3 className="text-lg font-semibold mb-3 text-primary-600">Patient Information</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">Patient Name</label>
-                          <p className="text-gray-900">
-                            {selectedItem.patient_name || 'Not specified'}
+                          <label
+                            style={{
+                              display: "block",
+                              fontSize: "14px",
+                              fontWeight: "500",
+                              color: "#6b7280",
+                              marginBottom: "4px",
+                            }}
+                          >
+                            Phone
+                          </label>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: "16px",
+                              color: "#111827",
+                              padding: "4px 0",
+                            }}
+                          >
+                            {selectedItem.patient_phone || "Not specified"}
                           </p>
                         </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">Father Name</label>
-                          <p className="text-gray-900">
-                            {selectedItem.patient_father_name || 'Not specified'}
-                          </p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">Email</label>
-                          <p className="text-gray-900">
-                            {selectedItem.patient_email || 'Not specified'}
-                          </p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">Phone</label>
-                          <p className="text-gray-900">
-                            {selectedItem.patient_phone || 'Not specified'}
-                          </p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">Gender</label>
-                          <p className="text-gray-900 capitalize">
-                            {selectedItem.patient_gender || 'Not specified'}
-                          </p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">Date of Birth</label>
-                          <p className="text-gray-900">
-                            {selectedItem.patient_dob ? new Date(selectedItem.patient_dob).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not specified'}
-                          </p>
-                        </div>
-                        <div className="col-span-full">
-                          <label className="text-sm font-medium text-gray-600">Address</label>
-                          <p className="text-gray-900">
-                            {selectedItem.patient_address || 'Not specified'}
-                          </p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">Medical History</label>
-                          <p className="text-gray-900">
-                            {selectedItem.patient_medical_history || 'Not specified'}
-                          </p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">Allergies</label>
-                          <p className="text-gray-900">
-                            {selectedItem.patient_allergies || 'Not specified'}
+
+                        <div style={{textAlign: "end"}}>
+                          <label
+                            style={{
+                              display: "block",
+                              fontSize: "14px",
+                              fontWeight: "500",
+                              color: "#6b7280",
+                              marginBottom: "4px",
+                            }}
+                          >
+                            Gender
+                          </label>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: "16px",
+                              color: "#111827",
+                              padding: "4px 0",
+                              textTransform: "capitalize",
+                            }}
+                          >
+                            {selectedItem.patient_gender || "Not specified"}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Doctor Information */}
-                    <div>
-                      <h3 className="text-lg font-semibold mb-3 text-primary-600">Doctor Information</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-sm font-medium text-gray-600">Doctor Name</label>
-                          <p className="text-gray-900">
-                            {selectedItem.doctor_name || 'Not specified'}
-                          </p>
-                        </div>
-                      </div>
+                    {/* Reason for Appointment (moved here) */}
+                    <div style={{ marginBottom: "32px" }}>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          color: "#6b7280",
+                          marginBottom: "4px",
+                        }}
+                      >
+                        Reason for Appointment
+                      </label>
+                      <p
+                        style={{
+                          margin: "0",
+                          fontSize: "16px",
+                          color: "#111827",
+                          padding: "4px 0",
+                          lineHeight: "1.5",
+                        }}
+                      >
+                        {selectedItem.appointment_reason || "Not specified"}
+                      </p>
                     </div>
-
-
                   </div>
                 </ModalBody>
+
                 <ModalFooter>
-                  <Button color="danger" variant="light" onPress={onClose}>
-                    Close
-                  </Button>
+                  <div className="w-full flex justify-between items-center">
+                    <div className="flex gap-2">
+                      <Button
+                        color="secondary"
+                        variant="light"
+                        onPress={onClose}
+                      >
+                        Close
+                      </Button>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        color="primary"
+                        variant="solid"
+                        onPress={() => {
+                          // Create a print-friendly version of the appointment using the unified content
+                          const printContent = document.getElementById(
+                            "appointment-unified-content"
+                          );
+                          const printWindow = window.open("", "_blank");
+                          printWindow.document.write(`
+                            <!DOCTYPE html>
+                            <html>
+                              <head>
+                                <title>Appointment - ${selectedItem.id}</title>
+                                <style>
+                                  @media print {
+                                    body { margin: 0; padding: 12px; font-family: 'Arial', sans-serif; }
+                                    .no-print { display: none; }
+                                    
+                                    /* Force everything into grayscale for print */
+                                    #appointment-print-content {
+                                      filter: grayscale(100%) !important;
+                                      -webkit-filter: grayscale(100%) !important;
+                                    }
+
+                                    /* Remove box-shadows for clean print */
+                                    #appointment-print-content * {
+                                      box-shadow: none !important;
+                                    }
+
+                                    /* Force text to black and backgrounds to white for clean appointment look */
+                                    #appointment-print-content,
+                                    #appointment-print-content * {
+                                      color: black !important;
+                                      background: white !important;
+                                      border-color: black !important;
+                                    }
+                                  }
+                                  body { font-family: 'Arial', sans-serif; margin: 0; padding: 12px; background: white; }
+                                  .appointment-container { max-width: 650px; margin: 0 auto; }
+                                </style>
+                              </head>
+                              <body>
+                                <div id="appointment-print-content" class="appointment-container" style="max-width: 650px; margin: 0 auto; padding: 20px; background: white; font-family: Arial, sans-serif;">
+                                  ${printContent.innerHTML}
+                                </div>
+                              </body>
+                            </html>
+                          `);
+                          printWindow.document.close();
+                          printWindow.focus();
+                          printWindow.print();
+                          printWindow.close();
+                        }}
+                        startContent={<span>🖨️</span>}
+                      >
+                        Print Appointment
+                      </Button>
+                    </div>
+                  </div>
                 </ModalFooter>
               </>
             )}
@@ -1090,20 +1571,22 @@ function AppointmentsPage() {
       )}
 
       <CrudDialog
-        key={`appointment-form-${selectedItem?.id || 'new'}-${isEditOpen}`}
+        key={`appointment-form-${selectedItem?.id || "new"}-${isEditOpen}`}
         isOpen={isEditOpen}
         onOpenChange={handleCloseModal}
         title={selectedItem?.id ? "Edit Appointment" : "Add New Appointment"}
         formData={getCleanFormData(selectedItem)}
         form={appointmentFormConfig}
-        formFields={isFormLoading ? [
+        formFields={
+          isFormLoading
+            ? [
           {
             key: "patient_id",
             label: "Patient",
             type: "select",
             required: true,
             options: [{ value: "", label: "Loading patients..." }],
-            disabled: true
+                  disabled: true,
           },
           {
             key: "doctor_id",
@@ -1111,7 +1594,7 @@ function AppointmentsPage() {
             type: "select",
             required: true,
             options: [{ value: "", label: "Loading doctors..." }],
-            disabled: true
+                  disabled: true,
           },
           {
             key: "appointment_date",
@@ -1142,12 +1625,14 @@ function AppointmentsPage() {
             type: "textarea",
             required: false,
           },
-        ] : formFields}
+              ]
+            : formFields
+        }
         onSave={(data) => {
-          console.log('Form save triggered with data:', data);
-          console.log('Form fields available:', formFields.length);
-          console.log('Patients list:', patientsList.length);
-          console.log('Doctors list:', doctorsList.length);
+          console.log("Form save triggered with data:", data);
+          console.log("Form fields available:", formFields.length);
+          console.log("Patients list:", patientsList.length);
+          console.log("Doctors list:", doctorsList.length);
           handleSave(data, !!selectedItem?.id);
         }}
         operationLoading={operationLoading || editLoading}
